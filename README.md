@@ -260,23 +260,6 @@ If subtitles are disabled:
 
 Each `_caption.txt` contains: episode title/number, soundbite title, full transcript text, link to full episode, and suggested hashtags.
 
-## Project structure
-
-```
-podcast-audiogram-generator/
-├── audiogram_generator/
-│   ├── __init__.py
-│   ├── __main__.py
-│   ├── cli.py
-│   ├── config.py
-│   ├── audio_utils.py
-│   └── video_generator.py
-├── tests/
-├── output/
-├── requirements.txt
-└── setup.py
-```
-
 ## How an audiogram is composed
 
 Each generated video includes:
