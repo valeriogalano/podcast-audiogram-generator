@@ -1,5 +1,5 @@
 """
-Generatore di video audiogram
+Audiogram video generator
 """
 import os
 import numpy as np
@@ -12,67 +12,67 @@ import re
 import unicodedata
 import shutil
 
-# Traccia i segmenti audio già salvati per evitare copie multiple per lo stesso soundbite
+# Track already saved audio segments to avoid multiple copies for the same soundbite
 _SAVED_SEGMENTS = set()
 
-# Formati video per social media
+# Social media video formats
 FORMATS = {
-    # Verticale 9:16 - Instagram Reels/Stories, YouTube Shorts, TikTok, Twitter
+    # Vertical 9:16 - Instagram Reels/Stories, YouTube Shorts, TikTok, Twitter
     'vertical': (1080, 1920),
-    # Quadrato 1:1 - Instagram Post, Twitter, Mastodon, LinkedIn
+    # Square 1:1 - Instagram Post, Twitter, Mastodon, LinkedIn
     'square': (1080, 1080),
-    # Orizzontale 16:9 - YouTube, Twitter orizzontale
+    # Horizontal 16:9 - YouTube, Horizontal Twitter
     'horizontal': (1920, 1080)
 }
 
-# Colori Pensieri in Codice
+# Pensieri in Codice Colors
 COLOR_ORANGE = (242, 101, 34)
 COLOR_BEIGE = (235, 213, 197)
 COLOR_WHITE = (255, 255, 255)
 COLOR_BLACK = (50, 50, 50)
 
-# Spaziatura tra le righe del titolo episodio (header)
-# Aumentata per migliorare la leggibilità nelle intestazioni multi‑riga
+# Line spacing for the episode title (header)
+# Increased to improve readability in multi-line headers
 HEADER_LINE_SPACING = 1.45
 
 
 def _subtitle_default_style(colors):
-    """Ritorna lo stile predefinito per i sottotitoli (trascrizione)."""
-    # Colori con alpha per sfondo
+    """Returns the default style for subtitles (transcription)."""
+    # Colors with alpha for background
     bg = tuple(colors.get('transcript_bg', COLOR_BLACK))
     bg_with_alpha = bg + (190,) if len(bg) == 3 else bg
     return {
         'text_color': tuple(colors.get('text', COLOR_WHITE)),
         'bg_color': bg_with_alpha,      # RGBA
         'padding': 18,                  # px
-        'radius': 18,                   # px angoli arrotondati
-        'line_spacing': 2,              # moltiplicatore altezza riga
-        'shadow': True,                 # ombra soft al box
+        'radius': 18,                   # px rounded corners
+        'line_spacing': 2,              # line height multiplier
+        'shadow': True,                 # soft shadow on the box
         'shadow_offset': (0, 4),        # dx, dy
-        'shadow_blur': 10,              # raggio blur
-        'max_lines': 5,                 # righe massime visualizzate
-        'width_ratio': 0.88             # % della larghezza massima
+        'shadow_blur': 10,              # blur radius
+        'max_lines': 5,                 # maximum displayed lines
+        'width_ratio': 0.88             # % of maximum width
     }
 
 
 def _strip_punctuation(text: str) -> str:
-    """Rimuove la punteggiatura (Unicode) dal testo dei sottotitoli e normalizza gli spazi.
-    Esempi rimossi: . , ; : ! ? … – — - ( ) [ ] { } « » “ ” ' " ecc.
+    """Removes punctuation (Unicode) from subtitle text and normalizes spaces.
+    Examples removed: . , ; : ! ? … – — - ( ) [ ] { } « » “ ” ' " etc.
     """
     if not text:
         return text
-    # Rimuovi tutti i caratteri la cui categoria Unicode inizia con 'P' (punctuation)
+    # Remove all characters whose Unicode category starts with 'P' (punctuation)
     no_punct = ''.join((ch if unicodedata.category(ch)[0] != 'P' else ' ') for ch in text)
-    # Collassa spazi multipli e trim
+    # Collapse multiple spaces and trim
     return re.sub(r"\s+", " ", no_punct).strip()
 
 
 def _draw_rounded_box_with_shadow(base_img, box, fill, radius=16, shadow=True, shadow_offset=(0, 3), shadow_blur=8):
-    """Disegna un rettangolo arrotondato semi-trasparente con ombra su un overlay RGBA e lo compone su base_img.
+    """Draws a semi-transparent rounded rectangle with shadow on an RGBA overlay and composites it onto base_img.
     box: (x1, y1, x2, y2)
-    Ritorna l'immagine risultante (stessa istanza o nuova se necessario).
+    Returns the resulting image (same instance or new if necessary).
     """
-    # Assicurati che la base sia RGBA per alpha_composite
+    # Ensure base is RGBA for alpha_composite
     if base_img.mode != 'RGBA':
         base_img = base_img.convert('RGBA')
 
@@ -96,12 +96,12 @@ def _draw_rounded_box_with_shadow(base_img, box, fill, radius=16, shadow=True, s
 
 
 def _render_subtitle_lines(img, draw, text, font, start_y, max_width, style):
-    """Esegue il word wrap e disegna le righe di sottotitoli più gradevoli.
-    Ritorna (img, total_height_disegnata).
+    """Performs word wrap and draws visually appealing subtitle lines.
+    Returns (img, total_height_drawn).
 
-    Nota: la spaziatura verticale tra le righe usa un'altezza di riga costante
-    basata sulle metriche del font, così da evitare differenze dovute ai glifi
-    presenti nelle singole righe (ascendenti/descendenti).
+    Note: vertical spacing between lines uses a constant line height
+    based on font metrics, to avoid differences due to glyphs
+    present in individual lines (ascenders/descenders).
     """
     # Word wrap manuale
     words = text.split()
@@ -224,14 +224,14 @@ def download_image(url, output_path):
 
 def get_waveform_data(audio_path, fps=24):
     """
-    Estrae dati waveform dall'audio campionati per frame
+    Extracts waveform data from audio sampled per frame.
 
     Args:
-        audio_path: Percorso del file audio
-        fps: Frame per secondo del video
+        audio_path: Path to the audio file
+        fps: Video frames per second
 
     Returns:
-        Array di ampiezze per ogni frame del video
+        Array of amplitudes for each video frame
     """
     # Lazy import to avoid importing heavy dependencies at module import time
     # which can break unit tests in constrained environments
@@ -240,18 +240,18 @@ def get_waveform_data(audio_path, fps=24):
     audio = AudioSegment.from_file(audio_path)
     samples = np.array(audio.get_array_of_samples())
 
-    # Normalizza
+    # Normalize
     if len(samples) > 0:
         samples = samples.astype(float)
         samples = samples / np.max(np.abs(samples))
 
-    # Calcola quanti campioni audio per frame video
+    # Calculate audio samples per video frame
     sample_rate = audio.frame_rate
     duration_seconds = len(audio) / 1000.0
     total_frames = int(duration_seconds * fps)
     samples_per_frame = len(samples) // total_frames if total_frames > 0 else len(samples)
 
-    # Estrai ampiezza media per ogni frame
+    # Extract mean amplitude for each frame
     frame_amplitudes = []
     for i in range(total_frames):
         start = i * samples_per_frame
@@ -263,7 +263,7 @@ def get_waveform_data(audio_path, fps=24):
     return np.array(frame_amplitudes)
 
 
-# Configurazioni per i diversi layout
+# Configurations for different layouts
 LAYOUT_CONFIGS = {
     'vertical': {
         'header_ratio': 0.17,
@@ -300,8 +300,8 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
                            waveform_data, current_time, transcript_chunks, audio_duration, colors, layout_config,
                            header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None):
     """
-    Layout unificato per tutti i formati video
-    Utilizza configurazioni specifiche per ciascun formato passate tramite layout_config
+    Unified layout for all video formats.
+    Uses format-specific configurations passed via layout_config.
     """
     progress_height = 0
 
@@ -527,12 +527,12 @@ def create_layout(img, draw, width, height, podcast_logo_path, podcast_title, ep
                   waveform_data, current_time, transcript_chunks, audio_duration, colors, format_name='vertical',
                   header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None):
     """
-    Crea il layout per il formato specificato
+    Creates the layout for the specified format.
 
     Args:
-        format_name: 'vertical', 'square', o 'horizontal'
+        format_name: 'vertical', 'square', or 'horizontal'
 
-    Formati supportati:
+    Supported formats:
         - vertical: 9:16 (1080x1920) - Instagram Reels, Stories, YouTube Shorts, TikTok
         - square: 1:1 (1080x1080) - Instagram Post, Twitter, Mastodon, LinkedIn
         - horizontal: 16:9 (1920x1080) - YouTube
@@ -547,21 +547,21 @@ def create_audiogram_frame(width, height, podcast_logo_path, podcast_title, epis
                            waveform_data, current_time, transcript_chunks, audio_duration, formats=None, colors=None, format_name='vertical',
                            header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None):
     """
-    Crea un singolo frame dell'audiogram delegando al layout specifico per formato
+    Creates a single audiogram frame by delegating to the format-specific layout.
 
     Args:
-        width, height: Dimensioni del frame
-        podcast_logo_path: Percorso logo podcast
-        podcast_title: Titolo del podcast
-        episode_title: Titolo dell'episodio
-        waveform_data: Dati della waveform
-        current_time: Tempo corrente in secondi
-        transcript_chunks: Lista di chunk di trascrizione con timing
-        audio_duration: Durata totale dell'audio
-        colors: Dizionario con i colori personalizzati (opzionale)
-        format_name: Nome del formato ('vertical', 'square', 'horizontal')
+        width, height: Frame dimensions
+        podcast_logo_path: Podcast logo path
+        podcast_title: Podcast title
+        episode_title: Episode title
+        waveform_data: Waveform data
+        current_time: Current time in seconds
+        transcript_chunks: List of transcript chunks with timing
+        audio_duration: Total audio duration
+        colors: Dictionary with custom colors (optional)
+        format_name: Format name ('vertical', 'square', 'horizontal')
     """
-    # Usa colori di default o personalizzati
+    # Use default or custom colors
     if colors is None:
         colors = {
             'primary': COLOR_ORANGE,
@@ -570,7 +570,7 @@ def create_audiogram_frame(width, height, podcast_logo_path, podcast_title, epis
             'transcript_bg': COLOR_BLACK
         }
     else:
-        # Converti liste in tuple se necessario
+        # Convert lists to tuples if necessary
         colors = {
             'primary': tuple(colors.get('primary', COLOR_ORANGE)),
             'background': tuple(colors.get('background', COLOR_BEIGE)),
@@ -578,16 +578,16 @@ def create_audiogram_frame(width, height, podcast_logo_path, podcast_title, epis
             'transcript_bg': tuple(colors.get('transcript_bg', COLOR_BLACK))
         }
 
-    # Crea immagine di base
+    # Create base image
     img = Image.new('RGB', (width, height), colors['background'])
     draw = ImageDraw.Draw(img)
 
-    # Crea il layout
+    # Create the layout
     img = create_layout(img, draw, width, height, podcast_logo_path, podcast_title,
                        episode_title, waveform_data, current_time, transcript_chunks,
                        audio_duration, colors, format_name, header_title_source, header_soundbite_title)
 
-    # Assicurati che l'array sia in RGB per MoviePy
+    # Ensure the array is in RGB for MoviePy
     if img.mode != 'RGB':
         img = img.convert('RGB')
     return np.array(img)
@@ -600,21 +600,21 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
                       header_title_source: Optional[str] = None,
                       header_soundbite_title: Optional[str] = None):
     """
-    Genera un video audiogram completo
+    Generates a complete audiogram video.
 
     Args:
-        audio_path: Percorso del file audio
-        output_path: Percorso del file video di output
-        format_name: Nome del formato ('vertical', 'square', 'horizontal')
-        podcast_logo_path: Percorso logo podcast
-        podcast_title: Titolo del podcast
-        episode_title: Titolo dell'episodio
-        transcript_chunks: Lista di chunk di trascrizione con timing
-        duration: Durata del video
-        formats: Dizionario con i formati personalizzati (opzionale)
-        colors: Dizionario con i colori personalizzati (opzionale)
+        audio_path: Path to the audio file
+        output_path: Path to the output video file
+        format_name: Format name ('vertical', 'square', 'horizontal')
+        podcast_logo_path: Podcast logo path
+        podcast_title: Podcast title
+        episode_title: Episode title
+        transcript_chunks: List of transcript chunks with timing
+        duration: Video duration
+        formats: Dictionary with custom formats (optional)
+        colors: Dictionary with custom colors (optional)
     """
-    # Usa formati personalizzati o di default
+    # Use custom or default formats
     if formats is None or format_name not in formats:
         width, height = FORMATS[format_name]
     else:
@@ -622,14 +622,14 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
         width = format_config.get('width', FORMATS[format_name][0])
         height = format_config.get('height', FORMATS[format_name][1])
 
-    fps = 24  # Riduci da 30 a 24 fps per velocizzare
+    fps = 24  # Reduced from 30 to 24 fps to speed up rendering
 
-    print(f"  - Estrazione waveform...")
-    # Estrai waveform una sola volta, campionata per frame
+    print(f"  - Extracting waveform...")
+    # Extract waveform once, sampled per frame
     waveform_data = get_waveform_data(audio_path, fps=fps)
 
-    print(f"  - Pre-caricamento logo...")
-    # Pre-carica e ridimensiona il logo una sola volta
+    print(f"  - Pre-loading logo...")
+    # Pre-load and resize the logo once
     logo_img = None
     if os.path.exists(podcast_logo_path):
         logo = Image.open(podcast_logo_path)
@@ -637,14 +637,14 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
         logo_size = int(min(width, central_height) * 0.4)
         logo_img = logo.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
 
-    print(f"  - Generazione frame video...")
-    # Prepara chunks sottotitoli in base al flag
+    print(f"  - Video frame generation...")
+    # Prepare subtitle chunks according to flag
     chunks_for_render = transcript_chunks if show_subtitles else []
-    # Funzione per generare frame
+    # Function to generate frame
     def make_frame(t):
         return create_audiogram_frame(
             width, height,
-            podcast_logo_path,  # Passiamo il path per compatibilità
+            podcast_logo_path,  # Passing path for compatibility
             podcast_title,
             episode_title,
             waveform_data,
@@ -653,33 +653,33 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
             duration,
             formats,
             colors,
-            format_name,  # Passa il formato per usare il layout corretto
+            format_name,  # Pass format to use correct layout
             header_title_source,
             header_soundbite_title,
         )
 
-    # Crea video clip
+    # Create video clip
     video = VideoClip(make_frame, duration=duration)
     video.fps = fps
 
-    print(f"  - Aggiunta audio...")
-    # Aggiungi audio
+    print(f"  - Adding audio...")
+    # Add audio
     audio = AudioFileClip(audio_path)
     video = video.with_audio(audio)
 
     print(f"  - Rendering video...")
-    # Esporta con threads per velocizzare
+    # Export with threads to speed up
     video.write_videofile(
         output_path,
         codec='libx264',
         audio_codec='aac',
         fps=fps,
         threads=4,
-        preset='veryfast'  # Velocizza la creazione per video semplici
+        preset='veryfast'  # Speeds up creation for simple videos
     )
 
-    # Salva anche il segmento audio nella cartella di output.
-    # Deduce il nome da output_path (es: ep145_sb1_vertical.mp4 -> ep145_sb1.mp3)
+    # Also save the audio segment in the output folder.
+    # Deduces name from output_path (e.g., ep145_sb1_vertical.mp4 -> ep145_sb1.mp3)
     try:
         base = os.path.basename(output_path)
         m = re.search(r"(ep\d+)_sb(\d+)", base)
@@ -687,8 +687,8 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
             ep_tag = m.group(1)
             sb_tag = m.group(2)
             dest_path = os.path.join(os.path.dirname(output_path), f"{ep_tag}_sb{sb_tag}.mp3")
-            # Copia sempre sovrascrivendo come da richiesta dell'utente
+            # Always copy overwriting as per user request
             shutil.copyfile(audio_path, dest_path)
     except Exception as e:
-        # Non interrompere la generazione video in caso di errore di copia
-        print(f"  - Avviso: impossibile salvare il segmento audio in output: {e}")
+        # Do not stop video generation in case of copy error
+        print(f"  - Warning: could not save audio segment in output: {e}")

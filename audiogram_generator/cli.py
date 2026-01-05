@@ -63,7 +63,7 @@ def get_podcast_episodes(feed_url, manual_soundbites=None):
 
 
 def get_transcript_text(transcript_url, start_time, duration):
-    """Scarica il file SRT e estrae il testo nel range temporale.
+    """Downloads the SRT file and extracts the text in the time range.
 
     Implementation delegates to services.transcript for fetching and parsing.
     """
@@ -75,7 +75,7 @@ def get_transcript_text(transcript_url, start_time, duration):
 
 
 def get_transcript_chunks(transcript_url, start_time, duration):
-    """Scarica il file SRT e restituisce chunk di testo con timing per il soundbite.
+    """Downloads the SRT file and returns text chunks with timing for the soundbite.
 
     Implementation delegates to services.transcript for fetching and parsing.
     """
@@ -132,7 +132,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
     if selected['audio_url']:
         print(f"Audio: {selected['audio_url']}")
 
-    # Scegli URL locandina da usare (episodio se richiesto e disponibile, altrimenti podcast)
+    # Choose artwork URL to use (episode if requested and available, otherwise podcast)
     artwork_url = None
     if use_episode_cover and selected.get('image_url'):
         artwork_url = selected['image_url']
@@ -146,7 +146,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
         if not sbs:
             print("No soundbites available for this episode.")
             return
-        # Determina quali soundbite stampare
+        # Determine which soundbites to print
         try:
             nums = parse_soundbite_selection(soundbites_choice, len(sbs))
         except ValueError as e:
@@ -164,7 +164,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                 print(f"Soundbite {idx}: invalid timing values (start={sb.get('start')}, duration={sb.get('duration')})")
                 continue
             end_s = start_s + dur_s
-            # Recupera testo trascrizione oppure fallback al titolo del soundbite
+            # Retrieve transcript text or fallback to soundbite title
             transcript_text = None
             if selected.get('transcript_url'):
                 transcript_text = get_transcript_text(
@@ -180,17 +180,17 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
             print(f"- End:   {end_s:.3f}s ({format_seconds(end_s)})")
             print(f"- Subtitle text:")
             print(text if text else "[Not available]")
-        # Non generare nulla in dry-run
+        # Do not generate anything in dry-run
         return
 
-    # Mostra soundbites se esistono
+    # Show soundbites if they exist
     if selected['soundbites']:
         print(f"\nFound soundbites ({len(selected['soundbites'])}):")
         for i, soundbite in enumerate(selected['soundbites'], 1):
             print(f"\n  {i}. [Start: {soundbite['start']}s, Duration: {soundbite['duration']}s]")
             print(f"     Title: {soundbite.get('text') or soundbite.get('title')}")
 
-            # Estrai testo dalla trascrizione se disponibile
+            # Extract text from transcript if available
             if selected['transcript_url']:
                 transcript_text = get_transcript_text(
                     selected['transcript_url'],
@@ -202,7 +202,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                 else:
                     print(f"     Text: [Not available]")
 
-        # Chiedi quale soundbite generare se non specificato
+        # Ask which soundbite to generate if not specified
         print("\n" + "="*60)
         if soundbites_choice is None:
             choice = input("\nDo you want to generate an audiogram for a soundbite? (number, 'a' for all, or 'n' to exit): ")
@@ -257,7 +257,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                             soundbite['start'],
                             soundbite['duration']
                         )
-                        # Estrai testo completo per caption
+                        # Extract full text for caption
                         transcript_text = get_transcript_text(
                             selected['transcript_url'],
                             soundbite['start'],
@@ -266,7 +266,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                     else:
                         transcript_text = soundbite.get('text') or soundbite.get('title')
 
-                    # Genera audiogram per ogni formato abilitato
+                    # Generate audiogram for each enabled format
                     formats_info = {}
                     for fmt_name, fmt_config in formats_config.items():
                         if fmt_config.get('enabled', True):
@@ -299,8 +299,8 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
 
                         print(f"✓ {format_name}: {output_path}")
 
-                    # Genera file caption .txt
-                    print("Generazione file caption...")
+                    # Generate caption file .txt
+                    print("Generating caption file...")
                     caption_path = os.path.join(
                         output_dir,
                         f"ep{selected['number']}_sb{soundbite_num}_caption.txt"
@@ -325,40 +325,40 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
 
         elif choice.lower() != 'n':
             try:
-                # Supporta lista di numeri separati da virgola
+                # Support comma-separated list of numbers
                 if ',' in choice:
                     soundbite_nums = [int(n.strip()) for n in choice.split(',')]
                 else:
                     soundbite_nums = [int(choice)]
 
-                # Valida tutti i numeri
+                # Validate all numbers
                 for num in soundbite_nums:
                     if not (1 <= num <= len(selected['soundbites'])):
                         print(f"Error: invalid number {num}. Choose between 1 and {len(selected['soundbites'])}")
                         return
 
-                # Genera audiogram per i soundbites selezionati
+                # Generate audiogram for the selected soundbites
                 print(f"\nGenerating audiogram for {len(soundbite_nums)} soundbite(s)...")
 
-                # Crea directory temporanea
+                # Create temporary directory
                 with tempfile.TemporaryDirectory() as temp_dir:
                     # Warn about FFmpeg if missing (once)
                     _warn_if_no_ffmpeg()
-                    # Scarica audio completo una sola volta
+                    # Download full audio once
                     print("Downloading audio...")
                     full_audio_path = os.path.join(temp_dir, "full_audio.mp3")
                     download_audio(selected['audio_url'], full_audio_path)
 
-                    # Scarica logo una sola volta
+                    # Download artwork once
                     print("Downloading artwork...")
                     logo_path = os.path.join(temp_dir, "logo.png")
                     if artwork_url:
                         download_image(artwork_url, logo_path)
 
-                    # Crea directory output
+                    # Create output directory
                     os.makedirs(output_dir, exist_ok=True)
 
-                    # Processa ogni soundbite selezionato
+                    # Process each selected soundbite
                     for soundbite_num in soundbite_nums:
                         soundbite = selected['soundbites'][soundbite_num - 1]
 
@@ -366,7 +366,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                         print(f"Soundbite {soundbite_num}: {soundbite.get('text') or soundbite.get('title')}")
                         print(f"{'='*60}")
 
-                        # Estrai segmento
+                        # Extract audio segment
                         print("Extracting audio segment...")
                         segment_path = os.path.join(temp_dir, f"segment_{soundbite_num}.mp3")
                         extract_audio_segment(
@@ -376,7 +376,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                             segment_path
                         )
 
-                        # Ottieni chunk trascrizione
+                        # Build transcript chunks
                         print("Processing transcript...")
                         transcript_chunks = []
                         transcript_text = ""
@@ -386,7 +386,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                                 soundbite['start'],
                                 soundbite['duration']
                             )
-                            # Estrai testo completo per caption
+                            # Extract full text for caption
                             transcript_text = get_transcript_text(
                                 selected['transcript_url'],
                                 soundbite['start'],
@@ -395,7 +395,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                         else:
                             transcript_text = soundbite.get('text') or soundbite.get('title')
 
-                        # Genera audiogram per ogni formato abilitato
+                        # Generate audiogram for each enabled format
                         formats_info = {}
                         for fmt_name, fmt_config in formats_config.items():
                             if fmt_config.get('enabled', True):
@@ -428,7 +428,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
 
                             print(f"✓ {format_name}: {output_path}")
 
-                        # Genera file caption .txt
+                        # Generate caption file .txt
                         print("Generating caption file...")
                         caption_path = os.path.join(
                             output_dir,
@@ -459,7 +459,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
 
 
 def main():
-    """Funzione principale CLI"""
+    """Main CLI function"""
     # Argument parsing
     # Minimal logging setup; default to WARNING (less noisy). Will adjust level
     # after parsing if --log-level is set.
@@ -471,23 +471,23 @@ def main():
     parser.add_argument('--soundbites', type=str, help='Soundbites to generate: specific number, "all" for all, or comma-separated list (e.g., 1,3,5)')
     parser.add_argument('--output-dir', type=str, help='Output directory for generated files')
     parser.add_argument('--log-level', type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], help='Logging level (default: INFO)')
-    parser.add_argument('--dry-run', action='store_true', help='Stampa solo intervalli e sottotitoli dei soundbite senza generare file')
+    parser.add_argument('--dry-run', action='store_true', help='Print only soundbite intervals and subtitles without generating files')
     parser.add_argument(
         '--header-title-source',
         type=str,
         choices=['auto', 'podcast', 'episode', 'soundbite', 'none'],
-        help="Sorgente del titolo nell'header: 'auto' (default), 'podcast', 'episode', 'soundbite', oppure 'none' per nascondere",
+        help="Header title source: 'auto' (default), 'podcast', 'episode', 'soundbite', or 'none' to hide",
     )
-    # Sottotitoli on/off
+    # Subtitles on/off
     subs_group = parser.add_mutually_exclusive_group()
-    subs_group.add_argument('--show-subtitles', dest='show_subtitles', action='store_true', help='Abilita la visualizzazione dei sottotitoli nel video')
-    subs_group.add_argument('--no-subtitles', dest='show_subtitles', action='store_false', help='Disabilita la visualizzazione dei sottotitoli nel video')
+    subs_group.add_argument('--show-subtitles', dest='show_subtitles', action='store_true', help='Enable subtitle display in the video')
+    subs_group.add_argument('--no-subtitles', dest='show_subtitles', action='store_false', help='Disable subtitle display in the video')
     parser.set_defaults(show_subtitles=None)
 
-    # Copertina episodio on/off
+    # Episode cover on/off
     cover_group = parser.add_mutually_exclusive_group()
-    cover_group.add_argument('--use-episode-cover', dest='use_episode_cover', action='store_true', help="Usa la copertina specifica dell'episodio se disponibile")
-    cover_group.add_argument('--no-use-episode-cover', dest='use_episode_cover', action='store_false', help="Non usare la copertina episodio, usa quella del podcast")
+    cover_group.add_argument('--use-episode-cover', dest='use_episode_cover', action='store_true', help="Use episode-specific cover if available")
+    cover_group.add_argument('--no-use-episode-cover', dest='use_episode_cover', action='store_false', help="Do not use episode cover, use podcast cover instead")
     parser.set_defaults(use_episode_cover=None)
 
     args = parser.parse_args()
@@ -497,11 +497,11 @@ def main():
         level = getattr(logging, args.log_level.upper(), logging.INFO)
         logging.getLogger().setLevel(level)
 
-    # Carica configurazione
-    # Se non viene passato --config, prova a usare un file di default (config.yml o config.yaml)
+    # Load configuration
+    # If --config is not passed, try to use a default file (config.yml or config.yaml)
     default_config_path = None
     if not args.config:
-        # Cerca nella directory corrente
+        # Search in the current directory
         cwd = os.getcwd()
         candidates = [
             os.path.join(cwd, 'config.yml'),
@@ -513,7 +513,7 @@ def main():
                 break
     config = Config(config_file=args.config or default_config_path)
 
-    # Aggiorna configurazione con argomenti CLI (hanno precedenza)
+    # Update configuration with CLI arguments (they take precedence)
     config.update_from_args({
         'feed_url': args.feed_url,
         'episode': args.episode,
@@ -525,13 +525,13 @@ def main():
         'header_title_source': args.header_title_source,
     })
 
-    # Usa argomenti o richiedi input interattivo
+    # Use arguments or request interactive input
     feed_url = config.get('feed_url')
     episode_input = config.get('episode')
     soundbites_choice = config.get('soundbites')
     output_dir = config.get('output_dir', os.path.join(os.getcwd(), 'output'))
 
-    # Carica configurazione colori, formati, hashtags e CTA
+    # Load color, format, hashtags, and CTA configuration
     colors = config.get('colors')
     formats_config = config.get('formats')
     config_hashtags = config.get('hashtags', [])
@@ -549,7 +549,7 @@ def main():
     CAPTION_LABEL_EPISODE_PREFIX = labels.get('episode_prefix', CAPTION_LABEL_EPISODE_PREFIX)
     CAPTION_LABEL_LISTEN_PREFIX = labels.get('listen_full_prefix', CAPTION_LABEL_LISTEN_PREFIX)
 
-    # Chiedi feed_url interattivamente se non specificato
+    # Ask for feed_url interactively if not specified
     if feed_url is None:
         try:
             while True:
@@ -564,49 +564,49 @@ def main():
             print("\nOperation cancelled.")
             return
 
-    print("\nRecupero episodi dal feed...")
+    print("\nFetching episodes from feed...")
     manual_sbs = config.get('manual_soundbites', {})
     episodes, podcast_info = get_podcast_episodes(feed_url, manual_soundbites=manual_sbs)
 
     if not episodes:
-        print("Nessun episodio trovato nel feed.")
+        print("No episodes found in the feed.")
         return
 
-    # Mostra informazioni podcast
+    # Show podcast info
     print(f"\n{'='*60}")
     print(f"Podcast: {podcast_info.get('title', 'N/A')}")
     if podcast_info.get('image_url'):
-        print(f"Locandina: {podcast_info['image_url']}")
+        print(f"Artwork: {podcast_info['image_url']}")
     print(f"{'='*60}")
 
-    # Mostra episodi dal primo all'ultimo
-    print(f"\nTrovati {len(episodes)} episodi:\n")
+    # Show episodes from first to last
+    print(f"\nFound {len(episodes)} episodes:\n")
     for episode in episodes:
         print(f"{episode['number']}. {episode['title']}")
 
-    # Determina quali episodi processare (singolo, lista o tutti)
+    # Determine which episodes to process (single, list, or all)
     max_episode = len(episodes)
     try:
         selected_episode_numbers = parse_episode_selection(episode_input, max_episode)
     except ValueError as e:
-        print(f"Errore input episodio: {e}")
+        print(f"Episode input error: {e}")
         return
 
     if not selected_episode_numbers:
-        # Modalità interattiva
+        # Interactive mode
         while True:
             try:
-                choice = input(f"\nSeleziona episodio: numero (es. 5), lista (es. 1,3,5), 'all'/'a' per tutti, oppure 'last' per l'ultimo: ").strip()
+                choice = input(f"\nSelect episode: number (e.g. 5), list (e.g. 1,3,5), 'all'/'a' for all, or 'last' for the last one: ").strip()
                 try:
                     selected_episode_numbers = parse_episode_selection(choice, max_episode)
                     break
                 except ValueError as e:
-                    print(f"Input non valido: {e}")
+                    print(f"Invalid input: {e}")
             except KeyboardInterrupt:
-                print("\nOperazione annullata.")
+                print("\nOperation cancelled.")
                 return
 
-    # Processa gli episodi selezionati
+    # Process selected episodes
     for episode_num in selected_episode_numbers:
         selected = None
         for ep in episodes:
@@ -614,7 +614,7 @@ def main():
                 selected = ep
                 break
         if selected is None:
-            print(f"Episodio {episode_num} non trovato nel feed. Skip.")
+            print(f"Episode {episode_num} not found in the feed. Skipping.")
             continue
 
         process_one_episode(

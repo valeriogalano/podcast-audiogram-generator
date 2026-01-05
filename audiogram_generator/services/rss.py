@@ -99,7 +99,7 @@ def parse_feed(feed_xml: str, manual_soundbites: dict = None) -> Tuple[List[Dict
             soundbites.append({
                 'start': sb.get('startTime'),
                 'duration': sb.get('duration'),
-                'text': sb.text.strip() if sb.text else 'Senza descrizione',
+                'text': sb.text.strip() if sb.text else 'No description',
             })
         if soundbites:
             soundbites_by_guid[guid] = soundbites
@@ -157,7 +157,7 @@ def parse_feed(feed_xml: str, manual_soundbites: dict = None) -> Tuple[List[Dict
         if manual_soundbites:
             manual_sbs = manual_soundbites.get(guid) or manual_soundbites.get(episode_number) or manual_soundbites.get(str(episode_number)) or []
         
-        # Unione dei soundbites
+        # Merge soundbites
         all_sbs = manual_sbs + feed_sbs
         
         episode = {

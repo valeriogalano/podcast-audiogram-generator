@@ -101,8 +101,8 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(config.get('output_dir'), './output')
 
     def test_load_from_invalid_yaml_file(self):
-        """Test gestione errori con file YAML non valido"""
-        # Crea un file temporaneo con contenuto non valido
+        """Test error handling with an invalid YAML file"""
+        # Create a temporary file with invalid content
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
             f.write("invalid: yaml: content: [")
             temp_file = f.name
@@ -111,7 +111,7 @@ class TestConfig(unittest.TestCase):
             with self.assertRaises(Exception) as context:
                 Config(config_file=temp_file)
 
-            self.assertIn("Errore nel caricamento del file di configurazione", str(context.exception))
+            self.assertIn("Error loading the configuration file", str(context.exception))
         finally:
             os.unlink(temp_file)
 

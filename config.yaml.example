@@ -1,116 +1,116 @@
-# File di configurazione di esempio per Audiogram Generator
-# Copia questo file come 'config.yaml' e personalizzalo secondo le tue esigenze
+# Example configuration file for Audiogram Generator
+# Copy this file as 'config.yaml' and customize it according to your needs
 
-# URL del feed RSS del podcast (opzionale)
-# Esempio: https://pensieriincodice.it/podcast/index.xml
+# Podcast RSS feed URL (optional)
+# Example: https://pensieriincodice.it/podcast/index.xml
 feed_url: https://pensieriincodice.it/podcast/index.xml
 
-# Directory di output per i file generati
+# Output directory for generated files
 # Default: ./output
 output_dir: ./output
 
-# Episodi da processare (opzionale)
-# Valori possibili:
-#   - Numero specifico: 1, 2, 3, ecc.
-#   - Lista separata da virgola: "1,3,5"
-#   - Tutti gli episodi: "all" o "a"
-#   - Ultimo episodio disponibile nel feed: "last"
-# Se non specificato, verrà richiesto in modalità interattiva
-# Esempi:
+# Episodes to process (optional)
+# Possible values:
+#   - Specific number: 1, 2, 3, etc.
+#   - Comma-separated list: "1,3,5"
+#   - All episodes: "all" or "a"
+#   - Last episode available in the feed: "last"
+# If not specified, it will be requested in interactive mode
+# Examples:
 #   episode: 142
 #   episode: "1,3,5"
 #   episode: "all"
 #   episode: "last"
 episode: null
 
-# Soundbites da generare (opzionale)
-# Valori possibili:
-#   - Numero specifico: 1, 2, 3, ecc.
-#   - Lista separata da virgola: "1,3,5"
-#   - Tutti i soundbites: "all" o "a"
-# Se non specificato, verrà richiesto in modalità interattiva
-# Esempio: soundbites: "all"
-# Esempio: soundbites: "1,3"
+# Soundbites to generate (optional)
+# Possible values:
+#   - Specific number: 1, 2, 3, etc.
+#   - Comma-separated list: "1,3,5"
+#   - All soundbites: "all" or "a"
+# If not specified, it will be requested in interactive mode
+# Example: soundbites: "all"
+# Example: soundbites: "1,3"
 soundbites: null
 
-# Configurazione colori (opzionale)
-# I colori sono specificati come liste RGB [R, G, B] con valori 0-255
+# Color configuration (optional)
+# Colors are specified as RGB lists [R, G, B] with values 0-255
 colors:
-  # Colore principale per header, footer e barre waveform
-  primary: [242, 101, 34]      # Arancione
-  # Colore di sfondo dell'area centrale
+  # Main color for header, footer and waveform bars
+  primary: [242, 101, 34]      # Orange
+  # Background color of the central area
   background: [235, 213, 197]  # Beige
-  # Colore del testo
-  text: [255, 255, 255]        # Bianco
-  # Colore di sfondo della trascrizione
-  transcript_bg: [0, 0, 0]     # Nero
+  # Text color
+  text: [255, 255, 255]        # White
+  # Transcription background color
+  transcript_bg: [0, 0, 0]     # Black
 
-# Configurazione formati video (opzionale)
-# Puoi personalizzare dimensioni, abilitare/disabilitare formati specifici
+# Video format configuration (optional)
+# You can customize dimensions, enable/disable specific formats
 formats:
   vertical:
     width: 1080
     height: 1920
     enabled: true
-    description: "Verticale 9:16 (Reels, Stories, Shorts, TikTok)"
+    description: "Vertical 9:16 (Reels, Stories, Shorts, TikTok)"
   square:
     width: 1080
     height: 1080
     enabled: true
-    description: "Quadrato 1:1 (Post Instagram, Twitter, Mastodon)"
+    description: "Square 1:1 (Instagram Post, Twitter, Mastodon)"
   horizontal:
     width: 1920
     height: 1080
     enabled: true
-    description: "Orizzontale 16:9 (YouTube)"
+    description: "Horizontal 16:9 (YouTube)"
 
-# Hashtag aggiuntivi per i post social (opzionale)
-# Questi hashtag verranno aggiunti a quelli estratti dal feed RSS
-# Formato: lista di hashtag senza il simbolo #
+# Additional hashtags for social posts (optional)
+# These hashtags will be added to those extracted from the RSS feed
+# Format: list of hashtags without the # symbol
 hashtags:
   - podcast
   - Pensieriincodice
 
-# Sottotitoli (opzionale)
-# Brucia i sottotitoli direttamente sul video
+# Subtitles (optional)
+# Burn subtitles directly onto the video
 # Default: true
 show_subtitles: true
 
-# Copertina da usare per i video (opzionale)
-# Se true, quando disponibile verrà usata la copertina specifica dell'episodio
-# invece di quella generale del podcast. Default: false
+# Cover to use for videos (optional)
+# If true, the episode-specific cover will be used when available
+# instead of the general podcast cover. Default: false
 use_episode_cover: false
 
-# Sorgente del titolo mostrato nell'header (opzionale)
-# Valori possibili:
-#   - auto      -> predefinito: usa titolo episodio se presente, altrimenti titolo podcast
-#   - episode   -> forza il titolo dell'episodio
-#   - podcast   -> forza il titolo del podcast
-#   - soundbite -> usa il titolo del soundbite corrente (fallback a episodio/podcast se vuoto)
-#   - none      -> non mostra alcun titolo nell'header
+# Source of the title shown in the header (optional)
+# Possible values:
+#   - auto      -> default: use episode title if present, otherwise podcast title
+#   - episode   -> force the episode title
+#   - podcast   -> force the podcast title
+#   - soundbite -> use the current soundbite title (fallback to episode/podcast if empty)
+#   - none      -> do not show any title in the header
 header_title_source: auto
 
-# Etichette della caption (opzionale)
-# Personalizza le scritte fisse che compaiono nel file di caption .txt
-# Puoi tradurle o modificarle a piacere.
+# Caption labels (optional)
+# Customize the fixed text that appears in the .txt caption file
+# You can translate or modify them as you wish.
 caption_labels:
-  # Prefisso prima del numero e del titolo episodio
-  # Esempio risultato: "Episodio 42: Titolo"
+  # Prefix before the episode number and title
+  # Example result: "Episode 42: Title"
   episode_prefix: "Episode"
-  # Testo prima del link all'episodio completo
-  # Esempio: "Ascolta l'episodio completo: https://..."
+  # Text before the link to the full episode
+  # Example: "Listen to the full episode: https://..."
   listen_full_prefix: "Listen to the full episode"
 
-# Soundbites definiti manualmente (opzionale)
-# Utilissimo se il feed del podcast non contiene soundbites (tag <podcast:soundbite>).
-# Puoi identificare l'episodio tramite il suo numero (basato sull'ordine nel feed, 1-based)
-# o tramite il suo GUID univoco (consigliato).
+# Manually defined soundbites (optional)
+# Very useful if the podcast feed does not contain soundbites (<podcast:soundbite> tags).
+# You can identify the episode by its number (based on feed order, 1-based)
+# or by its unique GUID (recommended).
 # manual_soundbites:
-#   "142": # Numero episodio (come stringa o intero)
+#   "142": # Episode number (as string or integer)
 #     - start: 120.5
 #       duration: 30.0
-#       text: "Un momento molto interessante"
-#   "guid-univoco-episodio": # GUID dell'episodio
+#       text: "A very interesting moment"
+#   "episode-unique-guid": # Episode GUID
 #     - start: 500
 #       duration: 15
-#       text: "Altro spezzone"
+#       text: "Another clip"

@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 
 
 class Config:
-    """Classe per gestire la configurazione dell'applicazione"""
+    """Class to manage application configuration"""
 
     DEFAULT_CONFIG = {
         'feed_url': None,
@@ -55,12 +55,12 @@ class Config:
 
     def __init__(self, config_file: Optional[str] = None):
         """
-        Inizializza la configurazione
+        Initializes the configuration.
 
         Args:
-            config_file: Path al file di configurazione YAML (opzionale)
+            config_file: Path to the YAML configuration file (optional)
         """
-        # Deep copy per evitare modifiche ai default
+        # Deep copy to avoid modifying defaults
         import copy
         self.config = copy.deepcopy(self.DEFAULT_CONFIG)
 
@@ -69,10 +69,10 @@ class Config:
 
     def load_from_file(self, config_file: str) -> None:
         """
-        Carica la configurazione da file YAML
+        Loads the configuration from a YAML file.
 
         Args:
-            config_file: Path al file di configurazione
+            config_file: Path to the configuration file
         """
         try:
             with open(config_file, 'r', encoding='utf-8') as f:
@@ -87,16 +87,15 @@ class Config:
                         else:
                             self.config[key] = value
         except Exception as e:
-            # Messaggio di errore in italiano per coerenza con i test e i messaggi del progetto
-            raise Exception(f"Errore nel caricamento del file di configurazione: {e}")
+            raise Exception(f"Error loading the configuration file: {e}")
 
     def _deep_merge(self, base: dict, update: dict) -> None:
         """
-        Merge profondo di dizionari nested
+        Deep merge of nested dictionaries.
 
         Args:
-            base: Dizionario base da aggiornare
-            update: Dizionario con gli aggiornamenti
+            base: Base dictionary to update
+            update: Dictionary with updates
         """
         for key, value in update.items():
             if key in base and isinstance(base[key], dict) and isinstance(value, dict):
@@ -106,11 +105,11 @@ class Config:
 
     def update_from_args(self, args: Dict[str, Any]) -> None:
         """
-        Aggiorna la configurazione con argomenti da CLI
-        Gli argomenti CLI hanno precedenza sul file di configurazione
+        Updates the configuration with CLI arguments.
+        CLI arguments take precedence over the configuration file.
 
         Args:
-            args: Dizionario con gli argomenti da CLI
+            args: Dictionary with CLI arguments
         """
         for key, value in args.items():
             if value is not None:
@@ -118,22 +117,22 @@ class Config:
 
     def get(self, key: str, default: Any = None) -> Any:
         """
-        Ottiene un valore di configurazione
+        Gets a configuration value.
 
         Args:
-            key: Chiave della configurazione
-            default: Valore di default se la chiave non esiste
+            key: Configuration key
+            default: Default value if the key does not exist
 
         Returns:
-            Il valore della configurazione
+            The configuration value
         """
         return self.config.get(key, default)
 
     def get_all(self) -> Dict[str, Any]:
         """
-        Ottiene tutta la configurazione
+        Gets all configuration.
 
         Returns:
-            Dizionario con tutta la configurazione
+            Dictionary with all configuration
         """
         return self.config.copy()

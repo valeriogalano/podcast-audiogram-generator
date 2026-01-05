@@ -20,13 +20,13 @@ def download_audio(url, output_path):
 
 def extract_audio_segment(audio_path, start_time, duration, output_path):
     """
-    Estrae un segmento audio da un file
+    Extracts an audio segment from a file.
 
     Args:
-        audio_path: Percorso del file audio completo
-        start_time: Tempo di inizio in secondi
-        duration: Durata del segmento in secondi
-        output_path: Percorso del file di output
+        audio_path: Path to the full audio file
+        start_time: Start time in seconds
+        duration: Segment duration in seconds
+        output_path: Output file path
     """
     # Lazy import to avoid importing heavy dependencies at module import time
     # and to keep unit tests independent from optional binary deps.

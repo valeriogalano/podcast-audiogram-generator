@@ -1,5 +1,5 @@
 """
-Test del flusso CLI in dry-run e verifica suffisso _nosubs nei nomi dei file (mock I/O).
+Tests for the CLI flow in dry-run mode and verification of the _nosubs suffix in filenames (mock I/O).
 """
 import io
 import unittest
@@ -13,7 +13,7 @@ class TestCliFlow(unittest.TestCase):
     def _make_selected(self, with_soundbites=True, with_transcript=True, with_image=True):
         return {
             'number': 142,
-            'title': 'Titolo episodio',
+            'title': 'Episode title',
             'link': 'https://example/ep142',
             'description': 'desc',
             'soundbites': (
@@ -65,9 +65,9 @@ class TestCliFlow(unittest.TestCase):
                 use_episode_cover=False,
             )
         out = buf.getvalue()
-        # Deve stampare il titolo della SB come fallback (quando transcript=None)
+        # Should print the SB title as fallback (when transcript=None)
         self.assertIn('SB1', out)
-        # Deve stampare anche i tempi formattati
+        # Should also print formatted times
         self.assertIn('00:00:05', out)
 
     def test_dry_run_invalid_selection_prints_error(self):
@@ -82,7 +82,7 @@ class TestCliFlow(unittest.TestCase):
                 config_hashtags=None,
                 show_subtitles=True,
                 output_dir='./output',
-                soundbites_choice='0',  # non valido
+                soundbites_choice='0',  # invalid
                 dry_run=True,
                 use_episode_cover=False,
             )
@@ -99,7 +99,7 @@ class TestCliFlow(unittest.TestCase):
             'vertical': {'width': 1080, 'height': 1920, 'enabled': True},
             'square': {'width': 1080, 'height': 1080, 'enabled': True},
         }
-        # Esegui non-dry-run ma con tutto mockato; intercetta le chiamate
+        # Run non-dry-run but with everything mocked; intercept calls
         with patch('audiogram_generator.cli.generate_audiogram') as gen:
             cli.process_one_episode(
                 selected=selected,
@@ -107,17 +107,17 @@ class TestCliFlow(unittest.TestCase):
                 colors=cli.Config.DEFAULT_CONFIG['colors'],
                 formats_config=formats,
                 config_hashtags=None,
-                show_subtitles=False,  # disabilitati → _nosubs
+                show_subtitles=False,  # disabled → _nosubs
                 output_dir='./output',
                 soundbites_choice='1',
                 dry_run=False,
                 use_episode_cover=True,
             )
-            # Verifica che ogni chiamata a generate_audiogram usi un path con _nosubs
+            # Verify that each call to generate_audiogram uses a path with _nosubs
             self.assertGreaterEqual(gen.call_count, 1)
             for call in gen.call_args_list:
                 args, kwargs = call
-                # output_path è il secondo argomento posizionale
+                # output_path is the second positional argument
                 output_path = args[1] if len(args) >= 2 else kwargs.get('output_path')
                 self.assertIn('_nosubs', output_path)
 

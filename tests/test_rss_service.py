@@ -25,7 +25,7 @@ SAMPLE_FEED = (
           <itunes:keywords>Dev Ops</itunes:keywords>
           <itunes:image href="https://example.com/ep-b.jpg" />
           <podcast:transcript url="https://example.com/ep-b.srt" type="application/srt" />
-          <podcast:soundbite startTime="5" duration="4">Segmento B</podcast:soundbite>
+          <podcast:soundbite startTime="5" duration="4">Segment B</podcast:soundbite>
         </item>
 
         <item>
@@ -37,7 +37,7 @@ SAMPLE_FEED = (
           <itunes:keywords>Python</itunes:keywords>
           <media:thumbnail url="https://example.com/ep-a-thumb.jpg" />
           <podcast:transcript url="https://example.com/ep-a.srt" type="application/srt" />
-          <podcast:soundbite startTime="10" duration="3">Segmento A</podcast:soundbite>
+          <podcast:soundbite startTime="10" duration="3">Segment A</podcast:soundbite>
         </item>
       </channel>
     </rss>
@@ -70,7 +70,7 @@ class TestRssService(unittest.TestCase):
         self.assertEqual(len(ep_a['soundbites']), 1)
         self.assertEqual(ep_a['soundbites'][0]['start'], '10')
         self.assertEqual(ep_a['soundbites'][0]['duration'], '3')
-        self.assertIn('Segmento A', ep_a['soundbites'][0]['text'])
+        self.assertIn('Segment A', ep_a['soundbites'][0]['text'])
 
         # Newest is Episode B (guid g2)
         ep_b = episodes[1]
