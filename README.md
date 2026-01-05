@@ -77,6 +77,8 @@ Available options:
 - `--episode EPISODES` — Episodes to process: `5`, `1,3,5`, `all`, or `last` (most recent)
 - `--soundbites CHOICE` — Soundbites: `1`, `1,3`, or `all`
 - `--output-dir PATH` — Output directory (default: `./output`)
+- `--header-title-source CHOICE` — Source for the header title: `auto` (default), `podcast`, `episode`, `soundbite`, or `none`
+- `--log-level LEVEL` — Logging level: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
 - `--dry-run` — Print timings and transcript text only (no files generated)
 - `--show-subtitles` / `--no-subtitles` — Force enable/disable on‑video subtitles
 - `--use-episode-cover` / `--no-use-episode-cover` — Prefer the episode-specific cover art when available (fallback to podcast cover)
@@ -125,17 +127,22 @@ Enable from config (optional):
 dry_run: true
 ```
 
-### Subtitles on/off
+### Subtitles and Cover options
 
-Control on‑video subtitles via CLI flags or YAML. CLI flags always win.
+Control on‑video subtitles and cover art preferences via CLI flags or YAML. CLI flags always win.
 
-- CLI:
+- Subtitles:
   - Disable: `python -m audiogram_generator --no-subtitles`
-  - Enable:  `python -m audiogram_generator --show-subtitles`
-- YAML (`config.yaml`):
-  ```yaml
-  show_subtitles: false
-  ```
+  - Enable:  `python -m audiogram_generator --show-subtitles` (default)
+- Episode cover:
+  - Enable:  `python -m audiogram_generator --use-episode-cover`
+  - Disable: `python -m audiogram_generator --no-use-episode-cover` (default)
+
+YAML (`config.yaml`):
+```yaml
+show_subtitles: false
+use_episode_cover: true
+```
 
 When subtitles are disabled, generated video filenames include a `_nosubs` suffix to make files easy to identify, for example: `ep142_sb1_nosubs_vertical.mp4`.
 
@@ -165,6 +172,8 @@ soundbites: "all"
 # Behavior
 dry_run: false
 show_subtitles: true
+use_episode_cover: false
+header_title_source: auto
 
 # Appearance (optional)
 colors:
@@ -193,6 +202,18 @@ hashtags:
 Notes:
 - RGB colors are expressed as `[R, G, B]` with values 0–255.
 - Formats can be enabled/disabled and resized per needs.
+
+### Header title source
+
+Customize what title appears in the video header. Available values:
+- `auto` (default): uses episode title if available, otherwise podcast title
+- `podcast`: always use podcast title
+- `episode`: always use episode title
+- `soundbite`: use soundbite title
+- `none`: hide the header title
+
+CLI: `--header-title-source CHOICE`
+YAML: `header_title_source: CHOICE`
 
 ### Caption labels (customizable fixed strings)
 
@@ -298,7 +319,6 @@ Note for Python 3.13+: The standard library module `audioop` was removed. We use
 ## Roadmap
 
 - Better document subtitle configuration
-- Option to choose podcast vs episode cover
 - Handle tags with spaces
 
 ## License

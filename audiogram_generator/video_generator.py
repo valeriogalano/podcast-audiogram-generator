@@ -4,6 +4,7 @@ Generatore di video audiogram
 import os
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from typing import Optional
 from moviepy import VideoClip, AudioFileClip
 import urllib.request
 import ssl
@@ -296,7 +297,8 @@ LAYOUT_CONFIGS = {
 
 
 def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_title, episode_title,
-                           waveform_data, current_time, transcript_chunks, audio_duration, colors, layout_config):
+                           waveform_data, current_time, transcript_chunks, audio_duration, colors, layout_config,
+                           header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None):
     """
     Layout unificato per tutti i formati video
     Utilizza configurazioni specifiche per ciascun formato passate tramite layout_config
@@ -307,6 +309,111 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
     header_top = progress_height
     header_height = int(height * layout_config['header_ratio'])
     draw.rectangle([(0, header_top), (width, header_top + header_height)], fill=colors['primary'])
+
+    # Header title selection according to configuration
+    src = (header_title_source or 'auto').lower()
+    header_text = None
+    if src == 'none':
+        header_text = None
+    elif src == 'podcast':
+        header_text = (podcast_title or '').strip()
+    elif src == 'episode':
+        header_text = (episode_title or '').strip()
+    elif src == 'soundbite':
+        header_text = (header_soundbite_title or '').strip()
+        if not header_text:
+            # fallback gracefully
+            header_text = (episode_title or podcast_title or '').strip()
+    else:  # auto
+        if episode_title and str(episode_title).strip():
+            header_text = str(episode_title).strip()
+        elif podcast_title and str(podcast_title).strip():
+            header_text = str(podcast_title).strip()
+
+    if header_text:
+        # Font size tuned per layout height; slightly smaller than header to leave padding
+        # Use a robust font fallback
+        # Available width with horizontal padding
+        pad_x = int(width * 0.04)
+        # Lower the title closer to the bottom edge of the header bar
+        # by reducing the vertical padding.
+        pad_y = int(header_height * 0.04)
+        max_width = width - 2 * pad_x
+        max_height = header_height - 2 * pad_y
+
+        # Start from a size proportionate to header and go down until fits
+        size = max(16, int(header_height * 0.26))
+        min_size = 12
+        lines = []
+        base_h = 0
+        total_text_h = 0
+
+        while size >= min_size:
+            try:
+                font_header = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", size=size)
+            except Exception:
+                font_header = ImageFont.load_default()
+
+            # Simple word wrap to fit within header width
+            words = header_text.split()
+            lines = []
+            cur = ""
+            for w in words:
+                test = (cur + (" " if cur else "") + w)
+                bbox = draw.textbbox((0, 0), test, font=font_header)
+                if (bbox[2] - bbox[0]) <= max_width:
+                    cur = test
+                else:
+                    if cur:
+                        lines.append(cur)
+                    cur = w
+                if len(lines) >= 3:
+                    break
+            if cur and len(lines) < 3:
+                lines.append(cur)
+
+            if lines:
+                lines = lines[:3]
+                # Ellipsize last line until it fits in width
+                def ellipsize(text_line: str) -> str:
+                    if not text_line:
+                        return text_line
+                    ell = "…"
+                    while True:
+                        bbox2 = draw.textbbox((0, 0), text_line, font=font_header)
+                        if (bbox2[2] - bbox2[0]) <= max_width or len(text_line) <= 1:
+                            return text_line
+                        text_line = text_line[:-2] + ell if len(text_line) > 2 else ell
+
+                lines[-1] = ellipsize(lines[-1])
+
+                # Compute total height
+                line_heights = []
+                for ln in lines:
+                    bbox = draw.textbbox((0, 0), ln, font=font_header)
+                    line_heights.append(bbox[3] - bbox[1])
+                base_h = max(line_heights) if line_heights else 0
+                total_text_h = 0
+                for i, _lh in enumerate(line_heights):
+                    total_text_h += (base_h if i == 0 else int(base_h * HEADER_LINE_SPACING))
+            else:
+                base_h = 0
+                total_text_h = 0
+
+            if total_text_h <= max_height:
+                break
+            size -= 2
+
+        # Draw lines if any
+        if lines:
+            start_y = header_top + header_height - pad_y - total_text_h
+            x = pad_x
+            text_fill = tuple(colors.get('text', COLOR_WHITE))
+            cy = start_y
+            for i, ln in enumerate(lines):
+                # Draw plain text: same font as subtitles, but no background box and no shadows
+                draw.text((x, cy), ln, font=font_header, fill=text_fill)
+                cy += (base_h if i == 0 else int(base_h * HEADER_LINE_SPACING))
 
     # Area centrale
     central_top = header_top + header_height
@@ -417,7 +524,8 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
 
 
 def create_layout(img, draw, width, height, podcast_logo_path, podcast_title, episode_title,
-                  waveform_data, current_time, transcript_chunks, audio_duration, colors, format_name='vertical'):
+                  waveform_data, current_time, transcript_chunks, audio_duration, colors, format_name='vertical',
+                  header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None):
     """
     Crea il layout per il formato specificato
 
@@ -432,11 +540,12 @@ def create_layout(img, draw, width, height, podcast_logo_path, podcast_title, ep
     layout_config = LAYOUT_CONFIGS.get(format_name, LAYOUT_CONFIGS['vertical'])
     return _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_title, episode_title,
                                   waveform_data, current_time, transcript_chunks, audio_duration, colors,
-                                  layout_config)
+                                  layout_config, header_title_source, header_soundbite_title)
 
 
 def create_audiogram_frame(width, height, podcast_logo_path, podcast_title, episode_title,
-                           waveform_data, current_time, transcript_chunks, audio_duration, formats=None, colors=None, format_name='vertical'):
+                           waveform_data, current_time, transcript_chunks, audio_duration, formats=None, colors=None, format_name='vertical',
+                           header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None):
     """
     Crea un singolo frame dell'audiogram delegando al layout specifico per formato
 
@@ -476,7 +585,7 @@ def create_audiogram_frame(width, height, podcast_logo_path, podcast_title, epis
     # Crea il layout
     img = create_layout(img, draw, width, height, podcast_logo_path, podcast_title,
                        episode_title, waveform_data, current_time, transcript_chunks,
-                       audio_duration, colors, format_name)
+                       audio_duration, colors, format_name, header_title_source, header_soundbite_title)
 
     # Assicurati che l'array sia in RGB per MoviePy
     if img.mode != 'RGB':
@@ -487,7 +596,9 @@ def create_audiogram_frame(width, height, podcast_logo_path, podcast_title, epis
 def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
                       podcast_title, episode_title, transcript_chunks, duration,
                       formats=None, colors=None,
-                      show_subtitles=True):
+                      show_subtitles=True, *,
+                      header_title_source: Optional[str] = None,
+                      header_soundbite_title: Optional[str] = None):
     """
     Genera un video audiogram completo
 
@@ -543,6 +654,8 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
             formats,
             colors,
             format_name,  # Passa il formato per usare il layout corretto
+            header_title_source,
+            header_soundbite_title,
         )
 
     # Crea video clip

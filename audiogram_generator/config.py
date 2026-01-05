@@ -17,6 +17,9 @@ class Config:
         'dry_run': False,
         'show_subtitles': True,
         'use_episode_cover': False,
+        # Header title text source: 'auto' (episode then podcast),
+        # or explicitly 'episode' | 'podcast' | 'soundbite' | 'none'
+        'header_title_source': 'auto',
         'caption_labels': {
             'episode_prefix': 'Episode',
             'listen_full_prefix': 'Listen to the full episode',

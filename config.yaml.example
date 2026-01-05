@@ -81,6 +81,15 @@ show_subtitles: true
 # invece di quella generale del podcast. Default: false
 use_episode_cover: false
 
+# Sorgente del titolo mostrato nell'header (opzionale)
+# Valori possibili:
+#   - auto      -> predefinito: usa titolo episodio se presente, altrimenti titolo podcast
+#   - episode   -> forza il titolo dell'episodio
+#   - podcast   -> forza il titolo del podcast
+#   - soundbite -> usa il titolo del soundbite corrente (fallback a episodio/podcast se vuoto)
+#   - none      -> non mostra alcun titolo nell'header
+header_title_source: auto
+
 # Etichette della caption (opzionale)
 # Personalizza le scritte fisse che compaiono nel file di caption .txt
 # Puoi tradurle o modificarle a piacere.

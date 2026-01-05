@@ -6,7 +6,7 @@ to ``video_generator.generate_audiogram``.
 """
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from audiogram_generator import video_generator
 
@@ -20,6 +20,8 @@ def render_audiogram(
     formats: Dict | None,
     colors: Dict | None,
     show_subtitles: bool = True,
+    header_title_source: Optional[str] = None,
+    soundbite_title: Optional[str] = None,
 ) -> None:
     """Render an audiogram using the underlying video generator.
 
@@ -47,6 +49,8 @@ def render_audiogram(
         formats,
         colors,
         show_subtitles,
+        header_title_source=header_title_source,
+        header_soundbite_title=soundbite_title,
     )
 
 
@@ -62,6 +66,9 @@ def generate_audiogram(
     formats: Dict | None,
     colors: Dict | None,
     show_subtitles: bool = True,
+    *,
+    header_title_source: Optional[str] = None,
+    header_soundbite_title: Optional[str] = None,
 ) -> None:
     """Legacy-compatible wrapper used by the CLI and tests.
 
@@ -81,4 +88,6 @@ def generate_audiogram(
         formats,
         colors,
         show_subtitles,
+        header_title_source=header_title_source,
+        header_soundbite_title=header_soundbite_title,
     )

@@ -127,7 +127,7 @@ def generate_caption_file(output_path, episode_number, episode_title, episode_li
 ## - parse_soundbite_selection
 
 
-def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags, show_subtitles, output_dir, soundbites_choice, dry_run=False, use_episode_cover=False):
+def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags, show_subtitles, output_dir, soundbites_choice, dry_run=False, use_episode_cover=False, header_title_source=None):
     print(f"\nEpisode {selected['number']}: {selected['title']}")
     if selected['audio_url']:
         print(f"Audio: {selected['audio_url']}")
@@ -292,7 +292,9 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                             float(soundbite['duration']),
                             formats_config,
                             colors,
-                            show_subtitles
+                            show_subtitles,
+                            header_title_source=header_title_source,
+                            header_soundbite_title=(soundbite.get('text') or soundbite.get('title')),
                         )
 
                         print(f"✓ {format_name}: {output_path}")
@@ -419,7 +421,9 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                                 float(soundbite['duration']),
                                 formats_config,
                                 colors,
-                                show_subtitles
+                                show_subtitles,
+                                header_title_source=header_title_source,
+                                header_soundbite_title=(soundbite.get('text') or soundbite.get('title')),
                             )
 
                             print(f"✓ {format_name}: {output_path}")
@@ -468,6 +472,12 @@ def main():
     parser.add_argument('--output-dir', type=str, help='Output directory for generated files')
     parser.add_argument('--log-level', type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], help='Logging level (default: INFO)')
     parser.add_argument('--dry-run', action='store_true', help='Stampa solo intervalli e sottotitoli dei soundbite senza generare file')
+    parser.add_argument(
+        '--header-title-source',
+        type=str,
+        choices=['auto', 'podcast', 'episode', 'soundbite', 'none'],
+        help="Sorgente del titolo nell'header: 'auto' (default), 'podcast', 'episode', 'soundbite', oppure 'none' per nascondere",
+    )
     # Sottotitoli on/off
     subs_group = parser.add_mutually_exclusive_group()
     subs_group.add_argument('--show-subtitles', dest='show_subtitles', action='store_true', help='Abilita la visualizzazione dei sottotitoli nel video')
@@ -511,7 +521,8 @@ def main():
         'output_dir': args.output_dir,
         'dry_run': args.dry_run,
         'show_subtitles': args.show_subtitles,
-        'use_episode_cover': args.use_episode_cover
+        'use_episode_cover': args.use_episode_cover,
+        'header_title_source': args.header_title_source,
     })
 
     # Usa argomenti o richiedi input interattivo
@@ -527,6 +538,7 @@ def main():
     show_subtitles = config.get('show_subtitles', True)
     dry_run = config.get('dry_run', False)
     use_episode_cover = config.get('use_episode_cover', False)
+    header_title_source = config.get('header_title_source', 'auto')
 
     # Caption labels (allow overriding fixed strings in caption)
     try:
@@ -614,7 +626,8 @@ def main():
             output_dir=output_dir,
             soundbites_choice=soundbites_choice,
             dry_run=dry_run,
-            use_episode_cover=use_episode_cover
+            use_episode_cover=use_episode_cover,
+            header_title_source=header_title_source,
         )
 
     return
