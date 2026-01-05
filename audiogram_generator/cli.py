@@ -48,13 +48,13 @@ def _warn_if_no_ffmpeg():
         _ffmpeg_warned = True
 
 
-def get_podcast_episodes(feed_url):
+def get_podcast_episodes(feed_url, manual_soundbites=None):
     """Fetch the list of episodes from the RSS feed.
 
     Thin delegator to services.rss to keep backward compatibility while
     moving parsing/network logic into the service layer.
     """
-    return rss_svc.get_podcast_episodes(feed_url)
+    return rss_svc.get_podcast_episodes(feed_url, manual_soundbites=manual_soundbites)
 
 
 ## NOTE: pure helpers moved to audiogram_generator.core
@@ -565,7 +565,8 @@ def main():
             return
 
     print("\nRecupero episodi dal feed...")
-    episodes, podcast_info = get_podcast_episodes(feed_url)
+    manual_sbs = config.get('manual_soundbites', {})
+    episodes, podcast_info = get_podcast_episodes(feed_url, manual_soundbites=manual_sbs)
 
     if not episodes:
         print("Nessun episodio trovato nel feed.")

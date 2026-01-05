@@ -17,6 +17,7 @@ class Config:
         'dry_run': False,
         'show_subtitles': True,
         'use_episode_cover': False,
+        'manual_soundbites': {},
         # Header title text source: 'auto' (episode then podcast),
         # or explicitly 'episode' | 'podcast' | 'soundbite' | 'none'
         'header_title_source': 'auto',

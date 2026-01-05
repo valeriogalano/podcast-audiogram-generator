@@ -100,3 +100,17 @@ caption_labels:
   # Testo prima del link all'episodio completo
   # Esempio: "Ascolta l'episodio completo: https://..."
   listen_full_prefix: "Listen to the full episode"
+
+# Soundbites definiti manualmente (opzionale)
+# Utilissimo se il feed del podcast non contiene soundbites (tag <podcast:soundbite>).
+# Puoi identificare l'episodio tramite il suo numero (basato sull'ordine nel feed, 1-based)
+# o tramite il suo GUID univoco (consigliato).
+# manual_soundbites:
+#   "142": # Numero episodio (come stringa o intero)
+#     - start: 120.5
+#       duration: 30.0
+#       text: "Un momento molto interessante"
+#   "guid-univoco-episodio": # GUID dell'episodio
+#     - start: 500
+#       duration: 15
+#       text: "Altro spezzone"

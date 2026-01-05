@@ -39,7 +39,7 @@ def fetch_feed(url: str, timeout: int = 10) -> str:
         raise RssError(str(e))
 
 
-def parse_feed(feed_xml: str) -> Tuple[List[Dict], Dict]:
+def parse_feed(feed_xml: str, manual_soundbites: dict = None) -> Tuple[List[Dict], Dict]:
     """Parse the feed XML and return (episodes, podcast_info).
 
     The output shape matches the legacy CLI implementation:
@@ -148,12 +148,24 @@ def parse_feed(feed_xml: str) -> Tuple[List[Dict], Dict]:
     for idx, entry in enumerate(reversed(feed.entries)):
         episode_number = idx + 1  # oldest to newest numbering
         guid = entry.get('guid', entry.get('id', ''))
+        
+        # Retrieve soundbites from feed
+        feed_sbs = soundbites_by_guid.get(guid, [])
+        
+        # Retrieve manual soundbites (by GUID or episode number)
+        manual_sbs = []
+        if manual_soundbites:
+            manual_sbs = manual_soundbites.get(guid) or manual_soundbites.get(episode_number) or manual_soundbites.get(str(episode_number)) or []
+        
+        # Unione dei soundbites
+        all_sbs = manual_sbs + feed_sbs
+        
         episode = {
             'number': episode_number,
-            'title': entry.get('title', 'Senza titolo'),
+            'title': entry.get('title', 'No title'),
             'link': entry.get('link', ''),
             'description': entry.get('description', ''),
-            'soundbites': soundbites_by_guid.get(guid, []),
+            'soundbites': all_sbs,
             'transcript_url': transcript_by_guid.get(guid, None),
             'audio_url': audio_by_guid.get(guid, None),
             'keywords': keywords_by_guid.get(guid, None),
@@ -164,10 +176,10 @@ def parse_feed(feed_xml: str) -> Tuple[List[Dict], Dict]:
     return episodes, podcast_info
 
 
-def get_podcast_episodes(feed_url: str) -> Tuple[List[Dict], Dict]:
+def get_podcast_episodes(feed_url: str, manual_soundbites: dict = None) -> Tuple[List[Dict], Dict]:
     """High-level convenience that fetches and parses the feed URL.
 
     Network I/O is isolated to ``fetch_feed`` to allow tests to mock it.
     """
     xml_text = fetch_feed(feed_url)
-    return parse_feed(xml_text)
+    return parse_feed(xml_text, manual_soundbites=manual_soundbites)

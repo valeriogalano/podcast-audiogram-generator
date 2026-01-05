@@ -231,6 +231,24 @@ caption_labels:
 
 If omitted, the defaults are used (`Episode` and `Listen to the full episode`).
 
+### Manual Soundbites
+
+If your podcast feed does not include `<podcast:soundbite>` tags, you can define them manually in your `config.yaml` file. You can identify episodes by their number (1-based, oldest to newest) or by their unique GUID.
+
+```yaml
+manual_soundbites:
+  "142": # By episode number
+    - start: 120.5
+      duration: 30.0
+      text: "A very interesting moment"
+  "unique-guid-here": # By episode GUID
+    - start: 500
+      duration: 15
+      text: "Another segment"
+```
+
+Manual soundbites are merged with any soundbites found in the feed, with manual ones appearing first in the list.
+
 ## Output
 
 Files are saved to `output/` by default.
