@@ -266,6 +266,17 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                     else:
                         transcript_text = soundbite.get('text') or soundbite.get('title')
 
+                    # Save MP3 segment to output directory
+                    mp3_output_path = os.path.join(
+                        output_dir,
+                        f"ep{selected['number']}_sb{soundbite_num}.mp3"
+                    )
+                    try:
+                        shutil.copy2(segment_path, mp3_output_path)
+                        print(f"✓ Audio: {mp3_output_path}")
+                    except Exception as e:
+                        print(f"Warning: could not save audio file: {e}")
+
                     # Generate audiogram for each enabled format
                     formats_info = {}
                     for fmt_name, fmt_config in formats_config.items():
@@ -394,6 +405,17 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                             ) or (soundbite.get('text') or soundbite.get('title'))
                         else:
                             transcript_text = soundbite.get('text') or soundbite.get('title')
+
+                        # Save MP3 segment to output directory
+                        mp3_output_path = os.path.join(
+                            output_dir,
+                            f"ep{selected['number']}_sb{soundbite_num}.mp3"
+                        )
+                        try:
+                            shutil.copy2(segment_path, mp3_output_path)
+                            print(f"✓ Audio: {mp3_output_path}")
+                        except Exception as e:
+                            print(f"Warning: could not save audio file: {e}")
 
                         # Generate audiogram for each enabled format
                         formats_info = {}
