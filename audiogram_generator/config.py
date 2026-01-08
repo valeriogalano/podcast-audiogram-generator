@@ -31,6 +31,10 @@ class Config:
             'text': [255, 255, 255],        # White (text)
             'transcript_bg': [0, 0, 0]      # Black (transcript background)
         },
+        'fonts': {
+            'header': '/System/Library/Fonts/Helvetica.ttc',
+            'transcript': '/System/Library/Fonts/Helvetica.ttc'
+        },
         'formats': {
             'vertical': {
                 'width': 1080,
@@ -78,9 +82,9 @@ class Config:
             with open(config_file, 'r', encoding='utf-8') as f:
                 file_config = yaml.safe_load(f)
                 if file_config:
-                    # Deep merge for colors, formats and caption_labels
+                    # Deep merge for colors, formats, fonts and caption_labels
                     for key, value in file_config.items():
-                        if key in ['colors', 'formats', 'caption_labels'] and isinstance(value, dict):
+                        if key in ['colors', 'formats', 'fonts', 'caption_labels'] and isinstance(value, dict):
                             if key not in self.config:
                                 self.config[key] = {}
                             self._deep_merge(self.config[key], value)

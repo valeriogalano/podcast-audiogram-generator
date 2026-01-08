@@ -45,6 +45,15 @@ colors:
   # Transcription background color
   transcript_bg: [0, 0, 0]     # Black
 
+# Font configuration (optional)
+# Specify the path to the TrueType font files (.ttf, .ttc)
+# Note: if the path is invalid, it will fall back to Helvetica (on macOS) or a default system font.
+fonts:
+  # Font used for the title in the header
+  header: "/System/Library/Fonts/Helvetica.ttc"
+  # Font used for the transcript/subtitles
+  transcript: "/System/Library/Fonts/Helvetica.ttc"
+
 # Video format configuration (optional)
 # You can customize dimensions, enable/disable specific formats
 formats:

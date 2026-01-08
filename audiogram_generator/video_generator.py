@@ -298,7 +298,8 @@ LAYOUT_CONFIGS = {
 
 def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_title, episode_title,
                            waveform_data, current_time, transcript_chunks, audio_duration, colors, layout_config,
-                           header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None):
+                           header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
+                           fonts=None):
     """
     Unified layout for all video formats.
     Uses format-specific configurations passed via layout_config.
@@ -350,7 +351,11 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
 
         while size >= min_size:
             try:
-                font_header = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", size=size)
+                # Use configured header font if available
+                header_font_path = "/System/Library/Fonts/Helvetica.ttc"
+                if fonts and fonts.get('header'):
+                    header_font_path = fonts['header']
+                font_header = ImageFont.truetype(header_font_path, size=size)
             except Exception:
                 font_header = ImageFont.load_default()
 
@@ -492,9 +497,13 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
         if current_text:
             current_text = _strip_punctuation(current_text)
             try:
-                font_transcript = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc",
+                # Use configured transcript font if available
+                transcript_font_path = "/System/Library/Fonts/Helvetica.ttc"
+                if fonts and fonts.get('transcript'):
+                    transcript_font_path = fonts['transcript']
+                font_transcript = ImageFont.truetype(transcript_font_path,
                                                      size=int(height * layout_config['transcript_font_size']))
-            except:
+            except Exception:
                 font_transcript = ImageFont.load_default()
 
             # Posizionamento trascrizione: per square e horizontal dal basso, per vertical dall'alto
@@ -525,7 +534,8 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
 
 def create_layout(img, draw, width, height, podcast_logo_path, podcast_title, episode_title,
                   waveform_data, current_time, transcript_chunks, audio_duration, colors, format_name='vertical',
-                  header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None):
+                  header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
+                  fonts=None):
     """
     Creates the layout for the specified format.
 
@@ -540,12 +550,13 @@ def create_layout(img, draw, width, height, podcast_logo_path, podcast_title, ep
     layout_config = LAYOUT_CONFIGS.get(format_name, LAYOUT_CONFIGS['vertical'])
     return _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_title, episode_title,
                                   waveform_data, current_time, transcript_chunks, audio_duration, colors,
-                                  layout_config, header_title_source, header_soundbite_title)
+                                  layout_config, header_title_source, header_soundbite_title, fonts=fonts)
 
 
 def create_audiogram_frame(width, height, podcast_logo_path, podcast_title, episode_title,
                            waveform_data, current_time, transcript_chunks, audio_duration, formats=None, colors=None, format_name='vertical',
-                           header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None):
+                           header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
+                           fonts=None):
     """
     Creates a single audiogram frame by delegating to the format-specific layout.
 
@@ -585,7 +596,8 @@ def create_audiogram_frame(width, height, podcast_logo_path, podcast_title, epis
     # Create the layout
     img = create_layout(img, draw, width, height, podcast_logo_path, podcast_title,
                        episode_title, waveform_data, current_time, transcript_chunks,
-                       audio_duration, colors, format_name, header_title_source, header_soundbite_title)
+                       audio_duration, colors, format_name, header_title_source, header_soundbite_title,
+                       fonts=fonts)
 
     # Ensure the array is in RGB for MoviePy
     if img.mode != 'RGB':
@@ -598,7 +610,8 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
                       formats=None, colors=None,
                       show_subtitles=True, *,
                       header_title_source: Optional[str] = None,
-                      header_soundbite_title: Optional[str] = None):
+                      header_soundbite_title: Optional[str] = None,
+                      fonts=None):
     """
     Generates a complete audiogram video.
 
@@ -656,6 +669,7 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
             format_name,  # Pass format to use correct layout
             header_title_source,
             header_soundbite_title,
+            fonts=fonts,
         )
 
     # Create video clip

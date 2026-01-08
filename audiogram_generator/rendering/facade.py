@@ -19,6 +19,7 @@ def render_audiogram(
     transcript_chunks: List[Dict],
     formats: Dict | None,
     colors: Dict | None,
+    fonts: Dict | None = None,
     show_subtitles: bool = True,
     header_title_source: Optional[str] = None,
     soundbite_title: Optional[str] = None,
@@ -51,6 +52,7 @@ def render_audiogram(
         show_subtitles,
         header_title_source=header_title_source,
         header_soundbite_title=soundbite_title,
+        fonts=fonts,
     )
 
 
@@ -65,6 +67,7 @@ def generate_audiogram(
     duration: float,
     formats: Dict | None,
     colors: Dict | None,
+    fonts: Dict | None = None,
     show_subtitles: bool = True,
     *,
     header_title_source: Optional[str] = None,
@@ -90,4 +93,5 @@ def generate_audiogram(
         show_subtitles,
         header_title_source=header_title_source,
         header_soundbite_title=header_soundbite_title,
+        fonts=fonts,
     )

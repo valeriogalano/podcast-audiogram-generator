@@ -403,7 +403,7 @@ class TestConfig(unittest.TestCase):
             os.unlink(temp_file)
 
     def test_deep_merge_colors_and_formats(self):
-        """Test del merge profondo per strutture nested (colors e formats)"""
+        """Test del merge profondo per strutture nested (colors, formats e fonts)"""
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
             yaml_content = {
                 'feed_url': 'https://example.com/feed.xml',
@@ -414,6 +414,9 @@ class TestConfig(unittest.TestCase):
                     'vertical': {
                         'width': 720  # Solo width personalizzato
                     }
+                },
+                'fonts': {
+                    'header': '/path/to/custom/font.ttf'
                 }
             }
             yaml.dump(yaml_content, f)
@@ -434,6 +437,11 @@ class TestConfig(unittest.TestCase):
             self.assertEqual(formats['vertical']['width'], 720)  # Personalizzato
             self.assertEqual(formats['vertical']['height'], 1920)  # Default
             self.assertTrue(formats['vertical']['enabled'])  # Default
+
+            # Verifica merge profondo per fonts
+            fonts = config.get('fonts')
+            self.assertEqual(fonts['header'], '/path/to/custom/font.ttf')  # Personalizzato
+            self.assertEqual(fonts['transcript'], '/System/Library/Fonts/Helvetica.ttc')  # Default
         finally:
             os.unlink(temp_file)
 

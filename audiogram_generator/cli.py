@@ -127,7 +127,7 @@ def generate_caption_file(output_path, episode_number, episode_title, episode_li
 ## - parse_soundbite_selection
 
 
-def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags, show_subtitles, output_dir, soundbites_choice, dry_run=False, use_episode_cover=False, header_title_source=None):
+def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags, show_subtitles, output_dir, soundbites_choice, dry_run=False, use_episode_cover=False, header_title_source=None, fonts=None):
     print(f"\nEpisode {selected['number']}: {selected['title']}")
     if selected['audio_url']:
         print(f"Audio: {selected['audio_url']}")
@@ -306,6 +306,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                             show_subtitles,
                             header_title_source=header_title_source,
                             header_soundbite_title=(soundbite.get('text') or soundbite.get('title')),
+                            fonts=fonts,
                         )
 
                         print(f"✓ {format_name}: {output_path}")
@@ -561,6 +562,7 @@ def main():
     dry_run = config.get('dry_run', False)
     use_episode_cover = config.get('use_episode_cover', False)
     header_title_source = config.get('header_title_source', 'auto')
+    fonts = config.get('fonts')
 
     # Caption labels (allow overriding fixed strings in caption)
     try:
@@ -651,6 +653,7 @@ def main():
             dry_run=dry_run,
             use_episode_cover=use_episode_cover,
             header_title_source=header_title_source,
+            fonts=fonts,
         )
 
     return

@@ -182,6 +182,11 @@ colors:
   text: [255, 255, 255]
   transcript_bg: [0, 0, 0]
 
+# Fonts (optional)
+fonts:
+  header: "/path/to/font.ttf"
+  transcript: "/path/to/font.ttf"
+
 formats:
   vertical:
     width: 1080
@@ -201,6 +206,7 @@ hashtags:
 
 Notes:
 - RGB colors are expressed as `[R, G, B]` with values 0–255.
+- Fonts can be customized by providing the path to a TrueType font file (.ttf or .ttc).
 - Formats can be enabled/disabled and resized per needs.
 
 ### Header title source
