@@ -256,6 +256,18 @@ manual_soundbites:
 
 Manual soundbites are merged with any soundbites found in the feed, with manual ones appearing first in the list.
 
+### Recommended Workflow for Precise Soundbites
+
+If you need to pinpoint exact start and duration values for your soundbites (especially for manual ones), follow this optimized workflow:
+
+1.  **Locate the text**: Run the script once for the desired episode. The generator automatically downloads the subtitles file to the `output/` folder (e.g., `output/ep147.srt`). Open this file with a text editor to find the exact timestamps (in `HH:MM:SS,mmm` format) for the segment you want to capture.
+2.  **Configure**: Enter the `start` value (in seconds, e.g., `307.96`) and `duration` in your `config.yaml` file under the `manual_soundbites` section.
+3.  **Verify with Dry-run**: To ensure the timings are correct without waiting for the video to render, run the script with the `--dry-run` flag. The program will print a preview of the extracted text for the specified timings:
+    ```bash
+    python -m audiogram_generator --episode <episode_number> --soundbites all --dry-run
+    ```
+4.  **Generate**: Once you confirm the terminal output matches the desired fragment, run the final command without the `--dry-run` flag to generate the videos.
+
 ## Output
 
 Files are saved to `output/` by default.
