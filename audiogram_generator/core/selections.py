@@ -17,7 +17,7 @@ def parse_episode_selection(value, max_episode: int) -> List[int]:
     if isinstance(value, int):
         if 1 <= value <= max_episode:
             return [value]
-        raise ValueError('Numero episodio fuori intervallo')
+        raise ValueError('Episode number out of range')
     if isinstance(value, str):
         v = value.strip().lower()
         if v in ('all', 'a'):
@@ -28,16 +28,16 @@ def parse_episode_selection(value, max_episode: int) -> List[int]:
         nums: List[int] = []
         for p in parts:
             if not p.isdigit():
-                raise ValueError('Valore non numerico nella lista')
+                raise ValueError('Non-numeric value in the list')
             n = int(p)
             if not (1 <= n <= max_episode):
-                raise ValueError('Numero episodio fuori intervallo')
+                raise ValueError('Episode number out of range')
             if n not in nums:
                 nums.append(n)
         if not nums:
-            raise ValueError('Nessun episodio valido specificato')
+            raise ValueError('No valid episodes specified')
         return nums
-    raise ValueError('Formato episodio non supportato')
+    raise ValueError('Unsupported episode format')
 
 
 def parse_soundbite_selection(value, max_soundbites: int) -> List[int]:
@@ -47,7 +47,7 @@ def parse_soundbite_selection(value, max_soundbites: int) -> List[int]:
     if isinstance(value, int):
         if 1 <= value <= max_soundbites:
             return [value]
-        raise ValueError('Numero soundbite fuori intervallo')
+        raise ValueError('Soundbite number out of range')
     if isinstance(value, str):
         v = value.strip().lower()
         if v in ('all', 'a'):
@@ -56,13 +56,13 @@ def parse_soundbite_selection(value, max_soundbites: int) -> List[int]:
         nums: List[int] = []
         for p in parts:
             if not p.isdigit():
-                raise ValueError('Valore non numerico nella lista')
+                raise ValueError('Non-numeric value in the list')
             n = int(p)
             if not (1 <= n <= max_soundbites):
-                raise ValueError('Numero soundbite fuori intervallo')
+                raise ValueError('Soundbite number out of range')
             if n not in nums:
                 nums.append(n)
         if not nums:
-            raise ValueError('Nessun soundbite valido specificato')
+            raise ValueError('No valid soundbites specified')
         return nums
-    raise ValueError('Formato soundbite non supportato')
+    raise ValueError('Unsupported soundbite format')

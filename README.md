@@ -9,6 +9,8 @@ Automatic audiogram generator for podcasts. It downloads episodes from an RSS fe
 - Generate audiograms in 3 social-friendly formats: vertical (9:16), square (1:1), horizontal (16:9)
 - Live transcript on video, animated waveform, and customizable colors/branding
 - Interactive CLI or fully automatic via command-line flags or YAML config
+- Manual soundbites support (for feeds without soundbite tags)
+- Customizable caption labels for easy localization
 - Dry‑run mode to preview timings and transcript text without generating files
 
 ## Requirements
@@ -356,6 +358,8 @@ Note for Python 3.13+: The standard library module `audioop` was removed. We use
 
 - Better document subtitle configuration
 - Handle tags with spaces
+- Support for more than 3 formats
+- Custom background images
 
 ## License
 

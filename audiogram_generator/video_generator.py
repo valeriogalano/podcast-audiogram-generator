@@ -123,17 +123,17 @@ def _render_subtitle_lines(img, draw, text, font, start_y, max_width, style):
 
     padding = int(style.get('padding', 0))
 
-    # Limiti orizzontali per il centraggio
+    # Horizontal boundaries for centering
     inner_left = 0 + padding
     inner_right = img.width - padding
     area_width = max(1, inner_right - inner_left)
 
-    # Calcola altezza di riga costante basata sul font
+    # Calculate constant line height based on font
     try:
         ascent, descent = font.getmetrics()
         constant_line_height = ascent + descent
     except Exception:
-        # Fallback: usa l'altezza del bbox di una stringa campione
+        # Fallback: use bbox height of a sample string
         sample_bbox = draw.textbbox((0, 0), "Hg", font=font)
         constant_line_height = (sample_bbox[3] - sample_bbox[1])
 
@@ -142,7 +142,7 @@ def _render_subtitle_lines(img, draw, text, font, start_y, max_width, style):
         bbox = draw.textbbox((0, 0), line, font=font)
         lw = bbox[2] - bbox[0]
         lh = bbox[3] - bbox[1]
-        # Centra entro l'area definita (già ridotta del padding)
+        # Center within defined area (already reduced by padding)
         line_x = inner_left + (area_width - lw) // 2
         line_y = start_y + int(total_height)
 
@@ -157,11 +157,11 @@ def _render_subtitle_lines(img, draw, text, font, start_y, max_width, style):
             shadow_blur=style['shadow_blur']
         )
 
-        # Dopo compositing, ricrea draw su eventuale immagine RGBA
+        # After compositing, recreate draw on RGBA image if necessary
         draw = ImageDraw.Draw(img)
         draw.text((line_x, line_y), line, fill=style['text_color'], font=font)
 
-        # Avanzamento verticale costante, indipendente dai glifi della riga
+        # Constant vertical advance, independent of glyphs in the line
         line_advance = int(constant_line_height * style['line_spacing'])
         total_height += line_advance
 
@@ -169,13 +169,13 @@ def _render_subtitle_lines(img, draw, text, font, start_y, max_width, style):
 
 
 def _draw_text_with_stroke(draw, position, text, font, fill, stroke_width=2, stroke_fill=(30, 30, 30)):
-    """Disegna testo con un sottile contorno per aumentare il contrasto.
-    Usa i parametri stroke nativi di PIL se disponibili.
+    """Draws text with a thin outline to increase contrast.
+    Uses PIL's native stroke parameters if available.
     """
     try:
         draw.text(position, text, font=font, fill=fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
     except TypeError:
-        # Fallback per versioni PIL molto vecchie: disegna il contorno manuale
+        # Fallback for very old PIL versions: draw manual outline
         x, y = position
         for dx, dy in [(-1,0),(1,0),(0,-1),(0,1),(-1,-1),(1,1),(-1,1),(1,-1)]:
             draw.text((x+dx, y+dy), text, font=font, fill=stroke_fill)
@@ -185,8 +185,8 @@ def _draw_text_with_stroke(draw, position, text, font, fill, stroke_width=2, str
 def _draw_pill_with_text(img, draw, text, font, center_x, y, padding_x=24, padding_y=12,
                          pill_color=(255, 255, 255, 230), radius=22, shadow=True,
                          text_color=(0, 0, 0), stroke_width=0, stroke_fill=(30, 30, 30)):
-    """Disegna una 'pill' arrotondata con ombra e testo centrato.
-    Ritorna (img, text_x, text_y) per eventuali usi successivi.
+    """Draws a rounded 'pill' with shadow and centered text.
+    Returns (img, text_x, text_y) for any subsequent use.
     """
     bb = draw.textbbox((0, 0), text, font=font)
     tw = bb[2] - bb[0]
@@ -197,7 +197,7 @@ def _draw_pill_with_text(img, draw, text, font, center_x, y, padding_x=24, paddi
     x2 = int(center_x + (tw // 2) + padding_x)
     y2 = int(y + th + padding_y)
 
-    # Disegna pill con ombra su overlay
+    # Draw pill with shadow on overlay
     img = _draw_rounded_box_with_shadow(img, (x1, y1, x2, y2), pill_color, radius=radius, shadow=shadow, shadow_offset=(0, 4), shadow_blur=10)
     draw = ImageDraw.Draw(img)
 
@@ -211,7 +211,7 @@ def _draw_pill_with_text(img, draw, text, font, center_x, y, padding_x=24, paddi
 
 
 def download_image(url, output_path):
-    """Scarica un'immagine da URL"""
+    """Downloads an image from URL"""
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
@@ -420,12 +420,12 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
                 draw.text((x, cy), ln, font=font_header, fill=text_fill)
                 cy += (base_h if i == 0 else int(base_h * HEADER_LINE_SPACING))
 
-    # Area centrale
+    # Central area
     central_top = header_top + header_height
     central_height = int(height * layout_config['central_ratio'])
     central_bottom = central_top + central_height
 
-    # Visualizzatore waveform CENTRATO VERTICALMENTE
+    # Waveform visualizer VERTICALLY CENTERED
     if waveform_data is not None and len(waveform_data) > 0:
         bar_spacing = 3
         bar_width = 12
@@ -457,18 +457,18 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
                 bar_height = int(min_height + (bar_amplitude * (max_height - min_height)))
                 bar_height = max(min_height, min(bar_height, max_height))
 
-                # CENTRATO VERTICALMENTE al 50%
+                # VERTICALLY CENTERED at 50%
                 y_center = central_top + central_height // 2
                 y_top = y_center - bar_height // 2
                 y_bottom = y_center + bar_height // 2
 
                 draw.rectangle([(x, y_top), (x + bar_width, y_bottom)], fill=colors['primary'])
 
-    # Logo podcast CENTRATO VERTICALMENTE
+    # Podcast logo VERTICALLY CENTERED
     if os.path.exists(podcast_logo_path):
         logo = Image.open(podcast_logo_path)
 
-        # Calcolo dimensione logo (horizontal ha logica diversa)
+        # Calculate logo size (horizontal has different logic)
         if 'logo_width_ratio' in layout_config:
             logo_size = int(min(width * layout_config['logo_width_ratio'], central_height * layout_config['logo_size_ratio']))
         else:
@@ -476,7 +476,7 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
 
         logo = logo.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
 
-        # CENTRATO VERTICALMENTE al 50%
+        # VERTICALLY CENTERED at 50%
         logo_x = (width - logo_size) // 2
         logo_y = central_top + (central_height - logo_size) // 2
         img.paste(logo, (logo_x, logo_y), logo if logo.mode == 'RGBA' else None)
@@ -486,7 +486,7 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
     footer_height = int(height * layout_config['footer_ratio'])
     draw.rectangle([(0, footer_top), (width, height)], fill=colors['primary'])
 
-    # Trascrizione
+    # Transcription
     if transcript_chunks:
         current_text = ""
         for chunk in transcript_chunks:
@@ -506,12 +506,12 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
             except Exception:
                 font_transcript = ImageFont.load_default()
 
-            # Posizionamento trascrizione: per square e horizontal dal basso, per vertical dall'alto
+            # Transcription positioning: from bottom for square and horizontal, from top for vertical
             if layout_config['transcript_y_offset'] < 0.5:
-                # Dal basso (square, horizontal)
+                # From bottom (square, horizontal)
                 transcript_y = central_bottom - int(central_height * layout_config['transcript_y_offset'])
             else:
-                # Dall'alto (vertical)
+                # From top (vertical)
                 transcript_y = central_top + int(central_height * layout_config['transcript_y_offset'])
 
             style = _subtitle_default_style(colors)
