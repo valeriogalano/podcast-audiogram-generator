@@ -7,6 +7,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 from audiogram_generator import cli
+from audiogram_generator.core.captioning import generate_srt_content
 
 
 FAKE_SRT = """
@@ -119,6 +120,19 @@ class TestTranscriptAndCaptions(unittest.TestCase):
             tmp2.seek(0)
             content2 = tmp2.read()
             self.assertIn("#podcast", content2)
+
+    def test_generate_srt_content(self):
+        """Generates valid SRT content from chunks"""
+        chunks = [
+            {'start': 0.0, 'end': 2.5, 'text': 'Hello'},
+            {'start': 3.0, 'end': 5.75, 'text': 'World'}
+        ]
+        content = generate_srt_content(chunks)
+        expected = (
+            "1\n00:00:00,000 --> 00:00:02,500\nHello\n\n"
+            "2\n00:00:03,000 --> 00:00:05,750\nWorld\n"
+        )
+        self.assertEqual(content, expected)
 
 
 if __name__ == "__main__":

@@ -79,3 +79,40 @@ def build_caption_text(
         f"{hashtag_string}\n"
     )
     return caption
+
+
+def format_srt_time(seconds: float) -> str:
+    """Format seconds into SRT timestamp format: HH:MM:SS,mmm"""
+    import math
+    s = abs(seconds)
+    hours = int(s // 3600)
+    minutes = int((s % 3600) // 60)
+    secs = int(s % 60)
+    millis = int(round((s - math.floor(s)) * 1000))
+    # Correct possible overflow from rounding
+    if millis == 1000:
+        millis = 0
+        secs += 1
+        if secs == 60:
+            secs = 0
+            minutes += 1
+            if minutes == 60:
+                minutes = 0
+                hours += 1
+    return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
+
+
+def generate_srt_content(chunks: List[dict]) -> str:
+    """Generate SRT content from transcript chunks.
+
+    Chunks must be a list of dicts with 'start', 'end', and 'text' keys.
+    """
+    lines = []
+    for i, chunk in enumerate(chunks, 1):
+        start = format_srt_time(chunk['start'])
+        end = format_srt_time(chunk['end'])
+        text = chunk['text'].strip()
+        lines.append(f"{i}")
+        lines.append(f"{start} --> {end}")
+        lines.append(f"{text}\n")
+    return "\n".join(lines)

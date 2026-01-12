@@ -16,7 +16,7 @@ from .audio_utils import download_audio, extract_audio_segment
 from .services.assets import download_image
 from .rendering.facade import generate_audiogram
 from .config import Config
-from .core.captioning import build_caption_text
+from .core.captioning import build_caption_text, generate_srt_content
 from .core import (
     parse_srt_time,
     format_seconds,
@@ -62,28 +62,36 @@ def get_podcast_episodes(feed_url, manual_soundbites=None):
 ## - format_seconds
 
 
-def get_transcript_text(transcript_url, start_time, duration):
-    """Downloads the SRT file and extracts the text in the time range.
+def get_transcript_text(transcript_url, start_time, duration, srt_content=None):
+    """Downloads the SRT file (if not provided) and extracts the text in the time range.
 
     Implementation delegates to services.transcript for fetching and parsing.
     """
     try:
-        srt_content = transcript_svc.fetch_srt(transcript_url)
-        return transcript_svc.get_transcript_text_from_srt(srt_content, start_time, duration)
+        if srt_content is None and transcript_url:
+            srt_content = transcript_svc.fetch_srt(transcript_url)
+
+        if srt_content:
+            return transcript_svc.get_transcript_text_from_srt(srt_content, start_time, duration)
     except Exception:
-        return None
+        pass
+    return None
 
 
-def get_transcript_chunks(transcript_url, start_time, duration):
-    """Downloads the SRT file and returns text chunks with timing for the soundbite.
+def get_transcript_chunks(transcript_url, start_time, duration, srt_content=None):
+    """Downloads the SRT file (if not provided) and returns text chunks with timing for the soundbite.
 
     Implementation delegates to services.transcript for fetching and parsing.
     """
     try:
-        srt_content = transcript_svc.fetch_srt(transcript_url)
-        return transcript_svc.parse_srt_to_chunks(srt_content, float(start_time), float(duration))
+        if srt_content is None and transcript_url:
+            srt_content = transcript_svc.fetch_srt(transcript_url)
+
+        if srt_content:
+            return transcript_svc.parse_srt_to_chunks(srt_content, float(start_time), float(duration))
     except Exception:
-        return []
+        pass
+    return []
 
 
 # Module-level caption label defaults; can be overridden via config in main()
@@ -122,6 +130,16 @@ def generate_caption_file(output_path, episode_number, episode_title, episode_li
         f.write(caption)
 
 
+def generate_srt_file(output_path, transcript_chunks):
+    """Generate a .srt subtitle file from transcript chunks."""
+    if not transcript_chunks:
+        return
+
+    content = generate_srt_content(transcript_chunks)
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+
+
 ## NOTE: selection parsers moved to audiogram_generator.core
 ## - parse_episode_selection
 ## - parse_soundbite_selection
@@ -155,6 +173,15 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
         print("\n" + "="*60)
         print("Dry-run: print start/end time and subtitle text")
         print("="*60)
+        
+        # Fetch SRT once for dry-run
+        srt_content = None
+        if selected.get('transcript_url'):
+            try:
+                srt_content = transcript_svc.fetch_srt(selected['transcript_url'])
+            except Exception:
+                pass
+
         for idx in nums:
             sb = sbs[idx - 1]
             try:
@@ -165,13 +192,12 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                 continue
             end_s = start_s + dur_s
             # Retrieve transcript text or fallback to soundbite title
-            transcript_text = None
-            if selected.get('transcript_url'):
-                transcript_text = get_transcript_text(
-                    selected['transcript_url'],
-                    sb['start'],
-                    sb['duration']
-                )
+            transcript_text = get_transcript_text(
+                selected.get('transcript_url'),
+                sb['start'],
+                sb['duration'],
+                srt_content=srt_content
+            )
             text = (transcript_text or sb.get('text') or sb.get('title') or '').strip()
 
             print(f"\nSoundbite {idx}")
@@ -183,24 +209,56 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
         # Do not generate anything in dry-run
         return
 
+    # Ensure output directory exists
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Download full audio and transcript if available
+    full_audio_path = None
+    srt_content = None
+
+    if selected['audio_url']:
+        full_audio_path = os.path.join(output_dir, f"ep{selected['number']}.mp3")
+        if not os.path.exists(full_audio_path):
+            print(f"\nDownloading full audio: {selected['audio_url']}")
+            try:
+                download_audio(selected['audio_url'], full_audio_path)
+                print(f"✓ Full audio: {full_audio_path}")
+            except Exception as e:
+                print(f"Warning: could not download full audio: {e}")
+                full_audio_path = None
+        else:
+            print(f"\nFull audio already exists: {full_audio_path}")
+
+    if selected.get('transcript_url'):
+        print("Processing full transcript...")
+        try:
+            srt_content = transcript_svc.fetch_srt(selected['transcript_url'])
+            full_srt_path = os.path.join(output_dir, f"ep{selected['number']}.srt")
+            with open(full_srt_path, 'w', encoding='utf-8') as f:
+                f.write(srt_content)
+            print(f"✓ Full SRT: {full_srt_path}")
+        except Exception as e:
+            print(f"Warning: could not fetch or save full transcript: {e}")
+
     # Show soundbites if they exist
     if selected['soundbites']:
         print(f"\nFound soundbites ({len(selected['soundbites'])}):")
+        
         for i, soundbite in enumerate(selected['soundbites'], 1):
             print(f"\n  {i}. [Start: {soundbite['start']}s, Duration: {soundbite['duration']}s]")
             print(f"     Title: {soundbite.get('text') or soundbite.get('title')}")
 
             # Extract text from transcript if available
-            if selected['transcript_url']:
-                transcript_text = get_transcript_text(
-                    selected['transcript_url'],
-                    soundbite['start'],
-                    soundbite['duration']
-                )
-                if transcript_text:
-                    print(f"     Text: {transcript_text[:100]}..." if len(transcript_text) > 100 else f"     Text: {transcript_text}")
-                else:
-                    print(f"     Text: [Not available]")
+            transcript_text = get_transcript_text(
+                selected.get('transcript_url'),
+                soundbite['start'],
+                soundbite['duration'],
+                srt_content=srt_content
+            )
+            if transcript_text:
+                print(f"     Text: {transcript_text[:100]}..." if len(transcript_text) > 100 else f"     Text: {transcript_text}")
+            else:
+                print(f"     Text: [Not available]")
 
         # Ask which soundbite to generate if not specified
         print("\n" + "="*60)
@@ -217,19 +275,12 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
             with tempfile.TemporaryDirectory() as temp_dir:
                 # Warn about FFmpeg if missing (once)
                 _warn_if_no_ffmpeg()
-                # Download full audio once
-                print("\nDownloading audio...")
-                full_audio_path = os.path.join(temp_dir, "full_audio.mp3")
-                download_audio(selected['audio_url'], full_audio_path)
 
                 # Download artwork once
                 print("Downloading artwork...")
                 logo_path = os.path.join(temp_dir, "logo.png")
                 if artwork_url:
                     download_image(artwork_url, logo_path)
-
-                # Create output directory
-                os.makedirs(output_dir, exist_ok=True)
 
                 # Process each soundbite
                 for soundbite_num, soundbite in enumerate(selected['soundbites'], 1):
@@ -251,17 +302,19 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                     print("Processing transcript...")
                     transcript_chunks = []
                     transcript_text = ""
-                    if selected['transcript_url']:
+                    if srt_content:
                         transcript_chunks = get_transcript_chunks(
-                            selected['transcript_url'],
+                            selected.get('transcript_url'),
                             soundbite['start'],
-                            soundbite['duration']
+                            soundbite['duration'],
+                            srt_content=srt_content
                         )
                         # Extract full text for caption
                         transcript_text = get_transcript_text(
-                            selected['transcript_url'],
+                            selected.get('transcript_url'),
                             soundbite['start'],
-                            soundbite['duration']
+                            soundbite['duration'],
+                            srt_content=srt_content
                         ) or (soundbite.get('text') or soundbite.get('title'))
                     else:
                         transcript_text = soundbite.get('text') or soundbite.get('title')
@@ -330,6 +383,16 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                     )
                     print(f"✓ Caption: {caption_path}")
 
+                    # Generate SRT file
+                    print("Generating SRT file...")
+                    srt_path = os.path.join(
+                        output_dir,
+                        f"ep{selected['number']}_sb{soundbite_num}.srt"
+                    )
+                    generate_srt_file(srt_path, transcript_chunks)
+                    if os.path.exists(srt_path):
+                        print(f"✓ SRT: {srt_path}")
+
                 print(f"\n{'='*60}")
                 print(f"All audiograms generated successfully into the 'output' folder!")
                 print(f"Total: {len(selected['soundbites'])} soundbites × {len(formats_info)} formats = {len(selected['soundbites']) * len(formats_info)} videos")
@@ -356,19 +419,12 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                 with tempfile.TemporaryDirectory() as temp_dir:
                     # Warn about FFmpeg if missing (once)
                     _warn_if_no_ffmpeg()
-                    # Download full audio once
-                    print("Downloading audio...")
-                    full_audio_path = os.path.join(temp_dir, "full_audio.mp3")
-                    download_audio(selected['audio_url'], full_audio_path)
 
                     # Download artwork once
                     print("Downloading artwork...")
                     logo_path = os.path.join(temp_dir, "logo.png")
                     if artwork_url:
                         download_image(artwork_url, logo_path)
-
-                    # Create output directory
-                    os.makedirs(output_dir, exist_ok=True)
 
                     # Process each selected soundbite
                     for soundbite_num in soundbite_nums:
@@ -392,17 +448,19 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                         print("Processing transcript...")
                         transcript_chunks = []
                         transcript_text = ""
-                        if selected['transcript_url']:
+                        if srt_content:
                             transcript_chunks = get_transcript_chunks(
-                                selected['transcript_url'],
+                                selected.get('transcript_url'),
                                 soundbite['start'],
-                                soundbite['duration']
+                                soundbite['duration'],
+                                srt_content=srt_content
                             )
                             # Extract full text for caption
                             transcript_text = get_transcript_text(
-                                selected['transcript_url'],
+                                selected.get('transcript_url'),
                                 soundbite['start'],
-                                soundbite['duration']
+                                soundbite['duration'],
+                                srt_content=srt_content
                             ) or (soundbite.get('text') or soundbite.get('title'))
                         else:
                             transcript_text = soundbite.get('text') or soundbite.get('title')
@@ -469,6 +527,16 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                             config_hashtags
                         )
                         print(f"✓ Caption: {caption_path}")
+
+                        # Generate SRT file
+                        print("Generating SRT file...")
+                        srt_path = os.path.join(
+                            output_dir,
+                            f"ep{selected['number']}_sb{soundbite_num}.srt"
+                        )
+                        generate_srt_file(srt_path, transcript_chunks)
+                        if os.path.exists(srt_path):
+                            print(f"✓ SRT: {srt_path}")
 
                     print(f"\n{'='*60}")
                     print(f"Audiograms successfully generated in folder: {output_dir}")

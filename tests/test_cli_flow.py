@@ -121,6 +121,39 @@ class TestCliFlow(unittest.TestCase):
                 output_path = args[1] if len(args) >= 2 else kwargs.get('output_path')
                 self.assertIn('_nosubs', output_path)
 
+    @patch('audiogram_generator.cli.transcript_svc.fetch_srt', return_value='FAKE SRT')
+    @patch('audiogram_generator.cli.download_audio')
+    @patch('os.makedirs')
+    @patch('builtins.open', new_callable=MagicMock)
+    @patch('os.path.exists', return_value=False)
+    def test_always_downloads_full_mp3_and_srt(self, mock_exists, mock_open, mock_makedirs, mock_download_audio, mock_fetch_srt):
+        selected = self._make_selected(with_soundbites=False) # No soundbites
+        
+        # Intercept output to avoid clutter
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            cli.process_one_episode(
+                selected=selected,
+                podcast_info={'image_url': 'https://example/podcast.jpg', 'title': 'Podcast'},
+                colors=cli.Config.DEFAULT_CONFIG['colors'],
+                formats_config=cli.Config.DEFAULT_CONFIG['formats'],
+                config_hashtags=None,
+                show_subtitles=True,
+                output_dir='./output',
+                soundbites_choice=None,
+                dry_run=False,
+                use_episode_cover=False,
+            )
+        
+        # Verify full audio download attempt
+        mock_download_audio.assert_called_once_with(selected['audio_url'], './output/ep142.mp3')
+        
+        # Verify full SRT fetch attempt
+        mock_fetch_srt.assert_called_once_with(selected['transcript_url'])
+        
+        # Verify SRT file save attempt
+        mock_open.assert_any_call('./output/ep142.srt', 'w', encoding='utf-8')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -5,6 +5,7 @@ Automatic audiogram generator for podcasts. It downloads episodes from an RSS fe
 ## At a glance
 
 - Parse podcast RSS to extract episodes, soundbites, transcripts, and cover art
+- Download and save full episode audio (MP3) and transcript (SRT) automatically
 - Generate audiograms in 3 social-friendly formats: vertical (9:16), square (1:1), horizontal (16:9)
 - Live transcript on video, animated waveform, and customizable colors/branding
 - Interactive CLI or fully automatic via command-line flags or YAML config
@@ -259,23 +260,39 @@ Manual soundbites are merged with any soundbites found in the feed, with manual 
 
 Files are saved to `output/` by default.
 
-Videos:
+### Full Episode Assets
+
+Regardless of whether you generate soundbites, the generator always downloads and saves the full assets for the selected episode:
+- `ep{episode_number}.mp3` — Full episode audio
+- `ep{episode_number}.srt` — Full episode transcript (if available in the feed)
+
+### Soundbite Assets
+
+For each selected soundbite, the following files are generated:
+
+#### Videos
 ```
 ep{episode_number}_sb{soundbite_number}_{format}.mp4
 # When subtitles are disabled:
 ep{episode_number}_sb{soundbite_number}_nosubs_{format}.mp4
 ```
 
-Caption file:
+#### Other assets
 ```
-ep{episode_number}_sb{soundbite_number}_caption.txt
+ep{episode_number}_sb{soundbite_number}_caption.txt  # Text for social posts
+ep{episode_number}_sb{soundbite_number}.srt          # Subtitles for the soundbite
+ep{episode_number}_sb{soundbite_number}.mp3          # Audio segment for the soundbite
 ```
 
 Example for soundbite 1 of episode 142:
+- `ep142.mp3`
+- `ep142.srt`
 - `ep142_sb1_vertical.mp4`
 - `ep142_sb1_square.mp4`
 - `ep142_sb1_horizontal.mp4`
 - `ep142_sb1_caption.txt`
+- `ep142_sb1.srt`
+- `ep142_sb1.mp3`
 
 If subtitles are disabled:
 - `ep142_sb1_nosubs_vertical.mp4`
