@@ -296,18 +296,26 @@ LAYOUT_CONFIGS = {
 }
 
 
-def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_title, episode_title,
-                           waveform_data, current_time, transcript_chunks, audio_duration, colors, layout_config,
-                           header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
-                           fonts=None):
+def _render_header(draw, width, height, layout_config, colors, podcast_title, episode_title,
+                   header_title_source=None, header_soundbite_title=None, fonts=None):
     """
-    Unified layout for all video formats.
-    Uses format-specific configurations passed via layout_config.
+    Render the header bar with title text.
+    
+    Args:
+        draw: ImageDraw object
+        width, height: Frame dimensions
+        layout_config: Layout configuration dictionary
+        colors: Colors dictionary
+        podcast_title: Podcast title
+        episode_title: Episode title
+        header_title_source: Source for header title ('auto', 'podcast', 'episode', 'soundbite', 'none')
+        header_soundbite_title: Soundbite title (used when header_title_source='soundbite')
+        fonts: Fonts configuration dictionary
+        
+    Returns:
+        header_height: Height of the header in pixels
     """
-    progress_height = 0
-
-    # Header
-    header_top = progress_height
+    header_top = 0
     header_height = int(height * layout_config['header_ratio'])
     draw.rectangle([(0, header_top), (width, header_top + header_height)], fill=colors['primary'])
 
@@ -333,11 +341,7 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
 
     if header_text:
         # Font size tuned per layout height; slightly smaller than header to leave padding
-        # Use a robust font fallback
-        # Available width with horizontal padding
         pad_x = int(width * 0.04)
-        # Lower the title closer to the bottom edge of the header bar
-        # by reducing the vertical padding.
         pad_y = int(header_height * 0.04)
         max_width = width - 2 * pad_x
         max_height = header_height - 2 * pad_y
@@ -351,7 +355,6 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
 
         while size >= min_size:
             try:
-                # Use configured header font if available
                 header_font_path = "/System/Library/Fonts/Helvetica.ttc"
                 if fonts and fonts.get('header'):
                     header_font_path = fonts['header']
@@ -416,118 +419,216 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
             text_fill = tuple(colors.get('text', COLOR_WHITE))
             cy = start_y
             for i, ln in enumerate(lines):
-                # Draw plain text: same font as subtitles, but no background box and no shadows
                 draw.text((x, cy), ln, font=font_header, fill=text_fill)
                 cy += (base_h if i == 0 else int(base_h * HEADER_LINE_SPACING))
 
+    return header_height
+
+
+def _render_waveform(draw, width, central_top, central_height, waveform_data, current_time, audio_duration, colors):
+    """
+    Render the waveform visualizer in the central area.
+    
+    Args:
+        draw: ImageDraw object
+        width: Frame width
+        central_top: Top position of central area
+        central_height: Height of central area
+        waveform_data: Waveform amplitude data
+        current_time: Current time in seconds
+        audio_duration: Total audio duration
+        colors: Colors dictionary
+    """
+    if waveform_data is None or len(waveform_data) == 0:
+        return
+        
+    bar_spacing = 3
+    bar_width = 12
+    total_bar_width = bar_width + bar_spacing
+
+    num_bars = width // total_bar_width
+    if num_bars % 2 != 0:
+        num_bars -= 1
+
+    if num_bars < 2:
+        return
+        
+    frame_idx = int((current_time / audio_duration) * len(waveform_data)) if audio_duration > 0 else 0
+    frame_idx = min(frame_idx, len(waveform_data) - 1)
+    current_amplitude = waveform_data[frame_idx]
+
+    np.random.seed(42)
+    sensitivities = np.random.uniform(0.6, 1.4, num_bars // 2)
+    sensitivities = np.concatenate([sensitivities, sensitivities[::-1]])
+
+    for i in range(num_bars):
+        x = i * total_bar_width
+
+        center_idx = num_bars // 2
+        distance_from_center = abs(i - center_idx)
+        center_boost = 1.0 + (1.0 - distance_from_center / center_idx) * 0.4 if center_idx > 0 else 1.0
+        bar_amplitude = current_amplitude * sensitivities[i] * center_boost
+
+        min_height = int(central_height * 0.03)
+        max_height = int(central_height * 0.70)
+        bar_height = int(min_height + (bar_amplitude * (max_height - min_height)))
+        bar_height = max(min_height, min(bar_height, max_height))
+
+        # VERTICALLY CENTERED at 50%
+        y_center = central_top + central_height // 2
+        y_top = y_center - bar_height // 2
+        y_bottom = y_center + bar_height // 2
+
+        draw.rectangle([(x, y_top), (x + bar_width, y_bottom)], fill=colors['primary'])
+
+
+def _render_logo(img, width, central_top, central_height, podcast_logo_path, layout_config):
+    """
+    Render the podcast logo in the central area.
+    
+    Args:
+        img: PIL Image object
+        width: Frame width
+        central_top: Top position of central area
+        central_height: Height of central area
+        podcast_logo_path: Path to the logo image
+        layout_config: Layout configuration dictionary
+    """
+    if not os.path.exists(podcast_logo_path):
+        return
+        
+    logo = Image.open(podcast_logo_path)
+
+    # Calculate logo size (horizontal has different logic)
+    if 'logo_width_ratio' in layout_config:
+        logo_size = int(min(width * layout_config['logo_width_ratio'], central_height * layout_config['logo_size_ratio']))
+    else:
+        logo_size = int(min(width, central_height) * layout_config['logo_size_ratio'])
+
+    logo = logo.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
+
+    # VERTICALLY CENTERED at 50%
+    logo_x = (width - logo_size) // 2
+    logo_y = central_top + (central_height - logo_size) // 2
+    img.paste(logo, (logo_x, logo_y), logo if logo.mode == 'RGBA' else None)
+
+
+def _render_footer(draw, width, height, central_bottom, colors):
+    """
+    Render the footer bar.
+    
+    Args:
+        draw: ImageDraw object
+        width, height: Frame dimensions
+        central_bottom: Bottom position of central area
+        colors: Colors dictionary
+    """
+    draw.rectangle([(0, central_bottom), (width, height)], fill=colors['primary'])
+
+
+def _render_transcript(img, draw, width, height, central_top, central_height, central_bottom,
+                       transcript_chunks, current_time, layout_config, colors, fonts=None):
+    """
+    Render the transcript/subtitle text.
+    
+    Args:
+        img: PIL Image object
+        draw: ImageDraw object
+        width, height: Frame dimensions
+        central_top: Top position of central area
+        central_height: Height of central area
+        central_bottom: Bottom position of central area
+        transcript_chunks: List of transcript chunks with timing
+        current_time: Current time in seconds
+        layout_config: Layout configuration dictionary
+        colors: Colors dictionary
+        fonts: Fonts configuration dictionary
+        
+    Returns:
+        Updated img and draw objects
+    """
+    if not transcript_chunks:
+        return img, draw
+        
+    current_text = ""
+    for chunk in transcript_chunks:
+        if chunk['start'] <= current_time < chunk['end']:
+            current_text = chunk['text']
+            break
+
+    if not current_text:
+        return img, draw
+        
+    current_text = _strip_punctuation(current_text)
+    try:
+        transcript_font_path = "/System/Library/Fonts/Helvetica.ttc"
+        if fonts and fonts.get('transcript'):
+            transcript_font_path = fonts['transcript']
+        font_transcript = ImageFont.truetype(transcript_font_path,
+                                             size=int(height * layout_config['transcript_font_size']))
+    except Exception:
+        font_transcript = ImageFont.load_default()
+
+    # Transcription positioning: from bottom for square and horizontal, from top for vertical
+    if layout_config['transcript_y_offset'] < 0.5:
+        # From bottom (square, horizontal)
+        transcript_y = central_bottom - int(central_height * layout_config['transcript_y_offset'])
+    else:
+        # From top (vertical)
+        transcript_y = central_top + int(central_height * layout_config['transcript_y_offset'])
+
+    style = _subtitle_default_style(colors)
+    style['max_lines'] = min(style.get('max_lines', 5), layout_config['max_lines'])
+    max_width = int(width * style['width_ratio'])
+
+    img, _ = _render_subtitle_lines(
+        img,
+        draw,
+        current_text,
+        font_transcript,
+        transcript_y,
+        max_width,
+        style
+    )
+    draw = ImageDraw.Draw(img)
+    
+    return img, draw
+
+
+def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_title, episode_title,
+                           waveform_data, current_time, transcript_chunks, audio_duration, colors, layout_config,
+                           header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
+                           fonts=None):
+    """
+    Unified layout for all video formats.
+    Uses format-specific configurations passed via layout_config.
+    """
+    # Render header
+    header_height = _render_header(
+        draw, width, height, layout_config, colors,
+        podcast_title, episode_title,
+        header_title_source, header_soundbite_title, fonts
+    )
+
     # Central area
-    central_top = header_top + header_height
+    central_top = header_height  # header starts at 0
     central_height = int(height * layout_config['central_ratio'])
     central_bottom = central_top + central_height
 
-    # Waveform visualizer VERTICALLY CENTERED
-    if waveform_data is not None and len(waveform_data) > 0:
-        bar_spacing = 3
-        bar_width = 12
-        total_bar_width = bar_width + bar_spacing
+    # Render waveform
+    _render_waveform(draw, width, central_top, central_height, waveform_data, current_time, audio_duration, colors)
 
-        num_bars = width // total_bar_width
-        if num_bars % 2 != 0:
-            num_bars -= 1
+    # Render logo
+    _render_logo(img, width, central_top, central_height, podcast_logo_path, layout_config)
 
-        if num_bars >= 2:
-            frame_idx = int((current_time / audio_duration) * len(waveform_data)) if audio_duration > 0 else 0
-            frame_idx = min(frame_idx, len(waveform_data) - 1)
-            current_amplitude = waveform_data[frame_idx]
+    # Render footer
+    _render_footer(draw, width, height, central_bottom, colors)
 
-            np.random.seed(42)
-            sensitivities = np.random.uniform(0.6, 1.4, num_bars // 2)
-            sensitivities = np.concatenate([sensitivities, sensitivities[::-1]])
-
-            for i in range(num_bars):
-                x = i * total_bar_width
-
-                center_idx = num_bars // 2
-                distance_from_center = abs(i - center_idx)
-                center_boost = 1.0 + (1.0 - distance_from_center / center_idx) * 0.4 if center_idx > 0 else 1.0
-                bar_amplitude = current_amplitude * sensitivities[i] * center_boost
-
-                min_height = int(central_height * 0.03)
-                max_height = int(central_height * 0.70)
-                bar_height = int(min_height + (bar_amplitude * (max_height - min_height)))
-                bar_height = max(min_height, min(bar_height, max_height))
-
-                # VERTICALLY CENTERED at 50%
-                y_center = central_top + central_height // 2
-                y_top = y_center - bar_height // 2
-                y_bottom = y_center + bar_height // 2
-
-                draw.rectangle([(x, y_top), (x + bar_width, y_bottom)], fill=colors['primary'])
-
-    # Podcast logo VERTICALLY CENTERED
-    if os.path.exists(podcast_logo_path):
-        logo = Image.open(podcast_logo_path)
-
-        # Calculate logo size (horizontal has different logic)
-        if 'logo_width_ratio' in layout_config:
-            logo_size = int(min(width * layout_config['logo_width_ratio'], central_height * layout_config['logo_size_ratio']))
-        else:
-            logo_size = int(min(width, central_height) * layout_config['logo_size_ratio'])
-
-        logo = logo.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
-
-        # VERTICALLY CENTERED at 50%
-        logo_x = (width - logo_size) // 2
-        logo_y = central_top + (central_height - logo_size) // 2
-        img.paste(logo, (logo_x, logo_y), logo if logo.mode == 'RGBA' else None)
-
-    # Footer
-    footer_top = central_bottom
-    footer_height = int(height * layout_config['footer_ratio'])
-    draw.rectangle([(0, footer_top), (width, height)], fill=colors['primary'])
-
-    # Transcription
-    if transcript_chunks:
-        current_text = ""
-        for chunk in transcript_chunks:
-            if chunk['start'] <= current_time < chunk['end']:
-                current_text = chunk['text']
-                break
-
-        if current_text:
-            current_text = _strip_punctuation(current_text)
-            try:
-                # Use configured transcript font if available
-                transcript_font_path = "/System/Library/Fonts/Helvetica.ttc"
-                if fonts and fonts.get('transcript'):
-                    transcript_font_path = fonts['transcript']
-                font_transcript = ImageFont.truetype(transcript_font_path,
-                                                     size=int(height * layout_config['transcript_font_size']))
-            except Exception:
-                font_transcript = ImageFont.load_default()
-
-            # Transcription positioning: from bottom for square and horizontal, from top for vertical
-            if layout_config['transcript_y_offset'] < 0.5:
-                # From bottom (square, horizontal)
-                transcript_y = central_bottom - int(central_height * layout_config['transcript_y_offset'])
-            else:
-                # From top (vertical)
-                transcript_y = central_top + int(central_height * layout_config['transcript_y_offset'])
-
-            style = _subtitle_default_style(colors)
-            style['max_lines'] = min(style.get('max_lines', 5), layout_config['max_lines'])
-            max_width = int(width * style['width_ratio'])
-
-            img, _ = _render_subtitle_lines(
-                img,
-                draw,
-                current_text,
-                font_transcript,
-                transcript_y,
-                max_width,
-                style
-            )
-            draw = ImageDraw.Draw(img)
+    # Render transcript
+    img, draw = _render_transcript(
+        img, draw, width, height, central_top, central_height, central_bottom,
+        transcript_chunks, current_time, layout_config, colors, fonts
+    )
 
     return img
 

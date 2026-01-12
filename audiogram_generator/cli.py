@@ -145,74 +145,234 @@ def generate_srt_file(output_path, transcript_chunks):
 ## - parse_soundbite_selection
 
 
-def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags, show_subtitles, output_dir, soundbites_choice, dry_run=False, use_episode_cover=False, header_title_source=None, fonts=None):
-    print(f"\nEpisode {selected['number']}: {selected['title']}")
-    if selected['audio_url']:
-        print(f"Audio: {selected['audio_url']}")
-
-    # Choose artwork URL to use (episode if requested and available, otherwise podcast)
-    artwork_url = None
-    if use_episode_cover and selected.get('image_url'):
-        artwork_url = selected['image_url']
+def _process_single_soundbite(
+    soundbite,
+    soundbite_num,
+    total_soundbites,
+    selected,
+    podcast_info,
+    temp_dir,
+    logo_path,
+    srt_content,
+    full_audio_path,
+    output_dir,
+    formats_config,
+    colors,
+    show_subtitles,
+    config_hashtags,
+    header_title_source=None,
+    fonts=None
+):
+    """
+    Process a single soundbite: extract audio, generate audiograms, caption and SRT.
+    
+    Args:
+        soundbite: Dictionary with soundbite data (start, duration, text/title)
+        soundbite_num: Number of the soundbite (1-based)
+        total_soundbites: Total number of soundbites (for display purposes)
+        selected: Selected episode dictionary
+        podcast_info: Podcast information dictionary
+        temp_dir: Temporary directory path
+        logo_path: Path to the logo image
+        srt_content: SRT content string (or None)
+        full_audio_path: Path to the full audio file
+        output_dir: Output directory path
+        formats_config: Formats configuration dictionary
+        colors: Colors configuration dictionary
+        show_subtitles: Whether to show subtitles
+        config_hashtags: Hashtags from configuration
+        header_title_source: Source for header title
+        fonts: Fonts configuration dictionary
+    """
+    # Print header
+    if total_soundbites:
+        print(f"\n{'='*60}")
+        print(f"Soundbite {soundbite_num}/{total_soundbites}: {soundbite.get('text') or soundbite.get('title')}")
+        print(f"{'='*60}")
     else:
-        artwork_url = podcast_info.get('image_url')
+        print(f"\n{'='*60}")
+        print(f"Soundbite {soundbite_num}: {soundbite.get('text') or soundbite.get('title')}")
+        print(f"{'='*60}")
 
-    # Dry-run mode: print intervals and subtitles only, then exit
-    if dry_run:
-        sbs = selected.get('soundbites') or []
-        print(f"\nFound soundbites ({len(sbs)}):")
-        if not sbs:
-            print("No soundbites available for this episode.")
-            return
-        # Determine which soundbites to print
-        try:
-            nums = parse_soundbite_selection(soundbites_choice, len(sbs))
-        except ValueError as e:
-            print(f"Soundbite selection error: {e}")
-            return
-        print("\n" + "="*60)
-        print("Dry-run: print start/end time and subtitle text")
-        print("="*60)
-        
-        # Fetch SRT once for dry-run
-        srt_content = None
-        if selected.get('transcript_url'):
-            try:
-                srt_content = transcript_svc.fetch_srt(selected['transcript_url'])
-            except Exception:
-                pass
+    # Extract audio segment
+    print("Extracting audio segment...")
+    segment_path = os.path.join(temp_dir, f"segment_{soundbite_num}.mp3")
+    extract_audio_segment(
+        full_audio_path,
+        soundbite['start'],
+        soundbite['duration'],
+        segment_path
+    )
 
-        for idx in nums:
-            sb = sbs[idx - 1]
-            try:
-                start_s = float(sb['start'])
-                dur_s = float(sb['duration'])
-            except Exception:
-                print(f"Soundbite {idx}: invalid timing values (start={sb.get('start')}, duration={sb.get('duration')})")
-                continue
-            end_s = start_s + dur_s
-            # Retrieve transcript text or fallback to soundbite title
-            transcript_text = get_transcript_text(
-                selected.get('transcript_url'),
-                sb['start'],
-                sb['duration'],
-                srt_content=srt_content
-            )
-            text = (transcript_text or sb.get('text') or sb.get('title') or '').strip()
+    # Build transcript chunks
+    print("Processing transcript...")
+    transcript_chunks = []
+    transcript_text = ""
+    if srt_content:
+        transcript_chunks = get_transcript_chunks(
+            selected.get('transcript_url'),
+            soundbite['start'],
+            soundbite['duration'],
+            srt_content=srt_content
+        )
+        # Extract full text for caption
+        transcript_text = get_transcript_text(
+            selected.get('transcript_url'),
+            soundbite['start'],
+            soundbite['duration'],
+            srt_content=srt_content
+        ) or (soundbite.get('text') or soundbite.get('title'))
+    else:
+        transcript_text = soundbite.get('text') or soundbite.get('title')
 
-            print(f"\nSoundbite {idx}")
-            print(f"- Start: {start_s:.3f}s ({format_seconds(start_s)})")
-            print(f"- Duration: {dur_s:.3f}s ({format_seconds(dur_s)})")
-            print(f"- End:   {end_s:.3f}s ({format_seconds(end_s)})")
-            print(f"- Subtitle text:")
-            print(text if text else "[Not available]")
-        # Do not generate anything in dry-run
+    # Save MP3 segment to output directory
+    mp3_output_path = os.path.join(
+        output_dir,
+        f"ep{selected['number']}_sb{soundbite_num}.mp3"
+    )
+    try:
+        shutil.copy2(segment_path, mp3_output_path)
+        print(f"✓ Audio: {mp3_output_path}")
+    except Exception as e:
+        print(f"Warning: could not save audio file: {e}")
+
+    # Generate audiogram for each enabled format
+    formats_info = {}
+    for fmt_name, fmt_config in formats_config.items():
+        if fmt_config.get('enabled', True):
+            formats_info[fmt_name] = fmt_config.get('description', fmt_name)
+
+    for format_name, format_desc in formats_info.items():
+        print(f"Generating audiogram {format_desc}...")
+        # Add a suffix to filename if subtitles are disabled
+        nosubs_suffix = "_nosubs" if not show_subtitles else ""
+        output_path = os.path.join(
+            output_dir,
+            f"ep{selected['number']}_sb{soundbite_num}{nosubs_suffix}_{format_name}.mp4"
+        )
+
+        generate_audiogram(
+            segment_path,
+            output_path,
+            format_name,
+            logo_path,
+            podcast_info['title'],
+            selected['title'],
+            transcript_chunks,
+            float(soundbite['duration']),
+            formats_config,
+            colors,
+            show_subtitles,
+            header_title_source=header_title_source,
+            header_soundbite_title=(soundbite.get('text') or soundbite.get('title')),
+            fonts=fonts,
+        )
+
+        print(f"✓ {format_name}: {output_path}")
+
+    # Generate caption file .txt
+    print("Generating caption file...")
+    caption_path = os.path.join(
+        output_dir,
+        f"ep{selected['number']}_sb{soundbite_num}_caption.txt"
+    )
+    generate_caption_file(
+        caption_path,
+        selected['number'],
+        selected['title'],
+        selected['link'],
+        soundbite.get('text') or soundbite.get('title') or '',
+        transcript_text,
+        podcast_info.get('keywords'),
+        selected.get('keywords'),
+        config_hashtags
+    )
+    print(f"✓ Caption: {caption_path}")
+
+    # Generate SRT file
+    print("Generating SRT file...")
+    srt_path = os.path.join(
+        output_dir,
+        f"ep{selected['number']}_sb{soundbite_num}.srt"
+    )
+    generate_srt_file(srt_path, transcript_chunks)
+    if os.path.exists(srt_path):
+        print(f"✓ SRT: {srt_path}")
+
+    return formats_info
+
+
+def _dry_run_episode(selected, soundbites_choice):
+    """
+    Print soundbite intervals and subtitles without generating any files.
+    
+    Args:
+        selected: Selected episode dictionary
+        soundbites_choice: Soundbite selection string
+    """
+    sbs = selected.get('soundbites') or []
+    print(f"\nFound soundbites ({len(sbs)}):")
+    if not sbs:
+        print("No soundbites available for this episode.")
         return
+    
+    # Determine which soundbites to print
+    try:
+        nums = parse_soundbite_selection(soundbites_choice, len(sbs))
+    except ValueError as e:
+        print(f"Soundbite selection error: {e}")
+        return
+    
+    print("\n" + "="*60)
+    print("Dry-run: print start/end time and subtitle text")
+    print("="*60)
+    
+    # Fetch SRT once for dry-run
+    srt_content = None
+    if selected.get('transcript_url'):
+        try:
+            srt_content = transcript_svc.fetch_srt(selected['transcript_url'])
+        except Exception:
+            pass
 
-    # Ensure output directory exists
-    os.makedirs(output_dir, exist_ok=True)
+    for idx in nums:
+        sb = sbs[idx - 1]
+        try:
+            start_s = float(sb['start'])
+            dur_s = float(sb['duration'])
+        except Exception:
+            print(f"Soundbite {idx}: invalid timing values (start={sb.get('start')}, duration={sb.get('duration')})")
+            continue
+        end_s = start_s + dur_s
+        
+        # Retrieve transcript text or fallback to soundbite title
+        transcript_text = get_transcript_text(
+            selected.get('transcript_url'),
+            sb['start'],
+            sb['duration'],
+            srt_content=srt_content
+        )
+        text = (transcript_text or sb.get('text') or sb.get('title') or '').strip()
 
-    # Download full audio and transcript if available
+        print(f"\nSoundbite {idx}")
+        print(f"- Start: {start_s:.3f}s ({format_seconds(start_s)})")
+        print(f"- Duration: {dur_s:.3f}s ({format_seconds(dur_s)})")
+        print(f"- End:   {end_s:.3f}s ({format_seconds(end_s)})")
+        print(f"- Subtitle text:")
+        print(text if text else "[Not available]")
+
+
+def _prepare_episode_resources(selected, output_dir):
+    """
+    Download full audio and transcript for an episode.
+    
+    Args:
+        selected: Selected episode dictionary
+        output_dir: Output directory path
+        
+    Returns:
+        Tuple of (full_audio_path, srt_content)
+    """
     full_audio_path = None
     srt_content = None
 
@@ -239,6 +399,32 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
             print(f"✓ Full SRT: {full_srt_path}")
         except Exception as e:
             print(f"Warning: could not fetch or save full transcript: {e}")
+
+    return full_audio_path, srt_content
+
+
+def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags, show_subtitles, output_dir, soundbites_choice, dry_run=False, use_episode_cover=False, header_title_source=None, fonts=None):
+    print(f"\nEpisode {selected['number']}: {selected['title']}")
+    if selected['audio_url']:
+        print(f"Audio: {selected['audio_url']}")
+
+    # Choose artwork URL to use (episode if requested and available, otherwise podcast)
+    artwork_url = None
+    if use_episode_cover and selected.get('image_url'):
+        artwork_url = selected['image_url']
+    else:
+        artwork_url = podcast_info.get('image_url')
+
+    # Dry-run mode: print intervals and subtitles only, then exit
+    if dry_run:
+        _dry_run_episode(selected, soundbites_choice)
+        return
+
+    # Ensure output directory exists
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Download full audio and transcript if available
+    full_audio_path, srt_content = _prepare_episode_resources(selected, output_dir)
 
     # Show soundbites if they exist
     if selected['soundbites']:
@@ -283,115 +469,26 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                     download_image(artwork_url, logo_path)
 
                 # Process each soundbite
+                formats_info = {}
                 for soundbite_num, soundbite in enumerate(selected['soundbites'], 1):
-                    print(f"\n{'='*60}")
-                    print(f"Soundbite {soundbite_num}/{len(selected['soundbites'])}: {soundbite.get('text') or soundbite.get('title')}")
-                    print(f"{'='*60}")
-
-                    # Extract audio segment
-                    print("Extracting audio segment...")
-                    segment_path = os.path.join(temp_dir, f"segment_{soundbite_num}.mp3")
-                    extract_audio_segment(
-                        full_audio_path,
-                        soundbite['start'],
-                        soundbite['duration'],
-                        segment_path
+                    formats_info = _process_single_soundbite(
+                        soundbite=soundbite,
+                        soundbite_num=soundbite_num,
+                        total_soundbites=len(selected['soundbites']),
+                        selected=selected,
+                        podcast_info=podcast_info,
+                        temp_dir=temp_dir,
+                        logo_path=logo_path,
+                        srt_content=srt_content,
+                        full_audio_path=full_audio_path,
+                        output_dir=output_dir,
+                        formats_config=formats_config,
+                        colors=colors,
+                        show_subtitles=show_subtitles,
+                        config_hashtags=config_hashtags,
+                        header_title_source=header_title_source,
+                        fonts=fonts,
                     )
-
-                    # Build transcript chunks
-                    print("Processing transcript...")
-                    transcript_chunks = []
-                    transcript_text = ""
-                    if srt_content:
-                        transcript_chunks = get_transcript_chunks(
-                            selected.get('transcript_url'),
-                            soundbite['start'],
-                            soundbite['duration'],
-                            srt_content=srt_content
-                        )
-                        # Extract full text for caption
-                        transcript_text = get_transcript_text(
-                            selected.get('transcript_url'),
-                            soundbite['start'],
-                            soundbite['duration'],
-                            srt_content=srt_content
-                        ) or (soundbite.get('text') or soundbite.get('title'))
-                    else:
-                        transcript_text = soundbite.get('text') or soundbite.get('title')
-
-                    # Save MP3 segment to output directory
-                    mp3_output_path = os.path.join(
-                        output_dir,
-                        f"ep{selected['number']}_sb{soundbite_num}.mp3"
-                    )
-                    try:
-                        shutil.copy2(segment_path, mp3_output_path)
-                        print(f"✓ Audio: {mp3_output_path}")
-                    except Exception as e:
-                        print(f"Warning: could not save audio file: {e}")
-
-                    # Generate audiogram for each enabled format
-                    formats_info = {}
-                    for fmt_name, fmt_config in formats_config.items():
-                        if fmt_config.get('enabled', True):
-                            formats_info[fmt_name] = fmt_config.get('description', fmt_name)
-
-                    for format_name, format_desc in formats_info.items():
-                        print(f"Generating audiogram {format_desc}...")
-                        # Add a suffix to filename if subtitles are disabled
-                        nosubs_suffix = "_nosubs" if not show_subtitles else ""
-                        output_path = os.path.join(
-                            output_dir,
-                            f"ep{selected['number']}_sb{soundbite_num}{nosubs_suffix}_{format_name}.mp4"
-                        )
-
-                        generate_audiogram(
-                            segment_path,
-                            output_path,
-                            format_name,
-                            logo_path,
-                            podcast_info['title'],
-                            selected['title'],
-                            transcript_chunks,
-                            float(soundbite['duration']),
-                            formats_config,
-                            colors,
-                            show_subtitles,
-                            header_title_source=header_title_source,
-                            header_soundbite_title=(soundbite.get('text') or soundbite.get('title')),
-                            fonts=fonts,
-                        )
-
-                        print(f"✓ {format_name}: {output_path}")
-
-                    # Generate caption file .txt
-                    print("Generating caption file...")
-                    caption_path = os.path.join(
-                        output_dir,
-                        f"ep{selected['number']}_sb{soundbite_num}_caption.txt"
-                    )
-                    generate_caption_file(
-                        caption_path,
-                        selected['number'],
-                        selected['title'],
-                        selected['link'],
-                        soundbite.get('text') or soundbite.get('title') or '',
-                        transcript_text,
-                        podcast_info.get('keywords'),
-                        selected.get('keywords'),
-                        config_hashtags
-                    )
-                    print(f"✓ Caption: {caption_path}")
-
-                    # Generate SRT file
-                    print("Generating SRT file...")
-                    srt_path = os.path.join(
-                        output_dir,
-                        f"ep{selected['number']}_sb{soundbite_num}.srt"
-                    )
-                    generate_srt_file(srt_path, transcript_chunks)
-                    if os.path.exists(srt_path):
-                        print(f"✓ SRT: {srt_path}")
 
                 print(f"\n{'='*60}")
                 print(f"All audiograms generated successfully into the 'output' folder!")
@@ -429,114 +526,24 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                     # Process each selected soundbite
                     for soundbite_num in soundbite_nums:
                         soundbite = selected['soundbites'][soundbite_num - 1]
-
-                        print(f"\n{'='*60}")
-                        print(f"Soundbite {soundbite_num}: {soundbite.get('text') or soundbite.get('title')}")
-                        print(f"{'='*60}")
-
-                        # Extract audio segment
-                        print("Extracting audio segment...")
-                        segment_path = os.path.join(temp_dir, f"segment_{soundbite_num}.mp3")
-                        extract_audio_segment(
-                            full_audio_path,
-                            soundbite['start'],
-                            soundbite['duration'],
-                            segment_path
+                        _process_single_soundbite(
+                            soundbite=soundbite,
+                            soundbite_num=soundbite_num,
+                            total_soundbites=None,  # Don't show total for selected soundbites
+                            selected=selected,
+                            podcast_info=podcast_info,
+                            temp_dir=temp_dir,
+                            logo_path=logo_path,
+                            srt_content=srt_content,
+                            full_audio_path=full_audio_path,
+                            output_dir=output_dir,
+                            formats_config=formats_config,
+                            colors=colors,
+                            show_subtitles=show_subtitles,
+                            config_hashtags=config_hashtags,
+                            header_title_source=header_title_source,
+                            fonts=fonts,
                         )
-
-                        # Build transcript chunks
-                        print("Processing transcript...")
-                        transcript_chunks = []
-                        transcript_text = ""
-                        if srt_content:
-                            transcript_chunks = get_transcript_chunks(
-                                selected.get('transcript_url'),
-                                soundbite['start'],
-                                soundbite['duration'],
-                                srt_content=srt_content
-                            )
-                            # Extract full text for caption
-                            transcript_text = get_transcript_text(
-                                selected.get('transcript_url'),
-                                soundbite['start'],
-                                soundbite['duration'],
-                                srt_content=srt_content
-                            ) or (soundbite.get('text') or soundbite.get('title'))
-                        else:
-                            transcript_text = soundbite.get('text') or soundbite.get('title')
-
-                        # Save MP3 segment to output directory
-                        mp3_output_path = os.path.join(
-                            output_dir,
-                            f"ep{selected['number']}_sb{soundbite_num}.mp3"
-                        )
-                        try:
-                            shutil.copy2(segment_path, mp3_output_path)
-                            print(f"✓ Audio: {mp3_output_path}")
-                        except Exception as e:
-                            print(f"Warning: could not save audio file: {e}")
-
-                        # Generate audiogram for each enabled format
-                        formats_info = {}
-                        for fmt_name, fmt_config in formats_config.items():
-                            if fmt_config.get('enabled', True):
-                                formats_info[fmt_name] = fmt_config.get('description', fmt_name)
-
-                        for format_name, format_desc in formats_info.items():
-                            print(f"Generating audiogram {format_desc}...")
-                            # Add a suffix to filename if subtitles are disabled
-                            nosubs_suffix = "_nosubs" if not show_subtitles else ""
-                            output_path = os.path.join(
-                                output_dir,
-                                f"ep{selected['number']}_sb{soundbite_num}{nosubs_suffix}_{format_name}.mp4"
-                            )
-
-                            generate_audiogram(
-                                segment_path,
-                                output_path,
-                                format_name,
-                                logo_path,
-                                podcast_info['title'],
-                                selected['title'],
-                                transcript_chunks,
-                                float(soundbite['duration']),
-                                formats_config,
-                                colors,
-                                show_subtitles,
-                                header_title_source=header_title_source,
-                                header_soundbite_title=(soundbite.get('text') or soundbite.get('title')),
-                            )
-
-                            print(f"✓ {format_name}: {output_path}")
-
-                        # Generate caption file .txt
-                        print("Generating caption file...")
-                        caption_path = os.path.join(
-                            output_dir,
-                            f"ep{selected['number']}_sb{soundbite_num}_caption.txt"
-                        )
-                        generate_caption_file(
-                            caption_path,
-                            selected['number'],
-                            selected['title'],
-                            selected['link'],
-                            soundbite.get('text') or soundbite.get('title') or '',
-                            transcript_text,
-                            podcast_info.get('keywords'),
-                            selected.get('keywords'),
-                            config_hashtags
-                        )
-                        print(f"✓ Caption: {caption_path}")
-
-                        # Generate SRT file
-                        print("Generating SRT file...")
-                        srt_path = os.path.join(
-                            output_dir,
-                            f"ep{selected['number']}_sb{soundbite_num}.srt"
-                        )
-                        generate_srt_file(srt_path, transcript_chunks)
-                        if os.path.exists(srt_path):
-                            print(f"✓ SRT: {srt_path}")
 
                     print(f"\n{'='*60}")
                     print(f"Audiograms successfully generated in folder: {output_dir}")
