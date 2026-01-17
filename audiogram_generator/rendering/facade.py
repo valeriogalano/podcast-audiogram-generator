@@ -67,11 +67,11 @@ def generate_audiogram(
     duration: float,
     formats: Dict | None,
     colors: Dict | None,
-    fonts: Dict | None = None,
     show_subtitles: bool = True,
     *,
     header_title_source: Optional[str] = None,
     header_soundbite_title: Optional[str] = None,
+    fonts: Dict | None = None,
 ) -> None:
     """Legacy-compatible wrapper used by the CLI and tests.
 
