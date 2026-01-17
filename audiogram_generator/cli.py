@@ -195,14 +195,18 @@ def _process_single_soundbite(
         print(f"{'='*60}")
 
     # Extract audio segment
-    print("Extracting audio segment...")
-    segment_path = os.path.join(temp_dir, f"segment_{soundbite_num}.mp3")
-    extract_audio_segment(
-        full_audio_path,
-        soundbite['start'],
-        soundbite['duration'],
-        segment_path
-    )
+    if full_audio_path and os.path.exists(full_audio_path):
+        print("Extracting audio segment...")
+        segment_path = os.path.join(temp_dir, f"segment_{soundbite_num}.mp3")
+        extract_audio_segment(
+            full_audio_path,
+            soundbite['start'],
+            soundbite['duration'],
+            segment_path
+        )
+    else:
+        print("Warning: skipping audio extraction because full audio file is missing or invalid.")
+        segment_path = None
 
     # Build transcript chunks
     print("Processing transcript...")
@@ -230,11 +234,14 @@ def _process_single_soundbite(
         output_dir,
         f"ep{selected['number']}_sb{soundbite_num}.mp3"
     )
-    try:
-        shutil.copy2(segment_path, mp3_output_path)
-        print(f"✓ Audio: {mp3_output_path}")
-    except Exception as e:
-        print(f"Warning: could not save audio file: {e}")
+    if segment_path and os.path.exists(segment_path):
+        try:
+            shutil.copy2(segment_path, mp3_output_path)
+            print(f"✓ Audio: {mp3_output_path}")
+        except Exception as e:
+            print(f"Warning: could not save audio file: {e}")
+    else:
+        print("Warning: audio segment was not generated, skipping MP3 output.")
 
     # Generate audiogram for each enabled format
     formats_info = {}
@@ -242,33 +249,36 @@ def _process_single_soundbite(
         if fmt_config.get('enabled', True):
             formats_info[fmt_name] = fmt_config.get('description', fmt_name)
 
-    for format_name, format_desc in formats_info.items():
-        print(f"Generating audiogram {format_desc}...")
-        # Add a suffix to filename if subtitles are disabled
-        nosubs_suffix = "_nosubs" if not show_subtitles else ""
-        output_path = os.path.join(
-            output_dir,
-            f"ep{selected['number']}_sb{soundbite_num}{nosubs_suffix}_{format_name}.mp4"
-        )
+    if not segment_path or not os.path.exists(segment_path):
+        print("Warning: skipping audiogram video generation because audio segment is missing.")
+    else:
+        for format_name, format_desc in formats_info.items():
+            print(f"Generating audiogram {format_desc}...")
+            # Add a suffix to filename if subtitles are disabled
+            nosubs_suffix = "_nosubs" if not show_subtitles else ""
+            output_path = os.path.join(
+                output_dir,
+                f"ep{selected['number']}_sb{soundbite_num}{nosubs_suffix}_{format_name}.mp4"
+            )
 
-        generate_audiogram(
-            segment_path,
-            output_path,
-            format_name,
-            logo_path,
-            podcast_info['title'],
-            selected['title'],
-            transcript_chunks,
-            float(soundbite['duration']),
-            formats_config,
-            colors,
-            show_subtitles,
-            header_title_source=header_title_source,
-            header_soundbite_title=(soundbite.get('text') or soundbite.get('title')),
-            fonts=fonts,
-        )
+            generate_audiogram(
+                segment_path,
+                output_path,
+                format_name,
+                logo_path,
+                podcast_info['title'],
+                selected['title'],
+                transcript_chunks,
+                float(soundbite['duration']),
+                formats_config,
+                colors,
+                show_subtitles,
+                header_title_source=header_title_source,
+                header_soundbite_title=(soundbite.get('text') or soundbite.get('title')),
+                fonts=fonts,
+            )
 
-        print(f"✓ {format_name}: {output_path}")
+            print(f"✓ {format_name}: {output_path}")
 
     # Generate caption file .txt
     print("Generating caption file...")
@@ -378,6 +388,15 @@ def _prepare_episode_resources(selected, output_dir):
 
     if selected['audio_url']:
         full_audio_path = os.path.join(output_dir, f"ep{selected['number']}.mp3")
+        
+        # Verify if existing file is valid (not empty)
+        try:
+            if os.path.exists(full_audio_path) and os.path.getsize(full_audio_path) == 0:
+                print(f"Warning: existing audio file {full_audio_path} is empty. Removing it.")
+                os.remove(full_audio_path)
+        except OSError:
+            pass
+
         if not os.path.exists(full_audio_path):
             print(f"\nDownloading full audio: {selected['audio_url']}")
             try:
@@ -393,10 +412,11 @@ def _prepare_episode_resources(selected, output_dir):
         print("Processing full transcript...")
         try:
             srt_content = transcript_svc.fetch_srt(selected['transcript_url'])
-            full_srt_path = os.path.join(output_dir, f"ep{selected['number']}.srt")
-            with open(full_srt_path, 'w', encoding='utf-8') as f:
-                f.write(srt_content)
-            print(f"✓ Full SRT: {full_srt_path}")
+            if srt_content:
+                full_srt_path = os.path.join(output_dir, f"ep{selected['number']}.srt")
+                with open(full_srt_path, 'w', encoding='utf-8') as f:
+                    f.write(srt_content)
+                print(f"✓ Full SRT: {full_srt_path}")
         except Exception as e:
             print(f"Warning: could not fetch or save full transcript: {e}")
 

@@ -13,9 +13,17 @@ def download_audio(url, output_path):
     ssl_context.verify_mode = ssl.CERT_NONE
 
     request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    with urllib.request.urlopen(request, context=ssl_context) as response:
-        with open(output_path, 'wb') as f:
-            f.write(response.read())
+    try:
+        with urllib.request.urlopen(request, context=ssl_context, timeout=30) as response:
+            with open(output_path, 'wb') as f:
+                content = response.read()
+                if not content:
+                    raise ValueError("Downloaded audio content is empty")
+                f.write(content)
+    except Exception:
+        if os.path.exists(output_path):
+            os.remove(output_path)
+        raise
 
 
 def extract_audio_segment(audio_path, start_time, duration, output_path):
