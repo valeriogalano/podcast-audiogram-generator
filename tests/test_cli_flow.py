@@ -93,6 +93,7 @@ class TestCliFlow(unittest.TestCase):
     @patch('audiogram_generator.cli.download_image', return_value='/tmp/cover.jpg')
     @patch('audiogram_generator.cli.extract_audio_segment', return_value='/tmp/seg.mp3')
     @patch('audiogram_generator.cli.download_audio', return_value='/tmp/full.mp3')
+    @patch('os.path.exists', return_value=True) # Ensure it thinks audio exists
     def test_output_filenames_include_nosubs_when_disabled(self, *_mocks):
         selected = self._make_selected(with_soundbites=True, with_transcript=False)
         formats = {
