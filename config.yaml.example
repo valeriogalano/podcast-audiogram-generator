@@ -9,6 +9,10 @@ feed_url: https://pensieriincodice.it/podcast/index.xml
 # Default: ./output
 output_dir: ./output
 
+# Temporary directory for intermediate files
+# Default: ./temp
+temp_dir: ./temp
+
 # Episodes to process (optional)
 # Possible values:
 #   - Specific number: 1, 2, 3, etc.

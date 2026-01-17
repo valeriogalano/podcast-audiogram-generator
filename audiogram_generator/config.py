@@ -12,6 +12,7 @@ class Config:
     DEFAULT_CONFIG = {
         'feed_url': None,
         'output_dir': './output',
+        'temp_dir': './temp',
         'episode': None,
         'soundbites': None,
         'dry_run': False,

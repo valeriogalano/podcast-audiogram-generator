@@ -423,7 +423,7 @@ def _prepare_episode_resources(selected, output_dir):
     return full_audio_path, srt_content
 
 
-def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags, show_subtitles, output_dir, soundbites_choice, dry_run=False, use_episode_cover=False, header_title_source=None, fonts=None):
+def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags, show_subtitles, output_dir, temp_dir_base, soundbites_choice, dry_run=False, use_episode_cover=False, header_title_source=None, fonts=None):
     print(f"\nEpisode {selected['number']}: {selected['title']}")
     if selected['audio_url']:
         print(f"Audio: {selected['audio_url']}")
@@ -440,8 +440,9 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
         _dry_run_episode(selected, soundbites_choice)
         return
 
-    # Ensure output directory exists
+    # Ensure output and temp directories exist
     os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(temp_dir_base, exist_ok=True)
 
     # Download full audio and transcript if available
     full_audio_path, srt_content = _prepare_episode_resources(selected, output_dir)
@@ -478,7 +479,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
             print(f"\nGenerating audiograms for all {len(selected['soundbites'])} soundbites...")
 
             # Create temporary directory
-            with tempfile.TemporaryDirectory() as temp_dir:
+            with tempfile.TemporaryDirectory(dir=temp_dir_base) as temp_dir:
                 # Warn about FFmpeg if missing (once)
                 _warn_if_no_ffmpeg()
 
@@ -533,7 +534,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                 print(f"\nGenerating audiogram for {len(soundbite_nums)} soundbite(s)...")
 
                 # Create temporary directory
-                with tempfile.TemporaryDirectory() as temp_dir:
+                with tempfile.TemporaryDirectory(dir=temp_dir_base) as temp_dir:
                     # Warn about FFmpeg if missing (once)
                     _warn_if_no_ffmpeg()
 
@@ -588,6 +589,7 @@ def main():
     parser.add_argument('--episode', type=str, help="Episode(s) to process: number (e.g., 5), list (e.g., 1,3,5), 'all'/'a' for all, or 'last' for the most recent episode")
     parser.add_argument('--soundbites', type=str, help='Soundbites to generate: specific number, "all" for all, or comma-separated list (e.g., 1,3,5)')
     parser.add_argument('--output-dir', type=str, help='Output directory for generated files')
+    parser.add_argument('--temp-dir', type=str, help='Temporary directory for intermediate files')
     parser.add_argument('--log-level', type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], help='Logging level (default: INFO)')
     parser.add_argument('--dry-run', action='store_true', help='Print only soundbite intervals and subtitles without generating files')
     parser.add_argument(
@@ -637,6 +639,7 @@ def main():
         'episode': args.episode,
         'soundbites': args.soundbites,
         'output_dir': args.output_dir,
+        'temp_dir': args.temp_dir,
         'dry_run': args.dry_run,
         'show_subtitles': args.show_subtitles,
         'use_episode_cover': args.use_episode_cover,
@@ -648,6 +651,7 @@ def main():
     episode_input = config.get('episode')
     soundbites_choice = config.get('soundbites')
     output_dir = config.get('output_dir', os.path.join(os.getcwd(), 'output'))
+    temp_dir_base = config.get('temp_dir', os.path.join(os.getcwd(), 'temp'))
 
     # Load color, format, hashtags, and CTA configuration
     colors = config.get('colors')
@@ -744,6 +748,7 @@ def main():
             config_hashtags=config_hashtags,
             show_subtitles=show_subtitles,
             output_dir=output_dir,
+            temp_dir_base=temp_dir_base,
             soundbites_choice=soundbites_choice,
             dry_run=dry_run,
             use_episode_cover=use_episode_cover,
