@@ -27,27 +27,28 @@ from .services import transcript as transcript_svc
 from .services import rss as rss_svc
 
 
-_ffmpeg_warned = False
 logger = logging.getLogger(__name__)
 
 
 def _warn_if_no_ffmpeg():
-    """Print a friendly warning if FFmpeg is not available on PATH.
+    """Log a one-time warning if FFmpeg is not available on PATH.
 
     Non-fatal: only informs the user; rendering may still fail later if required.
-    Printed at most once per process.
+    Logged at most once per process (state stored as a function attribute).
     """
-    global _ffmpeg_warned
-    if _ffmpeg_warned:
+    if _warn_if_no_ffmpeg.warned:
         return
     try:
         if shutil.which('ffmpeg') is None:
             logger.warning("FFmpeg not found on PATH. Rendering may fail. See README for install instructions.")
-        _ffmpeg_warned = True
+        _warn_if_no_ffmpeg.warned = True
     except Exception as e:
         # Never fail due to env probing
-        logging.warning("FFmpeg check failed: %s", e)
-        _ffmpeg_warned = True
+        logger.warning("FFmpeg check failed: %s", e)
+        _warn_if_no_ffmpeg.warned = True
+
+
+_warn_if_no_ffmpeg.warned = False
 
 
 def get_podcast_episodes(feed_url, manual_soundbites=None):
