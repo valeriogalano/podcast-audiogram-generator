@@ -482,35 +482,25 @@ def _render_waveform(draw, width, central_top, central_height, waveform_data, cu
         draw.rectangle([(x, y_top), (x + bar_width, y_bottom)], fill=colors['primary'])
 
 
-def _render_logo(img, width, central_top, central_height, podcast_logo_path, layout_config):
+def _render_logo(img, width, central_top, central_height, logo_img):
     """
-    Render the podcast logo in the central area.
-    
+    Render the podcast logo (pre-loaded) in the central area.
+
     Args:
         img: PIL Image object
         width: Frame width
         central_top: Top position of central area
         central_height: Height of central area
-        podcast_logo_path: Path to the logo image
-        layout_config: Layout configuration dictionary
+        logo_img: Pre-loaded and resized PIL Image, or None
     """
-    if not os.path.exists(podcast_logo_path):
+    if logo_img is None:
         return
-        
-    logo = Image.open(podcast_logo_path)
 
-    # Calculate logo size (horizontal has different logic)
-    if 'logo_width_ratio' in layout_config:
-        logo_size = int(min(width * layout_config['logo_width_ratio'], central_height * layout_config['logo_size_ratio']))
-    else:
-        logo_size = int(min(width, central_height) * layout_config['logo_size_ratio'])
-
-    logo = logo.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
-
+    logo_size = logo_img.width  # Already resized to the correct size
     # VERTICALLY CENTERED at 50%
     logo_x = (width - logo_size) // 2
     logo_y = central_top + (central_height - logo_size) // 2
-    img.paste(logo, (logo_x, logo_y), logo if logo.mode == 'RGBA' else None)
+    img.paste(logo_img, (logo_x, logo_y), logo_img if logo_img.mode == 'RGBA' else None)
 
 
 def _render_footer(draw, width, height, central_bottom, colors):
@@ -595,7 +585,7 @@ def _render_transcript(img, draw, width, height, central_top, central_height, ce
     return img, draw
 
 
-def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_title, episode_title,
+def _create_unified_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                            waveform_data, current_time, transcript_chunks, audio_duration, colors, layout_config,
                            header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
                            fonts=None):
@@ -618,8 +608,8 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
     # Render waveform
     _render_waveform(draw, width, central_top, central_height, waveform_data, current_time, audio_duration, colors)
 
-    # Render logo
-    _render_logo(img, width, central_top, central_height, podcast_logo_path, layout_config)
+    # Render logo (pre-loaded image, no disk I/O per frame)
+    _render_logo(img, width, central_top, central_height, logo_img)
 
     # Render footer
     _render_footer(draw, width, height, central_bottom, colors)
@@ -633,7 +623,7 @@ def _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_
     return img
 
 
-def create_layout(img, draw, width, height, podcast_logo_path, podcast_title, episode_title,
+def create_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                   waveform_data, current_time, transcript_chunks, audio_duration, colors, format_name='vertical',
                   header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
                   fonts=None):
@@ -649,13 +639,14 @@ def create_layout(img, draw, width, height, podcast_logo_path, podcast_title, ep
         - horizontal: 16:9 (1920x1080) - YouTube
     """
     layout_config = LAYOUT_CONFIGS.get(format_name, LAYOUT_CONFIGS['vertical'])
-    return _create_unified_layout(img, draw, width, height, podcast_logo_path, podcast_title, episode_title,
+    return _create_unified_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                                   waveform_data, current_time, transcript_chunks, audio_duration, colors,
                                   layout_config, header_title_source, header_soundbite_title, fonts=fonts)
 
 
-def create_audiogram_frame(width, height, podcast_logo_path, podcast_title, episode_title,
-                           waveform_data, current_time, transcript_chunks, audio_duration, formats=None, colors=None, format_name='vertical',
+def create_audiogram_frame(width, height, logo_img, podcast_title, episode_title,
+                           waveform_data, current_time, transcript_chunks, audio_duration, colors_tuples,
+                           format_name='vertical',
                            header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
                            fonts=None):
     """
@@ -663,41 +654,24 @@ def create_audiogram_frame(width, height, podcast_logo_path, podcast_title, epis
 
     Args:
         width, height: Frame dimensions
-        podcast_logo_path: Podcast logo path
+        logo_img: Pre-loaded and resized PIL Image for the podcast logo, or None
         podcast_title: Podcast title
         episode_title: Episode title
         waveform_data: Waveform data
         current_time: Current time in seconds
         transcript_chunks: List of transcript chunks with timing
         audio_duration: Total audio duration
-        colors: Dictionary with custom colors (optional)
+        colors_tuples: Dictionary with color tuples (pre-converted, no lists)
         format_name: Format name ('vertical', 'square', 'horizontal')
     """
-    # Use default or custom colors
-    if colors is None:
-        colors = {
-            'primary': COLOR_ORANGE,
-            'background': COLOR_BEIGE,
-            'text': COLOR_WHITE,
-            'transcript_bg': COLOR_BLACK
-        }
-    else:
-        # Convert lists to tuples if necessary
-        colors = {
-            'primary': tuple(colors.get('primary', COLOR_ORANGE)),
-            'background': tuple(colors.get('background', COLOR_BEIGE)),
-            'text': tuple(colors.get('text', COLOR_WHITE)),
-            'transcript_bg': tuple(colors.get('transcript_bg', COLOR_BLACK))
-        }
-
     # Create base image
-    img = Image.new('RGB', (width, height), colors['background'])
+    img = Image.new('RGB', (width, height), colors_tuples['background'])
     draw = ImageDraw.Draw(img)
 
     # Create the layout
-    img = create_layout(img, draw, width, height, podcast_logo_path, podcast_title,
+    img = create_layout(img, draw, width, height, logo_img, podcast_title,
                        episode_title, waveform_data, current_time, transcript_chunks,
-                       audio_duration, colors, format_name, header_title_source, header_soundbite_title,
+                       audio_duration, colors_tuples, format_name, header_title_source, header_soundbite_title,
                        fonts=fonts)
 
     # Ensure the array is in RGB for MoviePy
@@ -738,36 +712,57 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
 
     fps = 24  # Reduced from 30 to 24 fps to speed up rendering
 
+    # Pre-convert colors to tuples once (avoid per-frame conversion)
+    if colors is None:
+        colors_tuples = {
+            'primary': COLOR_ORANGE,
+            'background': COLOR_BEIGE,
+            'text': COLOR_WHITE,
+            'transcript_bg': COLOR_BLACK,
+        }
+    else:
+        colors_tuples = {
+            'primary': tuple(colors.get('primary', COLOR_ORANGE)),
+            'background': tuple(colors.get('background', COLOR_BEIGE)),
+            'text': tuple(colors.get('text', COLOR_WHITE)),
+            'transcript_bg': tuple(colors.get('transcript_bg', COLOR_BLACK)),
+        }
+
     print(f"  - Extracting waveform...")
     # Extract waveform once, sampled per frame
     waveform_data = get_waveform_data(audio_path, fps=fps)
 
     print(f"  - Pre-loading logo...")
-    # Pre-load and resize the logo once
+    # Pre-load and resize the logo once using the correct layout dimensions
+    layout_config = LAYOUT_CONFIGS.get(format_name, LAYOUT_CONFIGS['vertical'])
     logo_img = None
     if os.path.exists(podcast_logo_path):
         logo = Image.open(podcast_logo_path)
-        central_height = int(height * 0.60)
-        logo_size = int(min(width, central_height) * 0.4)
+        central_height_px = int(height * layout_config['central_ratio'])
+        if 'logo_width_ratio' in layout_config:
+            logo_size = int(min(width * layout_config['logo_width_ratio'],
+                                central_height_px * layout_config['logo_size_ratio']))
+        else:
+            logo_size = int(min(width, central_height_px) * layout_config['logo_size_ratio'])
         logo_img = logo.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
+        logo.close()
 
     print(f"  - Video frame generation...")
     # Prepare subtitle chunks according to flag
     chunks_for_render = transcript_chunks if show_subtitles else []
-    # Function to generate frame
+    # Function to generate frame — all static data captured from outer scope
     def make_frame(t):
         return create_audiogram_frame(
             width, height,
-            podcast_logo_path,  # Passing path for compatibility
+            logo_img,           # Pre-loaded PIL Image, no disk I/O per frame
             podcast_title,
             episode_title,
             waveform_data,
             t,
             chunks_for_render,
             duration,
-            formats,
-            colors,
-            format_name,  # Pass format to use correct layout
+            colors_tuples,      # Pre-converted tuples, no per-frame conversion
+            format_name,
             header_title_source,
             header_soundbite_title,
             fonts=fonts,
