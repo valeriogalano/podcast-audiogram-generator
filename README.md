@@ -83,6 +83,7 @@ Available options:
 - `--header-title-source CHOICE` — Source for the header title: `auto` (default), `podcast`, `episode`, `soundbite`, or `none`
 - `--log-level LEVEL` — Logging level: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
 - `--dry-run` — Print timings and transcript text only (no files generated)
+- `--full-episode` — Generate an audiogram for the entire episode (no soundbite selection)
 - `--show-subtitles` / `--no-subtitles` — Force enable/disable on‑video subtitles
 - `--use-episode-cover` / `--no-use-episode-cover` — Prefer the episode-specific cover art when available (fallback to podcast cover)
 
@@ -129,6 +130,29 @@ Enable from config (optional):
 ```yaml
 dry_run: true
 ```
+
+### Full-episode audiogram
+
+Generate an audiogram for the entire episode without selecting a soundbite. Useful for short episodes or promotional clips where you want to render the complete audio.
+
+**Note:** Full episodes can be 30–90 minutes long. Rendering time is proportional to duration — the generator will warn you before starting.
+
+From CLI:
+
+```bash
+python -m audiogram_generator --episode 142 --full-episode
+```
+
+Enable from config (optional):
+
+```yaml
+full_episode: true
+```
+
+Output files follow the pattern `ep{N}_full_{format}.mp4`, for example:
+- `ep142_full_vertical.mp4`
+- `ep142_full_square.mp4`
+- `ep142_full_horizontal.mp4`
 
 ### Subtitles and Cover options
 
@@ -279,6 +303,18 @@ Files are saved to `output/` by default.
 Regardless of whether you generate soundbites, the generator always downloads and saves the full assets for the selected episode:
 - `ep{episode_number}.mp3` — Full episode audio
 - `ep{episode_number}.srt` — Full episode transcript (if available in the feed)
+
+### Full-episode Audiogram Assets
+
+When `--full-episode` is used, the following videos are generated:
+```
+ep{episode_number}_full_{format}.mp4
+```
+
+Example for episode 142 with all formats enabled:
+- `ep142_full_vertical.mp4`
+- `ep142_full_square.mp4`
+- `ep142_full_horizontal.mp4`
 
 ### Soundbite Assets
 
