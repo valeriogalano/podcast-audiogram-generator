@@ -16,7 +16,7 @@ ignore = [
 ]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
@@ -28,10 +28,19 @@ pretty = true
 show_error_codes = true
 exclude = [
   "tests",
-  "audiogram_generator/video_generator.py",
 ]
 packages = [
   "audiogram_generator.core",
   "audiogram_generator.services",
   "audiogram_generator.rendering",
+  "audiogram_generator.cli",
+  "audiogram_generator.video_generator",
 ]
+
+[[tool.mypy.overrides]]
+module = "audiogram_generator.video_generator"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["pydub", "pydub.*", "feedparser", "moviepy", "moviepy.*"]
+ignore_missing_imports = true

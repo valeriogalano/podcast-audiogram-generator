@@ -6,7 +6,7 @@ to ``video_generator.generate_audiogram``.
 """
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, cast
 
 from audiogram_generator import video_generator
 
@@ -35,7 +35,7 @@ def render_audiogram(
     podcast_title = str(meta.get("podcast_title", ""))
     episode_title = str(meta.get("episode_title", ""))
     logo_path = str(meta.get("logo_path", ""))
-    duration = float(meta.get("duration", 0.0))
+    duration = float(cast(float, meta.get("duration", 0.0)))
 
     # Delegate to the legacy generator maintaining argument order/shape
     video_generator.generate_audiogram(

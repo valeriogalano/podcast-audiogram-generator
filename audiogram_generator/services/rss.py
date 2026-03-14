@@ -6,12 +6,12 @@ implementation in ``cli.get_podcast_episodes`` to preserve behavior.
 """
 from __future__ import annotations
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 import urllib.request
 import xml.etree.ElementTree as ET
 import logging
 
-import feedparser  # type: ignore
+import feedparser
 from .errors import RssError
 from ._http import make_ssl_context
 
@@ -37,7 +37,7 @@ def fetch_feed(url: str, timeout: int = 10, verify_ssl: bool = False) -> str:
         raise RssError(str(e))
 
 
-def parse_feed(feed_xml: str, manual_soundbites: dict = None) -> Tuple[List[Dict], Dict]:
+def parse_feed(feed_xml: str, manual_soundbites: Optional[dict] = None) -> Tuple[List[Dict], Dict]:
     """Parse the feed XML and return (episodes, podcast_info).
 
     The output shape matches the legacy CLI implementation:
@@ -151,7 +151,7 @@ def parse_feed(feed_xml: str, manual_soundbites: dict = None) -> Tuple[List[Dict
         feed_sbs = soundbites_by_guid.get(guid, [])
         
         # Retrieve manual soundbites (by GUID or episode number)
-        manual_sbs = []
+        manual_sbs: List[Dict] = []
         if manual_soundbites:
             manual_sbs = manual_soundbites.get(guid) or manual_soundbites.get(episode_number) or manual_soundbites.get(str(episode_number)) or []
         
@@ -174,7 +174,7 @@ def parse_feed(feed_xml: str, manual_soundbites: dict = None) -> Tuple[List[Dict
     return episodes, podcast_info
 
 
-def get_podcast_episodes(feed_url: str, manual_soundbites: dict = None, verify_ssl: bool = False) -> Tuple[List[Dict], Dict]:
+def get_podcast_episodes(feed_url: str, manual_soundbites: Optional[dict] = None, verify_ssl: bool = False) -> Tuple[List[Dict], Dict]:
     """High-level convenience that fetches and parses the feed URL.
 
     Network I/O is isolated to ``fetch_feed`` to allow tests to mock it.

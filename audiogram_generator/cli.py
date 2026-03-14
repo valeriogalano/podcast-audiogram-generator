@@ -11,7 +11,7 @@ import tempfile
 import argparse
 import shutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List
+from typing import List, Optional
 from .audio_utils import download_audio, extract_audio_segment, load_audio
 from .services.assets import download_image
 from .rendering.facade import generate_audiogram
@@ -36,19 +36,19 @@ def _warn_if_no_ffmpeg():
     Non-fatal: only informs the user; rendering may still fail later if required.
     Logged at most once per process (state stored as a function attribute).
     """
-    if _warn_if_no_ffmpeg.warned:
+    if _warn_if_no_ffmpeg.warned:  # type: ignore[attr-defined]
         return
     try:
         if shutil.which('ffmpeg') is None:
             logger.warning("FFmpeg not found on PATH. Rendering may fail. See README for install instructions.")
-        _warn_if_no_ffmpeg.warned = True
+        _warn_if_no_ffmpeg.warned = True  # type: ignore[attr-defined]
     except Exception as e:
         # Never fail due to env probing
         logger.warning("FFmpeg check failed: %s", e)
-        _warn_if_no_ffmpeg.warned = True
+        _warn_if_no_ffmpeg.warned = True  # type: ignore[attr-defined]
 
 
-_warn_if_no_ffmpeg.warned = False
+_warn_if_no_ffmpeg.warned = False  # type: ignore[attr-defined]
 
 
 def get_podcast_episodes(feed_url, manual_soundbites=None, verify_ssl: bool = False):
@@ -105,7 +105,7 @@ CAPTION_LABEL_LISTEN_PREFIX = "Listen to the full episode"
 def generate_caption_file(output_path, episode_number, episode_title, episode_link,
                           soundbite_title, transcript_text, podcast_keywords=None,
                           episode_keywords=None, config_hashtags=None,
-                          *, episode_prefix: str = None, listen_full_prefix: str = None):
+                          *, episode_prefix: Optional[str] = None, listen_full_prefix: Optional[str] = None):
     """
     Generate a plain-text .txt caption file for social posts (no markdown).
 

@@ -89,7 +89,7 @@ class Config:
                         if key in ['colors', 'formats', 'fonts', 'caption_labels'] and isinstance(value, dict):
                             if key not in self.config:
                                 self.config[key] = {}
-                            self._deep_merge(self.config[key], value)
+                            self._deep_merge(self.config[key], value)  # type: ignore[arg-type]
                         else:
                             self.config[key] = value
         except Exception as e:

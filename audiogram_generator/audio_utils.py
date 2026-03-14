@@ -30,7 +30,7 @@ def load_audio(audio_path):
     Returns the AudioSegment, which can be passed to extract_audio_segment()
     to avoid reloading the file for every soundbite.
     """
-    from pydub import AudioSegment  # type: ignore
+    from pydub import AudioSegment
     return AudioSegment.from_file(audio_path)
 
 
@@ -50,7 +50,7 @@ def extract_audio_segment(audio_path, start_time, duration, output_path, audio=N
     if audio is None:
         # Lazy import to avoid importing heavy dependencies at module import time
         # and to keep unit tests independent from optional binary deps.
-        from pydub import AudioSegment  # type: ignore
+        from pydub import AudioSegment
         audio = AudioSegment.from_file(audio_path)
 
     start_ms = int(float(start_time) * 1000)

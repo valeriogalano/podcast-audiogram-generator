@@ -1,0 +1,1257 @@
+2026-03-14 21:15:22,890 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwde4w_pc.png
+2026-03-14 21:15:22,892 [ERROR] audiogram_generator.services.assets: Failed to download image from https://example/image.png: network
+2026-03-14 21:15:22,893 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpjbyr00dm.png
+2026-03-14 21:15:22,894 [DEBUG] audiogram_generator.services.assets: Image saved to /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpjbyr00dm.png (6 bytes)
+2026-03-14 21:15:22,901 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-14 21:15:22,901 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-14 21:15:22,901 [INFO] audiogram_generator.cli: 
+Downloading full audio: https://example/audio.mp3
+2026-03-14 21:15:22,901 [INFO] audiogram_generator.cli: ✓ Full audio: ./output/ep142.mp3
+2026-03-14 21:15:22,901 [INFO] audiogram_generator.cli: Processing full transcript...
+2026-03-14 21:15:22,902 [INFO] audiogram_generator.cli: ✓ Full SRT: ./output/ep142.srt
+2026-03-14 21:15:22,902 [INFO] audiogram_generator.cli: 
+No soundbites found for this episode.
+2026-03-14 21:15:22,903 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/srt.srt
+2026-03-14 21:15:22,911 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/srt.srt: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli: 
+Full audio already exists: ./output/ep142.mp3
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-14 21:15:22,912 [WARNING] audiogram_generator.cli: Could not pre-load audio, will reload per soundbite: [Errno 2] No such file or directory: './output/ep142.mp3'
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli: 
+  1. [Start: 5s, Duration: 4s]
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli:      Title: SB1
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli: 
+  2. [Start: 12s, Duration: 3s]
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli:      Title: SB2
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli: 
+Generating audiogram for 1 soundbite(s)...
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-14 21:15:22,912 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: Soundbite 1: SB1
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 21:15:22,913 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: './temp/tmpu_mvjok1/segment_1.mp3'
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: ✓ vertical: ./output/ep142_sb1_nosubs_vertical.mp4
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: Generating audiogram square...
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: ✓ square: ./output/ep142_sb1_nosubs_square.mp4
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: ✓ Caption: ./output/ep142_sb1_caption.txt
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: ✓ SRT: ./output/ep142_sb1.srt
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: Audiograms successfully generated in folder: ./output
+2026-03-14 21:15:22,913 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: 
+Episode 7: Episode 7
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Audio: https://example.com/ep7.mp3
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: 
+Full audio already exists: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmptl0m8_8m/ep7.mp3
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: 
+  1. [Start: 0s, Duration: 5s]
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli:      Title: hello
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: 
+  2. [Start: 10s, Duration: 5s]
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli:      Title: world
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: 
+Generating audiograms for all 2 soundbites...
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Soundbite 1/2: hello
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 21:15:22,914 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmptl0m8_8m/tmp7owz04bz/segment_1.mp3'
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmptl0m8_8m/ep7_sb1_nosubs_vertical.mp4
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmptl0m8_8m/ep7_sb1_caption.txt
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmptl0m8_8m/ep7_sb1.srt
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Soundbite 2/2: world
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 21:15:22,914 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmptl0m8_8m/tmp7owz04bz/segment_2.mp3'
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 21:15:22,914 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmptl0m8_8m/ep7_sb2_nosubs_vertical.mp4
+2026-03-14 21:15:22,915 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 21:15:22,915 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmptl0m8_8m/ep7_sb2_caption.txt
+2026-03-14 21:15:22,915 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 21:15:22,915 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmptl0m8_8m/ep7_sb2.srt
+2026-03-14 21:15:22,915 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:15:22,915 [INFO] audiogram_generator.cli: All audiograms generated successfully into the 'output' folder!
+2026-03-14 21:15:22,915 [INFO] audiogram_generator.cli: Total: 2 soundbites × 1 formats = 2 videos
+2026-03-14 21:15:22,915 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:15:22,917 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:15:22,917 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-14 21:15:22,917 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:15:22,917 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 21:15:22,917 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 21:15:22,917 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpxksx7ntj/segment_1.mp3'
+2026-03-14 21:15:22,917 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 21:15:22,917 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpxksx7ntj/ep1_sb1_nosubs_vertical.mp4
+2026-03-14 21:15:22,917 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpxksx7ntj/ep1_sb1_caption.txt
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpxksx7ntj/ep1_sb1.srt
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 21:15:22,918 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp9kxgie2i/segment_1.mp3'
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp9kxgie2i/ep1_sb1_nosubs_vertical.mp4
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp9kxgie2i/ep1_sb1_caption.txt
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 21:15:22,918 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp9kxgie2i/ep1_sb1.srt
+2026-03-14 21:15:22,936 [INFO] audiogram_generator.services.rss: Fetching RSS feed: https://example/feed.xml
+2026-03-14 21:15:22,938 [ERROR] audiogram_generator.services.rss: Failed to fetch RSS feed from https://example/feed.xml: boom
+2026-03-14 21:15:22,938 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/bad.srt
+2026-03-14 21:15:22,940 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/bad.srt: boom
+2026-03-14 21:15:22,941 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-14 21:15:22,943 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-14 21:15:22,943 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-14 21:15:22,945 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-14 21:15:22,945 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-14 21:15:22,947 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-14 21:20:22,974 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpsw8_u4t1.png
+2026-03-14 21:20:22,976 [ERROR] audiogram_generator.services.assets: Failed to download image from https://example/image.png: network
+2026-03-14 21:20:22,977 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmphe3ow8xe.png
+2026-03-14 21:20:22,978 [DEBUG] audiogram_generator.services.assets: Image saved to /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmphe3ow8xe.png (6 bytes)
+2026-03-14 21:20:22,985 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-14 21:20:22,985 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-14 21:20:22,985 [INFO] audiogram_generator.cli: 
+Downloading full audio: https://example/audio.mp3
+2026-03-14 21:20:22,985 [INFO] audiogram_generator.cli: ✓ Full audio: ./output/ep142.mp3
+2026-03-14 21:20:22,985 [INFO] audiogram_generator.cli: Processing full transcript...
+2026-03-14 21:20:22,986 [INFO] audiogram_generator.cli: ✓ Full SRT: ./output/ep142.srt
+2026-03-14 21:20:22,986 [INFO] audiogram_generator.cli: 
+No soundbites found for this episode.
+2026-03-14 21:20:22,986 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/srt.srt
+2026-03-14 21:20:23,081 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/srt.srt: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli: 
+Full audio already exists: ./output/ep142.mp3
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-14 21:20:23,084 [WARNING] audiogram_generator.cli: Could not pre-load audio, will reload per soundbite: [Errno 2] No such file or directory: './output/ep142.mp3'
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli: 
+  1. [Start: 5s, Duration: 4s]
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli:      Title: SB1
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli: 
+  2. [Start: 12s, Duration: 3s]
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli:      Title: SB2
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:20:23,084 [INFO] audiogram_generator.cli: 
+Generating audiogram for 1 soundbite(s)...
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: Soundbite 1: SB1
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 21:20:23,085 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: './temp/tmpkpsxe63g/segment_1.mp3'
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: ✓ vertical: ./output/ep142_sb1_nosubs_vertical.mp4
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: Generating audiogram square...
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: ✓ square: ./output/ep142_sb1_nosubs_square.mp4
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: ✓ Caption: ./output/ep142_sb1_caption.txt
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: ✓ SRT: ./output/ep142_sb1.srt
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: Audiograms successfully generated in folder: ./output
+2026-03-14 21:20:23,085 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: 
+Episode 7: Episode 7
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: Audio: https://example.com/ep7.mp3
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: 
+Full audio already exists: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpoms3_owh/ep7.mp3
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: 
+  1. [Start: 0s, Duration: 5s]
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli:      Title: hello
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: 
+  2. [Start: 10s, Duration: 5s]
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli:      Title: world
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: 
+Generating audiograms for all 2 soundbites...
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: Soundbite 1/2: hello
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 21:20:23,087 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpoms3_owh/tmpcj2f37qj/segment_1.mp3'
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpoms3_owh/ep7_sb1_nosubs_vertical.mp4
+2026-03-14 21:20:23,087 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpoms3_owh/ep7_sb1_caption.txt
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpoms3_owh/ep7_sb1.srt
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: Soundbite 2/2: world
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 21:20:23,088 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpoms3_owh/tmpcj2f37qj/segment_2.mp3'
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpoms3_owh/ep7_sb2_nosubs_vertical.mp4
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpoms3_owh/ep7_sb2_caption.txt
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpoms3_owh/ep7_sb2.srt
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: All audiograms generated successfully into the 'output' folder!
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: Total: 2 soundbites × 1 formats = 2 videos
+2026-03-14 21:20:23,088 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:20:23,091 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:20:23,091 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-14 21:20:23,091 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:20:23,091 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 21:20:23,091 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 21:20:23,091 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpyc74ydam/segment_1.mp3'
+2026-03-14 21:20:23,091 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 21:20:23,091 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpyc74ydam/ep1_sb1_nosubs_vertical.mp4
+2026-03-14 21:20:23,091 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 21:20:23,091 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpyc74ydam/ep1_sb1_caption.txt
+2026-03-14 21:20:23,091 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 21:20:23,091 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpyc74ydam/ep1_sb1.srt
+2026-03-14 21:20:23,093 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 21:20:23,093 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-14 21:20:23,093 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 21:20:23,093 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 21:20:23,093 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 21:20:23,093 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpa_fzu7ko/segment_1.mp3'
+2026-03-14 21:20:23,093 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 21:20:23,093 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpa_fzu7ko/ep1_sb1_nosubs_vertical.mp4
+2026-03-14 21:20:23,093 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 21:20:23,093 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpa_fzu7ko/ep1_sb1_caption.txt
+2026-03-14 21:20:23,093 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 21:20:23,093 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpa_fzu7ko/ep1_sb1.srt
+2026-03-14 21:20:23,114 [INFO] audiogram_generator.services.rss: Fetching RSS feed: https://example/feed.xml
+2026-03-14 21:20:23,116 [ERROR] audiogram_generator.services.rss: Failed to fetch RSS feed from https://example/feed.xml: boom
+2026-03-14 21:20:23,116 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/bad.srt
+2026-03-14 21:20:23,118 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/bad.srt: boom
+2026-03-14 21:20:23,119 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-14 21:20:23,121 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-14 21:20:23,122 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-14 21:20:23,123 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-14 21:20:23,124 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-14 21:20:23,126 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-14 23:45:45,057 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpm8_50ahw.png
+2026-03-14 23:45:45,059 [ERROR] audiogram_generator.services.assets: Failed to download image from https://example/image.png: network
+2026-03-14 23:45:45,060 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp7bsh4qnx.png
+2026-03-14 23:45:45,061 [DEBUG] audiogram_generator.services.assets: Image saved to /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp7bsh4qnx.png (6 bytes)
+2026-03-14 23:45:45,069 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-14 23:45:45,069 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-14 23:45:45,069 [INFO] audiogram_generator.cli: 
+Downloading full audio: https://example/audio.mp3
+2026-03-14 23:45:45,069 [INFO] audiogram_generator.cli: ✓ Full audio: ./output/ep142.mp3
+2026-03-14 23:45:45,069 [INFO] audiogram_generator.cli: Processing full transcript...
+2026-03-14 23:45:45,070 [INFO] audiogram_generator.cli: ✓ Full SRT: ./output/ep142.srt
+2026-03-14 23:45:45,070 [INFO] audiogram_generator.cli: 
+No soundbites found for this episode.
+2026-03-14 23:45:45,071 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/srt.srt
+2026-03-14 23:45:45,163 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/srt.srt: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli: 
+Full audio already exists: ./output/ep142.mp3
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-14 23:45:45,165 [WARNING] audiogram_generator.cli: Could not pre-load audio, will reload per soundbite: [Errno 2] No such file or directory: './output/ep142.mp3'
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli: 
+  1. [Start: 5s, Duration: 4s]
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli:      Title: SB1
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli: 
+  2. [Start: 12s, Duration: 3s]
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli:      Title: SB2
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli: 
+Generating audiogram for 1 soundbite(s)...
+2026-03-14 23:45:45,165 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: Soundbite 1: SB1
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 23:45:45,166 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: './temp/tmpc2azzqj_/segment_1.mp3'
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: ✓ vertical: ./output/ep142_sb1_nosubs_vertical.mp4
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: Generating audiogram square...
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: ✓ square: ./output/ep142_sb1_nosubs_square.mp4
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: ✓ Caption: ./output/ep142_sb1_caption.txt
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: ✓ SRT: ./output/ep142_sb1.srt
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: Audiograms successfully generated in folder: ./output
+2026-03-14 23:45:45,166 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:45:45,167 [INFO] audiogram_generator.cli: 
+Episode 7: Episode 7
+2026-03-14 23:45:45,167 [INFO] audiogram_generator.cli: Audio: https://example.com/ep7.mp3
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: 
+Full audio already exists: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmppx1ji33o/ep7.mp3
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: 
+  1. [Start: 0s, Duration: 5s]
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli:      Title: hello
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: 
+  2. [Start: 10s, Duration: 5s]
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli:      Title: world
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: 
+Generating audiograms for all 2 soundbites...
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: Soundbite 1/2: hello
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 23:45:45,168 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmppx1ji33o/tmpl4yefso7/segment_1.mp3'
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmppx1ji33o/ep7_sb1_nosubs_vertical.mp4
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmppx1ji33o/ep7_sb1_caption.txt
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmppx1ji33o/ep7_sb1.srt
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: Soundbite 2/2: world
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 23:45:45,168 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmppx1ji33o/tmpl4yefso7/segment_2.mp3'
+2026-03-14 23:45:45,168 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 23:45:45,169 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmppx1ji33o/ep7_sb2_nosubs_vertical.mp4
+2026-03-14 23:45:45,169 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 23:45:45,169 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmppx1ji33o/ep7_sb2_caption.txt
+2026-03-14 23:45:45,169 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 23:45:45,169 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmppx1ji33o/ep7_sb2.srt
+2026-03-14 23:45:45,169 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:45:45,169 [INFO] audiogram_generator.cli: All audiograms generated successfully into the 'output' folder!
+2026-03-14 23:45:45,169 [INFO] audiogram_generator.cli: Total: 2 soundbites × 1 formats = 2 videos
+2026-03-14 23:45:45,169 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:45:45,172 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:45:45,172 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-14 23:45:45,172 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:45:45,172 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 23:45:45,172 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 23:45:45,172 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwsa404k4/segment_1.mp3'
+2026-03-14 23:45:45,172 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 23:45:45,173 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwsa404k4/ep1_sb1_nosubs_vertical.mp4
+2026-03-14 23:45:45,173 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 23:45:45,173 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwsa404k4/ep1_sb1_caption.txt
+2026-03-14 23:45:45,173 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 23:45:45,173 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwsa404k4/ep1_sb1.srt
+2026-03-14 23:45:45,174 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:45:45,174 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-14 23:45:45,174 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:45:45,174 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 23:45:45,174 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 23:45:45,174 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp8q86m5v9/segment_1.mp3'
+2026-03-14 23:45:45,174 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 23:45:45,174 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp8q86m5v9/ep1_sb1_nosubs_vertical.mp4
+2026-03-14 23:45:45,174 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 23:45:45,175 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp8q86m5v9/ep1_sb1_caption.txt
+2026-03-14 23:45:45,175 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 23:45:45,175 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp8q86m5v9/ep1_sb1.srt
+2026-03-14 23:45:45,196 [INFO] audiogram_generator.services.rss: Fetching RSS feed: https://example/feed.xml
+2026-03-14 23:45:45,198 [ERROR] audiogram_generator.services.rss: Failed to fetch RSS feed from https://example/feed.xml: boom
+2026-03-14 23:45:45,198 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/bad.srt
+2026-03-14 23:45:45,200 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/bad.srt: boom
+2026-03-14 23:45:45,201 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-14 23:45:45,203 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-14 23:45:45,204 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-14 23:45:45,205 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-14 23:45:45,206 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-14 23:45:45,207 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-14 23:48:42,281 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpqm4r89qx.png
+2026-03-14 23:48:42,283 [ERROR] audiogram_generator.services.assets: Failed to download image from https://example/image.png: network
+2026-03-14 23:48:42,283 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpyy400qts.png
+2026-03-14 23:48:42,285 [DEBUG] audiogram_generator.services.assets: Image saved to /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpyy400qts.png (6 bytes)
+2026-03-14 23:48:42,293 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-14 23:48:42,293 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-14 23:48:42,293 [INFO] audiogram_generator.cli: 
+Downloading full audio: https://example/audio.mp3
+2026-03-14 23:48:42,293 [INFO] audiogram_generator.cli: ✓ Full audio: ./output/ep142.mp3
+2026-03-14 23:48:42,293 [INFO] audiogram_generator.cli: Processing full transcript...
+2026-03-14 23:48:42,293 [INFO] audiogram_generator.cli: ✓ Full SRT: ./output/ep142.srt
+2026-03-14 23:48:42,293 [INFO] audiogram_generator.cli: 
+No soundbites found for this episode.
+2026-03-14 23:48:42,294 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/srt.srt
+2026-03-14 23:48:42,302 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/srt.srt: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+2026-03-14 23:48:42,303 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-14 23:48:42,303 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-14 23:48:42,303 [INFO] audiogram_generator.cli: 
+Full audio already exists: ./output/ep142.mp3
+2026-03-14 23:48:42,303 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-14 23:48:42,303 [WARNING] audiogram_generator.cli: Could not pre-load audio, will reload per soundbite: [Errno 2] No such file or directory: './output/ep142.mp3'
+2026-03-14 23:48:42,303 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-14 23:48:42,303 [INFO] audiogram_generator.cli: 
+  1. [Start: 5s, Duration: 4s]
+2026-03-14 23:48:42,303 [INFO] audiogram_generator.cli:      Title: SB1
+2026-03-14 23:48:42,303 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 23:48:42,303 [INFO] audiogram_generator.cli: 
+  2. [Start: 12s, Duration: 3s]
+2026-03-14 23:48:42,303 [INFO] audiogram_generator.cli:      Title: SB2
+2026-03-14 23:48:42,303 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 23:48:42,303 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: 
+Generating audiogram for 1 soundbite(s)...
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: Soundbite 1: SB1
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 23:48:42,304 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: './temp/tmpkmgna8s0/segment_1.mp3'
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: ✓ vertical: ./output/ep142_sb1_nosubs_vertical.mp4
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: Generating audiogram square...
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: ✓ square: ./output/ep142_sb1_nosubs_square.mp4
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: ✓ Caption: ./output/ep142_sb1_caption.txt
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: ✓ SRT: ./output/ep142_sb1.srt
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: Audiograms successfully generated in folder: ./output
+2026-03-14 23:48:42,304 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli: 
+Episode 7: Episode 7
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli: Audio: https://example.com/ep7.mp3
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli: 
+Full audio already exists: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpim960rbm/ep7.mp3
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli: 
+  1. [Start: 0s, Duration: 5s]
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli:      Title: hello
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli: 
+  2. [Start: 10s, Duration: 5s]
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli:      Title: world
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli: 
+Generating audiograms for all 2 soundbites...
+2026-03-14 23:48:42,305 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Soundbite 1/2: hello
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 23:48:42,306 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpim960rbm/tmpef7s9drj/segment_1.mp3'
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpim960rbm/ep7_sb1_nosubs_vertical.mp4
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpim960rbm/ep7_sb1_caption.txt
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpim960rbm/ep7_sb1.srt
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Soundbite 2/2: world
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 23:48:42,306 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpim960rbm/tmpef7s9drj/segment_2.mp3'
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpim960rbm/ep7_sb2_nosubs_vertical.mp4
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpim960rbm/ep7_sb2_caption.txt
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpim960rbm/ep7_sb2.srt
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: All audiograms generated successfully into the 'output' folder!
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: Total: 2 soundbites × 1 formats = 2 videos
+2026-03-14 23:48:42,306 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:48:42,309 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:48:42,309 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-14 23:48:42,309 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:48:42,309 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 23:48:42,309 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 23:48:42,309 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpnd2oqxvg/segment_1.mp3'
+2026-03-14 23:48:42,309 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 23:48:42,309 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpnd2oqxvg/ep1_sb1_nosubs_vertical.mp4
+2026-03-14 23:48:42,309 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 23:48:42,310 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpnd2oqxvg/ep1_sb1_caption.txt
+2026-03-14 23:48:42,310 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 23:48:42,310 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpnd2oqxvg/ep1_sb1.srt
+2026-03-14 23:48:42,311 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:48:42,311 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-14 23:48:42,311 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:48:42,311 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 23:48:42,311 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 23:48:42,311 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpm5og9mot/segment_1.mp3'
+2026-03-14 23:48:42,311 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-14 23:48:42,311 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpm5og9mot/ep1_sb1_nosubs_vertical.mp4
+2026-03-14 23:48:42,311 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 23:48:42,311 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpm5og9mot/ep1_sb1_caption.txt
+2026-03-14 23:48:42,311 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 23:48:42,311 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpm5og9mot/ep1_sb1.srt
+2026-03-14 23:48:42,330 [INFO] audiogram_generator.services.rss: Fetching RSS feed: https://example/feed.xml
+2026-03-14 23:48:42,332 [ERROR] audiogram_generator.services.rss: Failed to fetch RSS feed from https://example/feed.xml: boom
+2026-03-14 23:48:42,332 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/bad.srt
+2026-03-14 23:48:42,334 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/bad.srt: boom
+2026-03-14 23:48:42,335 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-14 23:48:42,337 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-14 23:48:42,337 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-14 23:48:42,339 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-14 23:48:42,339 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-14 23:48:42,341 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-14 23:51:17,048 [INFO] audiogram_generator.cli: 
+Fetching episodes from feed...
+2026-03-14 23:51:17,048 [INFO] audiogram_generator.services.rss: Fetching RSS feed: https://pensieriincodice.it/podcast/index.xml
+2026-03-14 23:51:18,288 [DEBUG] audiogram_generator.services.rss: Fetched 1704779 bytes of feed XML
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: Podcast: Pensieri in codice
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: Artwork: https://cdn.pensieriincodice.it/images/pensieriincodice-locandina.png
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 
+Found 148 episodes:
+
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 1. Perché tutti dovremmo imparare a programmare?
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 2. I 10 bug più costosi della storia
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 3. Consigli per la privacy online
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 4. Il sito fai-da-te? Sicuri che conviene?
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 5. La qualità del codice
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 6. Gli strati del Web
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 7. La filosofia dell'ipertesto
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 8. 10, 100, 1000 password e come archiviarle
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 9. Vecchi post, identità digitale e sé sociale
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 10. Come creare data breach per errore
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 11. Recensione informatica di Black Mirror stagione 5 feat. FREKT
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 12. La storia del Kibibyte
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 13. Le origini della tastiera QWERTY
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 14. 3 trucchi informatici per aiutare l'ambiente
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 15. Informatica Vintage - Olivetti Programma 101: il primo computer da tavolo
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 16. L'algoritmo di compressione (ZIP, JPEG, MP3)
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 17. Introduzione al Refactoring: migliorare il codice esistente
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 18. Crittografia e Informatica. Storia di un rapporto simbiotico
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 19. Informatica Vintage - Word Processor: dagli albori ai giorni nostri
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 20. L'algoritmo della crittografia a chiave pubblica
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 21. Anatomia di un sito Web
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 22. DevOps: cos'è e perché adottarla
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 23. Informatica Vintage - La nascita di Play-Doh: pensare fuori dagli schemi
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 24. Algoritmi di correzione degli errori (Holidaily Cogito edition)
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 25. Da WordPress a Hugo: cronache di una conversione
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 26. Gli strani nomi dei linguaggi di programmazione
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 27. Informatica Vintage - Il linguaggio di programmazione Fortran
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 28. Introduzione al Pair Programming: programmare in coppia
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 29. Smart Working senza stress
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 30. Gli algoritmi di indicizzazione dei motori di ricerca
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 31. Informatica Vintage - Visual Basic: gloria, declino e...
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 32. L'algoritmo PageRank di Google
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 33. Consigli di lettura
+2026-03-14 23:51:18,683 [INFO] audiogram_generator.cli: 34. Clienti fantastici e come evitarli
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 35. La tecnica del Pomodoro
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 36. E se ti chiudono l'affiliazione Amazon?
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 37. Sviluppare progetti in locale con Docker
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 38. La filosofia della programmazione in WordPress
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 39. Verso PHP 8
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 40. Data breach Consorzio Unico Campania
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 41. Chatbot: le interfacce del futuro
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 42. Perché non hai WhatsApp?
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 43. Perché ci sono bug nei software?
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 44. Il protocollo HTTPS
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 45. Il protocollo HTTPS (seconda parte)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 46. Le mie prime impressioni su Deno
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 47. Consigli per migliorare la Didattica a distanza (e le videoconferenze in generale)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 48. Gironi infernali per sviluppatori (risposta a Mich Murabito di DevelopersLife)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 49. Web Cache e CDN
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 50. Speciale di Natale 2020 - Come sarebbe il mondo senza condivisione
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 51. La foto del nostro... gatto
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 52. Buoni propositi e come rispettarli
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 53. Il vaccino BioNTech/Pfizer spiegato ad un informatico
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 54. Il cuggino (feat. Vita da informatici)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 55. Gli antenati del computer
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 56. Come ragiona un ascensore? (con Rinaldo Papa di Ascensori e dintorni)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 57. La strana storia del processore ARM
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 58. Condividere in sicurezza informazioni e identità: Oauth 2.0 e OpenID Connect
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 59. Cosa sono Scraping e Sim swapping? (con Walter Vannini di Dataknightmare)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 60. Dependency Confusion: come hackerare oltre 35 aziende con un solo attacco
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 61. Pubblicità traccianti: come fanno i banner a seguirci da un sito all'altro?
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 62. Perché il codice fa schifo
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 63. Uomini e algoritmi
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 64. Dark Patterns: cosa sono e come funzionano
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 65. Snippet - La DARPA Grand Challenge
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 66. Un hacker non è un criminale
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 67. Espresso - Deep thinking (Garry Kasparov)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 68. Consigli per sviluppare soluzioni in WordPress
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 69. Snippet - SPAM SPAM SPAM
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 70. Sistemi di raccomandazione: algoritmi dalla precisione sorprendente
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 71. Espresso - Il mio desktop set: Logitech MX Keys e Vertical
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 72. Il debug: una questione di metodo e strumenti
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 73. Snippet - Le prime raccolte di dati personali
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 74. Colleghi fantastici e come evitarli
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 75. Espresso - Hello World (Hannah Fry)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 76. Snippet - Dallo Sputnik al Lo...gin
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 77. Snippet - L'origine della parola "cifrare"
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 78. Imparare a programmare (con Alessandro, Eugenio e Luca del PointerPodcast)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 79. Espresso - Todoist
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 80. Speciale - Imparare a programmare [community edition] (con Sirio Negri e Alex Raccuglia)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 81. Snippet - Ada Lovelace: la prima programmatrice della storia
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 82. Com'è fatto un attacco Ransomware
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 83. Espresso - De/cifrare (Mark Frary)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 84. Cartografia digitale e visione del Mondo
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 85. Snippet - L'origine del bit e della cibernetica
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 86. Snippet - y2038
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 87. Espresso - 4 libri (non sull'informatica)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 88. Github Copilot: i miei primi 4 mesi di utilizzo quotidiano
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 89. Snippet - Algoritmo, algebra e numeri arabi
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 90. La strada verso la Guida Autonoma
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 91. Espresso - ProtonMail (& ProtonVPN)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 92. La crittografia omomorfica
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 93. SEO Poisoning: come funziona e perché
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 94. Il Basilisco di Roko
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 95. Proteste e sabotaggi del software Open Source (con Daniele Scasciafratte)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 96. Snippet - Bluetooth: l'origine del nome
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 97. Attacco Browser In The Browser (BITB)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 98. Snippet - The Book of Mozilla
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 99. Espresso - Drink Manager
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 100. Essere uno sviluppatore iOS (con Alex Raccuglia di Ulti.media)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 101. Snippet - Il computer ad acqua (Water Integrator)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 102. Snippet - INTERCAL
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 103. Attacco pre-hijacking: rubare account che ancora non esistono
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 104. Snippet - La tastiera Dvorak
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 105. Snippet - La trackball
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 106. Snippet - Il primo collegamento ad Internet italiano. Era il 30/04/1986
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 107. Il futuro di Pensieri in codice
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 108. Dopamina e ricompense: come le app hackerano il nostro cervello
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 109. Espresso - Respiro & Storie della tua vita (Ted Chiang)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 110. Hedy Lamarr e la nascita del Wi-Fi (prima parte)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 111. Espresso - L'era della dopamina (Anna Lembke)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 112. Hedy Lamarr e la nascita del Wi-Fi (seconda parte)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 113. Algoritmo tit-for-tat e protocollo BitTorrent
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 114. Snippet - Il Problema del Commesso Viaggiatore (TSP)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 115. Snippet - I problemi di ottimizzazione (il Problema del Commesso Viaggiatore errata corrige)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 116. Second brain: il mio nuovo fiammante secondo cervello
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 117. Riflessioni dall'Open Source Day 2023
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 118. Come funziona ChatGPT (o un Large Language Model in generale)?
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 119. AlphaDev, l'IA che ha inventato un nuovo algoritmo di ordinamento: una storia di reinforcement learning
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 120. Le lettere di Mary Stuart e l'algoritmo di Hill climbing
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 121. Ada Lovelace, la prima programmatrice della storia (Parte 1 di 3)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 122. La trappola della semplicità (riflessioni dal containerday 2023)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 123. Ada Lovelace, la prima programmatrice della storia (Parte 2 di 3)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 124. Ada Lovelace, la prima programmatrice della storia (Parte 3 di 3)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 125. Come funzionano la PEC e la REM? (con Francesco Tucci di Pillole di bit)
+2026-03-14 23:51:18,684 [INFO] audiogram_generator.cli: 126. Come funzionano e come utilizzare al meglio 2FA e One-Time-Password
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 127. Isaac Asimov - Tutti i problemi del mondo - Lettura e riflessioni
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 128. Multitasking ed effetto Zeigarnik: come sfruttare le interruzioni a proprio vantaggio
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 129. Notifiche push e privacy: dal funzionamento ai potenziali rischi
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 130. Tetris: come si finisce un gioco infinito?
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 131. Isaac Asimov - Intuito Femminile - Lettura e riflessioni
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 132. Casualità in Informatica: come si generano i numeri casuali?
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 133. Perché tutti odiano PHP
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 134. AI Poisoning: avvelenare un'Intelligenza Artificiale
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 135. Cryptovalute (con Andrea Venturelli di Decrypto)
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 136. Vibe coding
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 137. Il colore Chuck Norris e la legge di Postel
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 138. CE - Alex Raccuglia - L'impatto dell'IA sulla produzione di uno spot televisivo (Parte 1 di 4)
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 139. CE - Alex Raccuglia - L'impatto dell'IA sulla produzione di uno spot televisivo (Parte 2 di 4)
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 140. CE - Alex Raccuglia - L'impatto dell'IA sulla produzione di uno spot televisivo (Parte 3 di 4)
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 141. CE - Alex Raccuglia - L'impatto dell'IA sulla produzione di uno spot televisivo (Parte 4 di 4)
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 142. Perché non possiamo fidarci dell'Intelligenza Artificiale: allucianzioni, sicofantia e menzogne
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 143. C'era una volta l'Intelligenza Artificiale in Trentino
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 144. CE - Giuseppe Pugliese in Il Plugin Maledetto - Cronaca di un attacco notturno
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 145. CE - Alex Ordiner - L'audio: dietro le quinte di un evento dal vivo
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 146. I miei strumenti per l'organizzazione e la produttività
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 147. Ho provato il vibe coding
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 148. Elea 9003 - Il primo calcolatore elettronico commerciale italiano
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 
+Episode 148: Elea 9003 - Il primo calcolatore elettronico commerciale italiano
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: Audio: https://op3.dev/e/cdn.pensieriincodice.it/episodes/PIC148.mp3
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: 
+Full audio already exists: ./output/ep148.mp3
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.cli: Processing full transcript...
+2026-03-14 23:51:18,685 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://cdn.pensieriincodice.it/transcripts/PIC148.srt
+2026-03-14 23:51:18,955 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 36885 chars
+2026-03-14 23:51:18,956 [INFO] audiogram_generator.cli: ✓ Full SRT: ./output/ep148.srt
+2026-03-14 23:51:18,957 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-14 23:51:20,284 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-14 23:51:20,284 [INFO] audiogram_generator.cli: 
+  1. [Start: 126.08s, Duration: 60.00s]
+2026-03-14 23:51:20,284 [INFO] audiogram_generator.cli:      Title: Olivetti, visione umanistica e progresso
+2026-03-14 23:51:20,284 [INFO] audiogram_generator.cli:      Text:  Questa storia ha inizio a Divrea, una cittadina piemontese situata quasi al confine con la Valle d'...
+2026-03-14 23:51:20,284 [INFO] audiogram_generator.cli: 
+  2. [Start: 748.24s, Duration: 70.21s]
+2026-03-14 23:51:20,284 [INFO] audiogram_generator.cli:      Title: Innovazione nasce da libertà e sperimentazione
+2026-03-14 23:51:20,285 [INFO] audiogram_generator.cli:      Text:  C'è un'altra figura al tempo in azienda che potrebbe ricoprire il ruolo di direttore e coordinatore...
+2026-03-14 23:51:20,285 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:51:20,285 [INFO] audiogram_generator.cli: 
+Generating audiograms for all 2 soundbites...
+2026-03-14 23:51:20,285 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-14 23:51:20,285 [INFO] audiogram_generator.services.assets: Downloading image: https://cdn.pensieriincodice.it/covers/PIC148.png -> ./temp/tmp12uxq727/logo.png
+2026-03-14 23:51:22,060 [DEBUG] audiogram_generator.services.assets: Image saved to ./temp/tmp12uxq727/logo.png (2567422 bytes)
+2026-03-14 23:51:22,060 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:51:22,060 [INFO] audiogram_generator.cli: Soundbite 1/2: Olivetti, visione umanistica e progresso
+2026-03-14 23:51:22,060 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:51:22,060 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 23:51:22,510 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 23:51:22,511 [INFO] audiogram_generator.cli: ✓ Audio: ./output/ep148_sb1.mp3
+2026-03-14 23:51:22,511 [INFO] audiogram_generator.cli: Generating audiogram Verticale 9:16 (Reels, Stories, Shorts, TikTok)...
+2026-03-14 23:51:22,512 [INFO] audiogram_generator.video_generator:   - Extracting waveform...
+2026-03-14 23:51:22,611 [INFO] audiogram_generator.video_generator:   - Pre-loading logo...
+2026-03-14 23:51:22,651 [INFO] audiogram_generator.video_generator:   - Pre-computing transcript layout...
+2026-03-14 23:51:22,654 [INFO] audiogram_generator.video_generator:   - Pre-computing header layout...
+2026-03-14 23:51:22,658 [INFO] audiogram_generator.video_generator:   - Video frame generation...
+2026-03-14 23:51:22,663 [INFO] audiogram_generator.video_generator:   - Adding audio...
+2026-03-14 23:51:22,712 [INFO] audiogram_generator.video_generator:   - Rendering video...
+2026-03-14 23:51:30,289 [INFO] audiogram_generator.cli: ✓ vertical: ./output/ep148_sb1_nosubs_vertical.mp4
+2026-03-14 23:51:30,289 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 23:51:30,289 [INFO] audiogram_generator.cli: ✓ Caption: ./output/ep148_sb1_caption.txt
+2026-03-14 23:51:30,289 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 23:51:30,289 [INFO] audiogram_generator.cli: ✓ SRT: ./output/ep148_sb1.srt
+2026-03-14 23:51:30,289 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:51:30,289 [INFO] audiogram_generator.cli: Soundbite 2/2: Innovazione nasce da libertà e sperimentazione
+2026-03-14 23:51:30,289 [INFO] audiogram_generator.cli: ============================================================
+2026-03-14 23:51:30,289 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-14 23:51:30,779 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-14 23:51:30,781 [INFO] audiogram_generator.cli: ✓ Audio: ./output/ep148_sb2.mp3
+2026-03-14 23:51:30,781 [INFO] audiogram_generator.cli: Generating audiogram Verticale 9:16 (Reels, Stories, Shorts, TikTok)...
+2026-03-14 23:51:30,781 [INFO] audiogram_generator.video_generator:   - Extracting waveform...
+2026-03-14 23:51:30,874 [INFO] audiogram_generator.video_generator:   - Pre-loading logo...
+2026-03-14 23:51:30,889 [INFO] audiogram_generator.video_generator:   - Pre-computing transcript layout...
+2026-03-14 23:51:30,889 [INFO] audiogram_generator.video_generator:   - Pre-computing header layout...
+2026-03-14 23:51:30,893 [INFO] audiogram_generator.video_generator:   - Video frame generation...
+2026-03-14 23:51:30,897 [INFO] audiogram_generator.video_generator:   - Adding audio...
+2026-03-14 23:51:30,925 [INFO] audiogram_generator.video_generator:   - Rendering video...
+2026-03-14 23:51:39,455 [INFO] audiogram_generator.cli: ✓ vertical: ./output/ep148_sb2_nosubs_vertical.mp4
+2026-03-14 23:51:39,455 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-14 23:51:39,455 [INFO] audiogram_generator.cli: ✓ Caption: ./output/ep148_sb2_caption.txt
+2026-03-14 23:51:39,455 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-14 23:51:39,455 [INFO] audiogram_generator.cli: ✓ SRT: ./output/ep148_sb2.srt
+2026-03-14 23:51:39,455 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-14 23:51:39,455 [INFO] audiogram_generator.cli: All audiograms generated successfully into the 'output' folder!
+2026-03-14 23:51:39,455 [INFO] audiogram_generator.cli: Total: 2 soundbites × 1 formats = 2 videos
+2026-03-14 23:51:39,455 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:03:50,617 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp1tmzk5i3.png
+2026-03-15 00:03:50,619 [ERROR] audiogram_generator.services.assets: Failed to download image from https://example/image.png: network
+2026-03-15 00:03:50,620 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp3v5chhb6.png
+2026-03-15 00:03:50,621 [DEBUG] audiogram_generator.services.assets: Image saved to /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp3v5chhb6.png (6 bytes)
+2026-03-15 00:03:50,629 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-15 00:03:50,629 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-15 00:03:50,629 [INFO] audiogram_generator.cli: 
+Downloading full audio: https://example/audio.mp3
+2026-03-15 00:03:50,629 [INFO] audiogram_generator.cli: ✓ Full audio: ./output/ep142.mp3
+2026-03-15 00:03:50,629 [INFO] audiogram_generator.cli: Processing full transcript...
+2026-03-15 00:03:50,629 [INFO] audiogram_generator.cli: ✓ Full SRT: ./output/ep142.srt
+2026-03-15 00:03:50,629 [INFO] audiogram_generator.cli: 
+No soundbites found for this episode.
+2026-03-15 00:03:50,666 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/srt.srt
+2026-03-15 00:03:50,674 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/srt.srt: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: 
+Full audio already exists: ./output/ep142.mp3
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-15 00:03:50,676 [WARNING] audiogram_generator.cli: Could not pre-load audio, will reload per soundbite: [Errno 2] No such file or directory: './output/ep142.mp3'
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: 
+  1. [Start: 5s, Duration: 4s]
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli:      Title: SB1
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: 
+  2. [Start: 12s, Duration: 3s]
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli:      Title: SB2
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: 
+Generating audiogram for 1 soundbite(s)...
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: Soundbite 1: SB1
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:03:50,676 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: './temp/tmpw_wvv48w/segment_1.mp3'
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: ✓ vertical: ./output/ep142_sb1_nosubs_vertical.mp4
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: Generating audiogram square...
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: ✓ square: ./output/ep142_sb1_nosubs_square.mp4
+2026-03-15 00:03:50,676 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:03:50,677 [INFO] audiogram_generator.cli: ✓ Caption: ./output/ep142_sb1_caption.txt
+2026-03-15 00:03:50,677 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:03:50,677 [INFO] audiogram_generator.cli: ✓ SRT: ./output/ep142_sb1.srt
+2026-03-15 00:03:50,677 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:03:50,677 [INFO] audiogram_generator.cli: Audiograms successfully generated in folder: ./output
+2026-03-15 00:03:50,677 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: 
+Episode 7: Episode 7
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: Audio: https://example.com/ep7.mp3
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: 
+Full audio already exists: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpai6pgw3h/ep7.mp3
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: 
+  1. [Start: 0s, Duration: 5s]
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli:      Title: hello
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: 
+  2. [Start: 10s, Duration: 5s]
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli:      Title: world
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: 
+Generating audiograms for all 2 soundbites...
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: Soundbite 1/2: hello
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:03:50,678 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpai6pgw3h/tmpybyloxqd/segment_1.mp3'
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpai6pgw3h/ep7_sb1_nosubs_vertical.mp4
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpai6pgw3h/ep7_sb1_caption.txt
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpai6pgw3h/ep7_sb1.srt
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: Soundbite 2/2: world
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:03:50,678 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:03:50,679 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpai6pgw3h/tmpybyloxqd/segment_2.mp3'
+2026-03-15 00:03:50,679 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:03:50,679 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpai6pgw3h/ep7_sb2_nosubs_vertical.mp4
+2026-03-15 00:03:50,679 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:03:50,679 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpai6pgw3h/ep7_sb2_caption.txt
+2026-03-15 00:03:50,679 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:03:50,679 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpai6pgw3h/ep7_sb2.srt
+2026-03-15 00:03:50,679 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:03:50,679 [INFO] audiogram_generator.cli: All audiograms generated successfully into the 'output' folder!
+2026-03-15 00:03:50,679 [INFO] audiogram_generator.cli: Total: 2 soundbites × 1 formats = 2 videos
+2026-03-15 00:03:50,679 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:03:50,681 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:03:50,681 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-15 00:03:50,681 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:03:50,681 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:03:50,681 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:03:50,681 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp110oodrn/segment_1.mp3'
+2026-03-15 00:03:50,681 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:03:50,681 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp110oodrn/ep1_sb1_nosubs_vertical.mp4
+2026-03-15 00:03:50,681 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:03:50,681 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp110oodrn/ep1_sb1_caption.txt
+2026-03-15 00:03:50,681 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:03:50,681 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp110oodrn/ep1_sb1.srt
+2026-03-15 00:03:50,682 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:03:50,682 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-15 00:03:50,682 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:03:50,682 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:03:50,682 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:03:50,682 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp6eq13fxl/segment_1.mp3'
+2026-03-15 00:03:50,682 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:03:50,682 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp6eq13fxl/ep1_sb1_nosubs_vertical.mp4
+2026-03-15 00:03:50,682 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:03:50,682 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp6eq13fxl/ep1_sb1_caption.txt
+2026-03-15 00:03:50,682 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:03:50,682 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp6eq13fxl/ep1_sb1.srt
+2026-03-15 00:03:50,700 [INFO] audiogram_generator.services.rss: Fetching RSS feed: https://example/feed.xml
+2026-03-15 00:03:50,701 [ERROR] audiogram_generator.services.rss: Failed to fetch RSS feed from https://example/feed.xml: boom
+2026-03-15 00:03:50,702 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/bad.srt
+2026-03-15 00:03:50,703 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/bad.srt: boom
+2026-03-15 00:03:50,705 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-15 00:03:50,706 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-15 00:03:50,707 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-15 00:03:50,708 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-15 00:03:50,709 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-15 00:03:50,710 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-15 00:04:17,605 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-15 00:04:17,605 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-15 00:04:17,605 [INFO] audiogram_generator.cli: 
+Downloading full audio: https://example/audio.mp3
+2026-03-15 00:04:17,605 [INFO] audiogram_generator.cli: ✓ Full audio: ./output/ep142.mp3
+2026-03-15 00:04:17,605 [INFO] audiogram_generator.cli: Processing full transcript...
+2026-03-15 00:04:17,605 [INFO] audiogram_generator.cli: ✓ Full SRT: ./output/ep142.srt
+2026-03-15 00:04:17,605 [INFO] audiogram_generator.cli: 
+No soundbites found for this episode.
+2026-03-15 00:07:53,659 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmps94gyy99.png
+2026-03-15 00:07:53,661 [ERROR] audiogram_generator.services.assets: Failed to download image from https://example/image.png: network
+2026-03-15 00:07:53,662 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpcbwrmcqq.png
+2026-03-15 00:07:53,664 [DEBUG] audiogram_generator.services.assets: Image saved to /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpcbwrmcqq.png (6 bytes)
+2026-03-15 00:07:53,670 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-15 00:07:53,670 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-15 00:07:53,670 [INFO] audiogram_generator.cli: 
+Downloading full audio: https://example/audio.mp3
+2026-03-15 00:07:53,670 [INFO] audiogram_generator.cli: ✓ Full audio: ./output/ep142.mp3
+2026-03-15 00:07:53,670 [INFO] audiogram_generator.cli: Processing full transcript...
+2026-03-15 00:07:53,671 [INFO] audiogram_generator.cli: ✓ Full SRT: ./output/ep142.srt
+2026-03-15 00:07:53,671 [INFO] audiogram_generator.cli: 
+No soundbites found for this episode.
+2026-03-15 00:07:53,671 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/srt.srt
+2026-03-15 00:07:53,679 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/srt.srt: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+2026-03-15 00:07:53,680 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-15 00:07:53,680 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-15 00:07:53,680 [INFO] audiogram_generator.cli: 
+Full audio already exists: ./output/ep142.mp3
+2026-03-15 00:07:53,680 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-15 00:07:53,680 [WARNING] audiogram_generator.cli: Could not pre-load audio, will reload per soundbite: [Errno 2] No such file or directory: './output/ep142.mp3'
+2026-03-15 00:07:53,680 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-15 00:07:53,680 [INFO] audiogram_generator.cli: 
+  1. [Start: 5s, Duration: 4s]
+2026-03-15 00:07:53,680 [INFO] audiogram_generator.cli:      Title: SB1
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: 
+  2. [Start: 12s, Duration: 3s]
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli:      Title: SB2
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: 
+Generating audiogram for 1 soundbite(s)...
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: Soundbite 1: SB1
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:07:53,681 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: './temp/tmpfk_ht7on/segment_1.mp3'
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: ✓ vertical: ./output/ep142_sb1_nosubs_vertical.mp4
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: Generating audiogram square...
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: ✓ square: ./output/ep142_sb1_nosubs_square.mp4
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: ✓ Caption: ./output/ep142_sb1_caption.txt
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: ✓ SRT: ./output/ep142_sb1.srt
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: Audiograms successfully generated in folder: ./output
+2026-03-15 00:07:53,681 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: 
+Episode 7: Episode 7
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: Audio: https://example.com/ep7.mp3
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: 
+Full audio already exists: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp482uytxe/ep7.mp3
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: 
+  1. [Start: 0s, Duration: 5s]
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli:      Title: hello
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: 
+  2. [Start: 10s, Duration: 5s]
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli:      Title: world
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: 
+Generating audiograms for all 2 soundbites...
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: Soundbite 1/2: hello
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:07:53,682 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:07:53,683 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp482uytxe/tmpwmyy1wnl/segment_1.mp3'
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp482uytxe/ep7_sb1_nosubs_vertical.mp4
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp482uytxe/ep7_sb1_caption.txt
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp482uytxe/ep7_sb1.srt
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: Soundbite 2/2: world
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:07:53,683 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp482uytxe/tmpwmyy1wnl/segment_2.mp3'
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp482uytxe/ep7_sb2_nosubs_vertical.mp4
+2026-03-15 00:07:53,683 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:07:53,684 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp482uytxe/ep7_sb2_caption.txt
+2026-03-15 00:07:53,684 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:07:53,684 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp482uytxe/ep7_sb2.srt
+2026-03-15 00:07:53,684 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:07:53,684 [INFO] audiogram_generator.cli: All audiograms generated successfully into the 'output' folder!
+2026-03-15 00:07:53,684 [INFO] audiogram_generator.cli: Total: 2 soundbites × 1 formats = 2 videos
+2026-03-15 00:07:53,684 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:07:53,686 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:07:53,686 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-15 00:07:53,686 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:07:53,686 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:07:53,686 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:07:53,686 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpql3ylyl9/segment_1.mp3'
+2026-03-15 00:07:53,686 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:07:53,686 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpql3ylyl9/ep1_sb1_nosubs_vertical.mp4
+2026-03-15 00:07:53,686 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:07:53,686 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpql3ylyl9/ep1_sb1_caption.txt
+2026-03-15 00:07:53,686 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:07:53,686 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpql3ylyl9/ep1_sb1.srt
+2026-03-15 00:07:53,687 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:07:53,687 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-15 00:07:53,687 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:07:53,687 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:07:53,687 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:07:53,687 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpxzfifehx/segment_1.mp3'
+2026-03-15 00:07:53,687 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:07:53,687 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpxzfifehx/ep1_sb1_nosubs_vertical.mp4
+2026-03-15 00:07:53,687 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:07:53,687 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpxzfifehx/ep1_sb1_caption.txt
+2026-03-15 00:07:53,687 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:07:53,687 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpxzfifehx/ep1_sb1.srt
+2026-03-15 00:07:53,704 [INFO] audiogram_generator.services.rss: Fetching RSS feed: https://example/feed.xml
+2026-03-15 00:07:53,706 [ERROR] audiogram_generator.services.rss: Failed to fetch RSS feed from https://example/feed.xml: boom
+2026-03-15 00:07:53,706 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/bad.srt
+2026-03-15 00:07:53,708 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/bad.srt: boom
+2026-03-15 00:07:53,709 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-15 00:07:53,711 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-15 00:07:53,711 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-15 00:07:53,713 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-15 00:07:53,713 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-15 00:07:53,715 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-15 00:19:31,573 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmp53g7179f.png
+2026-03-15 00:19:31,575 [ERROR] audiogram_generator.services.assets: Failed to download image from https://example/image.png: network
+2026-03-15 00:19:31,576 [INFO] audiogram_generator.services.assets: Downloading image: https://example/image.png -> /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpinl_2t3u.png
+2026-03-15 00:19:31,577 [DEBUG] audiogram_generator.services.assets: Image saved to /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpinl_2t3u.png (6 bytes)
+2026-03-15 00:19:31,585 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-15 00:19:31,585 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-15 00:19:31,585 [INFO] audiogram_generator.cli: 
+Downloading full audio: https://example/audio.mp3
+2026-03-15 00:19:31,585 [INFO] audiogram_generator.cli: ✓ Full audio: ./output/ep142.mp3
+2026-03-15 00:19:31,585 [INFO] audiogram_generator.cli: Processing full transcript...
+2026-03-15 00:19:31,586 [INFO] audiogram_generator.cli: ✓ Full SRT: ./output/ep142.srt
+2026-03-15 00:19:31,586 [INFO] audiogram_generator.cli: 
+No soundbites found for this episode.
+2026-03-15 00:19:31,586 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/srt.srt
+2026-03-15 00:19:31,595 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/srt.srt: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+2026-03-15 00:19:31,596 [INFO] audiogram_generator.cli: 
+Episode 142: Episode title
+2026-03-15 00:19:31,596 [INFO] audiogram_generator.cli: Audio: https://example/audio.mp3
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: 
+Full audio already exists: ./output/ep142.mp3
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-15 00:19:31,597 [WARNING] audiogram_generator.cli: Could not pre-load audio, will reload per soundbite: [Errno 2] No such file or directory: './output/ep142.mp3'
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: 
+  1. [Start: 5s, Duration: 4s]
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli:      Title: SB1
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: 
+  2. [Start: 12s, Duration: 3s]
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli:      Title: SB2
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: 
+Generating audiogram for 1 soundbite(s)...
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: Soundbite 1: SB1
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:19:31,597 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: './temp/tmpyao7cpkm/segment_1.mp3'
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: Generating audiogram square...
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: ✓ vertical: ./output/ep142_sb1_nosubs_vertical.mp4
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: ✓ square: ./output/ep142_sb1_nosubs_square.mp4
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: ✓ Caption: ./output/ep142_sb1_caption.txt
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: ✓ SRT: ./output/ep142_sb1.srt
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:19:31,597 [INFO] audiogram_generator.cli: Audiograms successfully generated in folder: ./output
+2026-03-15 00:19:31,598 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:19:31,598 [INFO] audiogram_generator.cli: 
+Episode 7: Episode 7
+2026-03-15 00:19:31,598 [INFO] audiogram_generator.cli: Audio: https://example.com/ep7.mp3
+2026-03-15 00:19:31,598 [INFO] audiogram_generator.cli: 
+Full audio already exists: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwdesajre/ep7.mp3
+2026-03-15 00:19:31,598 [INFO] audiogram_generator.cli: Pre-loading audio for segment extraction...
+2026-03-15 00:19:31,598 [INFO] audiogram_generator.cli: 
+Found soundbites (2):
+2026-03-15 00:19:31,598 [INFO] audiogram_generator.cli: 
+  1. [Start: 0s, Duration: 5s]
+2026-03-15 00:19:31,598 [INFO] audiogram_generator.cli:      Title: hello
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: 
+  2. [Start: 10s, Duration: 5s]
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli:      Title: world
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli:      Text: [Not available]
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: 
+Generating audiograms for all 2 soundbites...
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: Downloading artwork...
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: Soundbite 1/2: hello
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:19:31,599 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwdesajre/tmp5mbitifp/segment_1.mp3'
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwdesajre/ep7_sb1_nosubs_vertical.mp4
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwdesajre/ep7_sb1_caption.txt
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwdesajre/ep7_sb1.srt
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: Soundbite 2/2: world
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:19:31,599 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwdesajre/tmp5mbitifp/segment_2.mp3'
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwdesajre/ep7_sb2_nosubs_vertical.mp4
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:19:31,599 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwdesajre/ep7_sb2_caption.txt
+2026-03-15 00:19:31,600 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:19:31,600 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpwdesajre/ep7_sb2.srt
+2026-03-15 00:19:31,600 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:19:31,600 [INFO] audiogram_generator.cli: All audiograms generated successfully into the 'output' folder!
+2026-03-15 00:19:31,600 [INFO] audiogram_generator.cli: Total: 2 soundbites × 1 formats = 2 videos
+2026-03-15 00:19:31,600 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:19:31,602 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:19:31,602 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-15 00:19:31,602 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:19:31,602 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:19:31,602 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:19:31,602 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpnf6exg4a/segment_1.mp3'
+2026-03-15 00:19:31,602 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:19:31,602 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpnf6exg4a/ep1_sb1_nosubs_vertical.mp4
+2026-03-15 00:19:31,602 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:19:31,602 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpnf6exg4a/ep1_sb1_caption.txt
+2026-03-15 00:19:31,602 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:19:31,602 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpnf6exg4a/ep1_sb1.srt
+2026-03-15 00:19:31,603 [INFO] audiogram_generator.cli: 
+============================================================
+2026-03-15 00:19:31,603 [INFO] audiogram_generator.cli: Soundbite 1/1: hello
+2026-03-15 00:19:31,603 [INFO] audiogram_generator.cli: ============================================================
+2026-03-15 00:19:31,603 [INFO] audiogram_generator.cli: Extracting audio segment...
+2026-03-15 00:19:31,603 [INFO] audiogram_generator.cli: Processing transcript...
+2026-03-15 00:19:31,603 [WARNING] audiogram_generator.cli: Could not save audio file: [Errno 2] No such file or directory: '/var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpbwjsdl6c/segment_1.mp3'
+2026-03-15 00:19:31,603 [INFO] audiogram_generator.cli: Generating audiogram vertical...
+2026-03-15 00:19:31,603 [INFO] audiogram_generator.cli: ✓ vertical: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpbwjsdl6c/ep1_sb1_nosubs_vertical.mp4
+2026-03-15 00:19:31,603 [INFO] audiogram_generator.cli: Generating caption file...
+2026-03-15 00:19:31,603 [INFO] audiogram_generator.cli: ✓ Caption: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpbwjsdl6c/ep1_sb1_caption.txt
+2026-03-15 00:19:31,603 [INFO] audiogram_generator.cli: Generating SRT file...
+2026-03-15 00:19:31,603 [INFO] audiogram_generator.cli: ✓ SRT: /var/folders/52/vjhq__tj1xnbg4x40yf5txn40000gn/T/tmpbwjsdl6c/ep1_sb1.srt
+2026-03-15 00:19:31,621 [INFO] audiogram_generator.services.rss: Fetching RSS feed: https://example/feed.xml
+2026-03-15 00:19:31,622 [ERROR] audiogram_generator.services.rss: Failed to fetch RSS feed from https://example/feed.xml: boom
+2026-03-15 00:19:31,623 [INFO] audiogram_generator.services.transcript: Fetching SRT: https://example/bad.srt
+2026-03-15 00:19:31,624 [ERROR] audiogram_generator.services.transcript: Failed to fetch SRT from https://example/bad.srt: boom
+2026-03-15 00:19:31,626 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-15 00:19:31,627 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-15 00:19:31,628 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-15 00:19:31,629 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars
+2026-03-15 00:19:31,630 [INFO] audiogram_generator.services.transcript: Fetching SRT: http://example/srt
+2026-03-15 00:19:31,632 [DEBUG] audiogram_generator.services.transcript: Fetched SRT with 229 chars

@@ -43,7 +43,7 @@ Attenzione: MoviePy e PIL rilasciano il GIL durante l'encoding, quindi `ProcessP
 | C6 | Percorsi font hard-coded macOS → ricerca cross-platform o config obbligatoria | `video_generator.py` | Media | ✅ Done |
 | C7 | `print()` → `logging` strutturato con `FileHandler` (log su file + console) | entrambi | Media | ✅ Done |
 | C8 | `_ffmpeg_warned` globale → incapsulato o rimosso | `cli.py` | Bassa | ✅ Done |
-| C9 | Type hints aggiunti a `cli.py` e `video_generator.py` + mypy abilitato su entrambi | entrambi | Bassa | ⬜ Todo |
+| C9 | Type hints aggiunti a `cli.py` e `video_generator.py` + mypy abilitato su entrambi | entrambi | Bassa | ✅ Done |
 | C10 | SSL disabilitato → flag `verify_ssl` configurabile in `config.yaml` con warning | tutti i servizi | Media | ✅ Done |
 
 ### Dettaglio C1 — Eccezioni silenziose
