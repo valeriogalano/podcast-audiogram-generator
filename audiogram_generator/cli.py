@@ -2,7 +2,6 @@
 Command-line interface for the audiogram generator
 """
 import feedparser
-import ssl
 import urllib.request
 import xml.etree.ElementTree as ET
 import re
@@ -52,13 +51,13 @@ def _warn_if_no_ffmpeg():
 _warn_if_no_ffmpeg.warned = False
 
 
-def get_podcast_episodes(feed_url, manual_soundbites=None):
+def get_podcast_episodes(feed_url, manual_soundbites=None, verify_ssl: bool = False):
     """Fetch the list of episodes from the RSS feed.
 
     Thin delegator to services.rss to keep backward compatibility while
     moving parsing/network logic into the service layer.
     """
-    return rss_svc.get_podcast_episodes(feed_url, manual_soundbites=manual_soundbites)
+    return rss_svc.get_podcast_episodes(feed_url, manual_soundbites=manual_soundbites, verify_ssl=verify_ssl)
 
 
 ## NOTE: pure helpers moved to audiogram_generator.core
@@ -66,14 +65,14 @@ def get_podcast_episodes(feed_url, manual_soundbites=None):
 ## - format_seconds
 
 
-def get_transcript_text(transcript_url, start_time, duration, srt_content=None):
+def get_transcript_text(transcript_url, start_time, duration, srt_content=None, verify_ssl: bool = False):
     """Downloads the SRT file (if not provided) and extracts the text in the time range.
 
     Implementation delegates to services.transcript for fetching and parsing.
     """
     try:
         if srt_content is None and transcript_url:
-            srt_content = transcript_svc.fetch_srt(transcript_url)
+            srt_content = transcript_svc.fetch_srt(transcript_url, verify_ssl=verify_ssl)
 
         if srt_content:
             return transcript_svc.get_transcript_text_from_srt(srt_content, start_time, duration)
@@ -82,14 +81,14 @@ def get_transcript_text(transcript_url, start_time, duration, srt_content=None):
     return None
 
 
-def get_transcript_chunks(transcript_url, start_time, duration, srt_content=None):
+def get_transcript_chunks(transcript_url, start_time, duration, srt_content=None, verify_ssl: bool = False):
     """Downloads the SRT file (if not provided) and returns text chunks with timing for the soundbite.
 
     Implementation delegates to services.transcript for fetching and parsing.
     """
     try:
         if srt_content is None and transcript_url:
-            srt_content = transcript_svc.fetch_srt(transcript_url)
+            srt_content = transcript_svc.fetch_srt(transcript_url, verify_ssl=verify_ssl)
 
         if srt_content:
             return transcript_svc.parse_srt_to_chunks(srt_content, float(start_time), float(duration))
@@ -167,6 +166,7 @@ def _process_single_soundbite(
     header_title_source=None,
     fonts=None,
     loaded_audio=None,
+    verify_ssl: bool = False,
 ):
     """
     Process a single soundbite: extract audio, generate audiograms, caption and SRT.
@@ -223,14 +223,16 @@ def _process_single_soundbite(
             selected.get('transcript_url'),
             soundbite['start'],
             soundbite['duration'],
-            srt_content=srt_content
+            srt_content=srt_content,
+            verify_ssl=verify_ssl,
         )
         # Extract full text for caption
         transcript_text = get_transcript_text(
             selected.get('transcript_url'),
             soundbite['start'],
             soundbite['duration'],
-            srt_content=srt_content
+            srt_content=srt_content,
+            verify_ssl=verify_ssl,
         ) or (soundbite.get('text') or soundbite.get('title'))
     else:
         transcript_text = soundbite.get('text') or soundbite.get('title')
@@ -326,7 +328,7 @@ def _process_single_soundbite(
     return formats_info
 
 
-def _dry_run_episode(selected, soundbites_choice):
+def _dry_run_episode(selected, soundbites_choice, verify_ssl: bool = False):
     """
     Print soundbite intervals and subtitles without generating any files.
     
@@ -355,7 +357,7 @@ def _dry_run_episode(selected, soundbites_choice):
     srt_content = None
     if selected.get('transcript_url'):
         try:
-            srt_content = transcript_svc.fetch_srt(selected['transcript_url'])
+            srt_content = transcript_svc.fetch_srt(selected['transcript_url'], verify_ssl=verify_ssl)
         except Exception as e:
             logging.warning("Could not fetch SRT for dry-run preview: %s", e)
 
@@ -368,13 +370,14 @@ def _dry_run_episode(selected, soundbites_choice):
             logger.warning("Soundbite %d: invalid timing values (start=%s, duration=%s)", idx, sb.get('start'), sb.get('duration'))
             continue
         end_s = start_s + dur_s
-        
+
         # Retrieve transcript text or fallback to soundbite title
         transcript_text = get_transcript_text(
             selected.get('transcript_url'),
             sb['start'],
             sb['duration'],
-            srt_content=srt_content
+            srt_content=srt_content,
+            verify_ssl=verify_ssl,
         )
         text = (transcript_text or sb.get('text') or sb.get('title') or '').strip()
 
@@ -386,7 +389,7 @@ def _dry_run_episode(selected, soundbites_choice):
         logger.info("%s", text if text else "[Not available]")
 
 
-def _prepare_episode_resources(selected, output_dir):
+def _prepare_episode_resources(selected, output_dir, verify_ssl: bool = False):
     """
     Download full audio and transcript for an episode.
     
@@ -414,7 +417,7 @@ def _prepare_episode_resources(selected, output_dir):
         if not os.path.exists(full_audio_path):
             logger.info("\nDownloading full audio: %s", selected['audio_url'])
             try:
-                download_audio(selected['audio_url'], full_audio_path)
+                download_audio(selected['audio_url'], full_audio_path, verify_ssl=verify_ssl)
                 logger.info("✓ Full audio: %s", full_audio_path)
             except Exception as e:
                 logger.warning("Could not download full audio: %s", e)
@@ -425,7 +428,7 @@ def _prepare_episode_resources(selected, output_dir):
     if selected.get('transcript_url'):
         logger.info("Processing full transcript...")
         try:
-            srt_content = transcript_svc.fetch_srt(selected['transcript_url'])
+            srt_content = transcript_svc.fetch_srt(selected['transcript_url'], verify_ssl=verify_ssl)
             if srt_content:
                 full_srt_path = os.path.join(output_dir, f"ep{selected['number']}.srt")
                 with open(full_srt_path, 'w', encoding='utf-8') as f:
@@ -437,7 +440,7 @@ def _prepare_episode_resources(selected, output_dir):
     return full_audio_path, srt_content
 
 
-def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags, show_subtitles, output_dir, temp_dir_base, soundbites_choice, dry_run=False, use_episode_cover=False, header_title_source=None, fonts=None):
+def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags, show_subtitles, output_dir, temp_dir_base, soundbites_choice, dry_run=False, use_episode_cover=False, header_title_source=None, fonts=None, verify_ssl: bool = False):
     logger.info("\nEpisode %d: %s", selected['number'], selected['title'])
     if selected['audio_url']:
         logger.info("Audio: %s", selected['audio_url'])
@@ -451,7 +454,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
 
     # Dry-run mode: print intervals and subtitles only, then exit
     if dry_run:
-        _dry_run_episode(selected, soundbites_choice)
+        _dry_run_episode(selected, soundbites_choice, verify_ssl=verify_ssl)
         return
 
     # Ensure output and temp directories exist
@@ -459,7 +462,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
     os.makedirs(temp_dir_base, exist_ok=True)
 
     # Download full audio and transcript if available
-    full_audio_path, srt_content = _prepare_episode_resources(selected, output_dir)
+    full_audio_path, srt_content = _prepare_episode_resources(selected, output_dir, verify_ssl=verify_ssl)
 
     # Pre-load audio once — reused by all soundbite extractions to avoid repeated decoding
     loaded_audio = None
@@ -483,7 +486,8 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                 selected.get('transcript_url'),
                 soundbite['start'],
                 soundbite['duration'],
-                srt_content=srt_content
+                srt_content=srt_content,
+                verify_ssl=verify_ssl,
             )
             if transcript_text:
                 logger.info("     Text: %s", transcript_text[:100] + "..." if len(transcript_text) > 100 else transcript_text)
@@ -510,7 +514,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                 logger.info("Downloading artwork...")
                 logo_path = os.path.join(temp_dir, "logo.png")
                 if artwork_url:
-                    download_image(artwork_url, logo_path)
+                    download_image(artwork_url, logo_path, verify_ssl=verify_ssl)
 
                 # Process each soundbite
                 formats_info = {}
@@ -533,6 +537,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                         header_title_source=header_title_source,
                         fonts=fonts,
                         loaded_audio=loaded_audio,
+                        verify_ssl=verify_ssl,
                     )
 
                 logger.info("\n%s", "="*60)
@@ -568,7 +573,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                     logger.info("Downloading artwork...")
                     logo_path = os.path.join(temp_dir, "logo.png")
                     if artwork_url:
-                        download_image(artwork_url, logo_path)
+                        download_image(artwork_url, logo_path, verify_ssl=verify_ssl)
 
                     # Process each selected soundbite
                     for soundbite_num in soundbite_nums:
@@ -591,6 +596,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                             header_title_source=header_title_source,
                             fonts=fonts,
                             loaded_audio=loaded_audio,
+                            verify_ssl=verify_ssl,
                         )
 
                     logger.info("\n%s", "="*60)
@@ -689,6 +695,10 @@ def main():
     use_episode_cover = config.get('use_episode_cover', False)
     header_title_source = config.get('header_title_source', 'auto')
     fonts = config.get('fonts')
+    verify_ssl = config.get('verify_ssl', False)
+    if not verify_ssl:
+        logger.warning("SSL certificate verification is disabled (verify_ssl: false). "
+                       "Set verify_ssl: true in config.yaml to enable it.")
 
     # Caption labels (allow overriding fixed strings in caption)
     try:
@@ -717,7 +727,7 @@ def main():
 
     logger.info("\nFetching episodes from feed...")
     manual_sbs = config.get('manual_soundbites', {})
-    episodes, podcast_info = get_podcast_episodes(feed_url, manual_soundbites=manual_sbs)
+    episodes, podcast_info = get_podcast_episodes(feed_url, manual_soundbites=manual_sbs, verify_ssl=verify_ssl)
 
     if not episodes:
         logger.warning("No episodes found in the feed.")
@@ -782,6 +792,7 @@ def main():
             use_episode_cover=use_episode_cover,
             header_title_source=header_title_source,
             fonts=fonts,
+            verify_ssl=verify_ssl,
         )
 
     return

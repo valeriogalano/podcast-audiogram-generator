@@ -44,7 +44,7 @@ Attenzione: MoviePy e PIL rilasciano il GIL durante l'encoding, quindi `ProcessP
 | C7 | `print()` → `logging` strutturato con `FileHandler` (log su file + console) | entrambi | Media | ✅ Done |
 | C8 | `_ffmpeg_warned` globale → incapsulato o rimosso | `cli.py` | Bassa | ✅ Done |
 | C9 | Type hints aggiunti a `cli.py` e `video_generator.py` + mypy abilitato su entrambi | entrambi | Bassa | ⬜ Todo |
-| C10 | SSL disabilitato → flag `verify_ssl` configurabile in `config.yaml` con warning | tutti i servizi | Media | ⬜ Todo |
+| C10 | SSL disabilitato → flag `verify_ssl` configurabile in `config.yaml` con warning | tutti i servizi | Media | ✅ Done |
 
 ### Dettaglio C1 — Eccezioni silenziose
 
@@ -99,7 +99,7 @@ DEFAULT_FONT_PATH = _DEFAULT_FONT_PATHS.get(sys.platform, "")
 |---|-----|---------|-------|
 | A1 | Suddividere `video_generator.py` (809 righe) in moduli: `waveform.py`, `compositor.py`, `layouts.py`, `encoder.py` | Manutenibilità | ⬜ Todo |
 | A2 | Estrarre logica di business da `cli.py` (763 righe) in un layer separato | Manutenibilità | ⬜ Todo |
-| A3 | Test smoke del rendering (frame 64×64 senza audio reale) per coprire casi font mancanti ecc. | Qualità test | ⬜ Todo |
+| A3 | Test smoke del rendering (frame 64×64 senza audio reale) per coprire casi font mancanti ecc. | Qualità test | ✅ Done (T10) |
 | A4 | Separare il layer interattivo da `process_one_episode()`: estrarre i prompt `input()` in una funzione dedicata in modo che la logica di orchestrazione sia testabile senza stdin | Testabilità | ⬜ Todo |
 
 ### Dettaglio A4 — Layer interattivo separato

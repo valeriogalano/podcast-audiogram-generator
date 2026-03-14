@@ -2,15 +2,13 @@
 Utilities to download and process audio
 """
 import os
-import ssl
 import urllib.request
+from .services._http import make_ssl_context
 
 
-def download_audio(url, output_path):
+def download_audio(url, output_path, verify_ssl: bool = False):
     """Download an audio file from a URL"""
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+    ssl_context = make_ssl_context(verify=verify_ssl)
 
     request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     try:

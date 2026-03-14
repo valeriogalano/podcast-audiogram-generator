@@ -5,25 +5,23 @@ Network I/O is isolated here to keep the CLI/test flows clean and mockable.
 from __future__ import annotations
 
 import logging
-import ssl
 import urllib.request
 
 from .errors import AssetDownloadError
+from ._http import make_ssl_context
 
 
 logger = logging.getLogger(__name__)
 
 
-def download_image(url: str, output_path: str, timeout: int = 10) -> str:
+def download_image(url: str, output_path: str, timeout: int = 10, verify_ssl: bool = False) -> str:
     """Download an image from ``url`` into ``output_path``.
 
     Returns the ``output_path`` on success. Raises exceptions on failure.
     """
     logger.info("Downloading image: %s -> %s", url, output_path)
 
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+    ssl_context = make_ssl_context(verify=verify_ssl)
 
     try:
         request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})

@@ -7,25 +7,23 @@ from __future__ import annotations
 
 from typing import List, Dict
 import re
-import ssl
 import urllib.request
 import logging
 
 from audiogram_generator.core import parse_srt_time
 from .errors import SrtFetchError
+from ._http import make_ssl_context
 
 logger = logging.getLogger(__name__)
 
 
-def fetch_srt(url: str, timeout: int = 10) -> str:
-    """Fetch SRT text from a URL using a relaxed SSL context and UA header.
+def fetch_srt(url: str, timeout: int = 10, verify_ssl: bool = False) -> str:
+    """Fetch SRT text from a URL using a UA header.
 
     Returns the decoded UTF‑8 text. Raises exceptions on network errors.
     """
     logger.info("Fetching SRT: %s", url)
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+    ssl_context = make_ssl_context(verify=verify_ssl)
 
     try:
         request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})

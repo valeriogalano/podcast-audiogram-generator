@@ -7,26 +7,24 @@ implementation in ``cli.get_podcast_episodes`` to preserve behavior.
 from __future__ import annotations
 
 from typing import Dict, List, Tuple
-import ssl
 import urllib.request
 import xml.etree.ElementTree as ET
 import logging
 
 import feedparser  # type: ignore
 from .errors import RssError
+from ._http import make_ssl_context
 
 logger = logging.getLogger(__name__)
 
 
-def fetch_feed(url: str, timeout: int = 10) -> str:
-    """Fetch RSS/Atom feed XML from a URL with a relaxed SSL context.
+def fetch_feed(url: str, timeout: int = 10, verify_ssl: bool = False) -> str:
+    """Fetch RSS/Atom feed XML from a URL.
 
     Returns the decoded UTF-8 text. Raises exceptions on network errors.
     """
     logger.info("Fetching RSS feed: %s", url)
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+    ssl_context = make_ssl_context(verify=verify_ssl)
 
     try:
         request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
@@ -176,10 +174,10 @@ def parse_feed(feed_xml: str, manual_soundbites: dict = None) -> Tuple[List[Dict
     return episodes, podcast_info
 
 
-def get_podcast_episodes(feed_url: str, manual_soundbites: dict = None) -> Tuple[List[Dict], Dict]:
+def get_podcast_episodes(feed_url: str, manual_soundbites: dict = None, verify_ssl: bool = False) -> Tuple[List[Dict], Dict]:
     """High-level convenience that fetches and parses the feed URL.
 
     Network I/O is isolated to ``fetch_feed`` to allow tests to mock it.
     """
-    xml_text = fetch_feed(feed_url)
+    xml_text = fetch_feed(feed_url, verify_ssl=verify_ssl)
     return parse_feed(xml_text, manual_soundbites=manual_soundbites)
