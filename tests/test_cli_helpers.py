@@ -83,8 +83,8 @@ class TestProcessSingleSoundbitePassesLoadedAudio(unittest.TestCase):
             'image_url': None,
         }
 
-    @patch('audiogram_generator.cli.generate_audiogram')
-    @patch('audiogram_generator.cli.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('audiogram_generator.pipeline.generate_audiogram')
+    @patch('audiogram_generator.pipeline.extract_audio_segment', return_value='/tmp/seg.mp3')
     @patch('os.path.exists', return_value=True)
     def test_loaded_audio_forwarded_to_extract(self, mock_exists, mock_extract, mock_gen):
         """loaded_audio kwarg must be forwarded to extract_audio_segment."""
@@ -115,8 +115,8 @@ class TestProcessSingleSoundbitePassesLoadedAudio(unittest.TestCase):
         _, kwargs = mock_extract.call_args
         self.assertIs(kwargs.get('audio'), pre_loaded)
 
-    @patch('audiogram_generator.cli.generate_audiogram')
-    @patch('audiogram_generator.cli.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('audiogram_generator.pipeline.generate_audiogram')
+    @patch('audiogram_generator.pipeline.extract_audio_segment', return_value='/tmp/seg.mp3')
     @patch('os.path.exists', return_value=True)
     def test_none_loaded_audio_still_calls_extract(self, mock_exists, mock_extract, mock_gen):
         """When loaded_audio=None, extract_audio_segment is still called (fallback)."""

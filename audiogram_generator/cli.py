@@ -1,649 +1,104 @@
 """
-Command-line interface for the audiogram generator
+Command-line interface for the audiogram generator.
+
+This module handles argument parsing, configuration loading, and interactive
+user prompts. All business logic is delegated to ``pipeline``.
 """
-import feedparser
-import urllib.request
-import xml.etree.ElementTree as ET
-import re
 import logging
 import os
-import tempfile
 import argparse
-import shutil
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Optional
-from .audio_utils import download_audio, extract_audio_segment, load_audio
-from .services.assets import download_image
-from .rendering.facade import generate_audiogram
+
 from .config import Config
-from .core.captioning import build_caption_text, generate_srt_content
 from .core import (
     parse_srt_time,
     format_seconds,
     parse_episode_selection,
     parse_soundbite_selection,
 )
-from .services import transcript as transcript_svc
+from .pipeline import (
+    _warn_if_no_ffmpeg,
+    get_transcript_text,
+    get_transcript_chunks,
+    generate_caption_file,
+    generate_srt_file,
+    _prepare_episode_resources,
+    _dry_run_episode,
+    _process_single_soundbite,
+    process_one_episode,
+    generate_audiogram,
+    CAPTION_LABEL_EPISODE_PREFIX,
+    CAPTION_LABEL_LISTEN_PREFIX,
+)
+from .rendering.facade import generate_audiogram  # noqa: F811 – keep facade reference for API guard test
 from .services import rss as rss_svc
 
 
 logger = logging.getLogger(__name__)
 
 
-def _warn_if_no_ffmpeg():
-    """Log a one-time warning if FFmpeg is not available on PATH.
-
-    Non-fatal: only informs the user; rendering may still fail later if required.
-    Logged at most once per process (state stored as a function attribute).
-    """
-    if _warn_if_no_ffmpeg.warned:  # type: ignore[attr-defined]
-        return
-    try:
-        if shutil.which('ffmpeg') is None:
-            logger.warning("FFmpeg not found on PATH. Rendering may fail. See README for install instructions.")
-        _warn_if_no_ffmpeg.warned = True  # type: ignore[attr-defined]
-    except Exception as e:
-        # Never fail due to env probing
-        logger.warning("FFmpeg check failed: %s", e)
-        _warn_if_no_ffmpeg.warned = True  # type: ignore[attr-defined]
-
-
-_warn_if_no_ffmpeg.warned = False  # type: ignore[attr-defined]
-
-
 def get_podcast_episodes(feed_url, manual_soundbites=None, verify_ssl: bool = False):
-    """Fetch the list of episodes from the RSS feed.
-
-    Thin delegator to services.rss to keep backward compatibility while
-    moving parsing/network logic into the service layer.
-    """
-    return rss_svc.get_podcast_episodes(feed_url, manual_soundbites=manual_soundbites, verify_ssl=verify_ssl)
-
-
-## NOTE: pure helpers moved to audiogram_generator.core
-## - parse_srt_time
-## - format_seconds
-
-
-def get_transcript_text(transcript_url, start_time, duration, srt_content=None, verify_ssl: bool = False):
-    """Downloads the SRT file (if not provided) and extracts the text in the time range.
-
-    Implementation delegates to services.transcript for fetching and parsing.
-    """
-    try:
-        if srt_content is None and transcript_url:
-            srt_content = transcript_svc.fetch_srt(transcript_url, verify_ssl=verify_ssl)
-
-        if srt_content:
-            return transcript_svc.get_transcript_text_from_srt(srt_content, start_time, duration)
-    except Exception as e:
-        logging.warning("Could not load transcript text: %s", e)
-    return None
-
-
-def get_transcript_chunks(transcript_url, start_time, duration, srt_content=None, verify_ssl: bool = False):
-    """Downloads the SRT file (if not provided) and returns text chunks with timing for the soundbite.
-
-    Implementation delegates to services.transcript for fetching and parsing.
-    """
-    try:
-        if srt_content is None and transcript_url:
-            srt_content = transcript_svc.fetch_srt(transcript_url, verify_ssl=verify_ssl)
-
-        if srt_content:
-            return transcript_svc.parse_srt_to_chunks(srt_content, float(start_time), float(duration))
-    except Exception as e:
-        logging.warning("Could not load transcript chunks: %s", e)
-    return []
-
-
-# Module-level caption label defaults; can be overridden via config in main()
-CAPTION_LABEL_EPISODE_PREFIX = "Episode"
-CAPTION_LABEL_LISTEN_PREFIX = "Listen to the full episode"
-
-
-def generate_caption_file(output_path, episode_number, episode_title, episode_link,
-                          soundbite_title, transcript_text, podcast_keywords=None,
-                          episode_keywords=None, config_hashtags=None,
-                          *, episode_prefix: Optional[str] = None, listen_full_prefix: Optional[str] = None):
-    """
-    Generate a plain-text .txt caption file for social posts (no markdown).
-
-    This function delegates the pure string generation to
-    ``core.captioning.build_caption_text`` and only performs file I/O here.
-    """
-    # Resolve prefixes from parameters or module-level defaults
-    ep_prefix = episode_prefix if episode_prefix is not None else CAPTION_LABEL_EPISODE_PREFIX
-    listen_prefix = listen_full_prefix if listen_full_prefix is not None else CAPTION_LABEL_LISTEN_PREFIX
-
-    caption = build_caption_text(
-        episode_number=episode_number,
-        episode_title=episode_title,
-        episode_link=episode_link,
-        soundbite_title=soundbite_title,
-        transcript_text=transcript_text,
-        podcast_keywords=podcast_keywords,
-        episode_keywords=episode_keywords,
-        config_hashtags=config_hashtags,
-        episode_prefix=ep_prefix,
-        listen_full_prefix=listen_prefix,
-    )
-
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(caption)
-
-
-def generate_srt_file(output_path, transcript_chunks):
-    """Generate a .srt subtitle file from transcript chunks."""
-    if not transcript_chunks:
-        return
-
-    content = generate_srt_content(transcript_chunks)
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(content)
-
-
-## NOTE: selection parsers moved to audiogram_generator.core
-## - parse_episode_selection
-## - parse_soundbite_selection
-
-
-def _process_single_soundbite(
-    soundbite,
-    soundbite_num,
-    total_soundbites,
-    selected,
-    podcast_info,
-    temp_dir,
-    logo_path,
-    srt_content,
-    full_audio_path,
-    output_dir,
-    formats_config,
-    colors,
-    show_subtitles,
-    config_hashtags,
-    header_title_source=None,
-    fonts=None,
-    loaded_audio=None,
-    verify_ssl: bool = False,
-):
-    """
-    Process a single soundbite: extract audio, generate audiograms, caption and SRT.
-    
-    Args:
-        soundbite: Dictionary with soundbite data (start, duration, text/title)
-        soundbite_num: Number of the soundbite (1-based)
-        total_soundbites: Total number of soundbites (for display purposes)
-        selected: Selected episode dictionary
-        podcast_info: Podcast information dictionary
-        temp_dir: Temporary directory path
-        logo_path: Path to the logo image
-        srt_content: SRT content string (or None)
-        full_audio_path: Path to the full audio file
-        output_dir: Output directory path
-        formats_config: Formats configuration dictionary
-        colors: Colors configuration dictionary
-        show_subtitles: Whether to show subtitles
-        config_hashtags: Hashtags from configuration
-        header_title_source: Source for header title
-        fonts: Fonts configuration dictionary
-    """
-    # Print header
-    if total_soundbites:
-        logger.info("\n%s", "="*60)
-        logger.info("Soundbite %d/%d: %s", soundbite_num, total_soundbites, soundbite.get('text') or soundbite.get('title'))
-        logger.info("%s", "="*60)
-    else:
-        logger.info("\n%s", "="*60)
-        logger.info("Soundbite %d: %s", soundbite_num, soundbite.get('text') or soundbite.get('title'))
-        logger.info("%s", "="*60)
-
-    # Extract audio segment (use pre-loaded audio when available to avoid re-reading the file)
-    if full_audio_path and os.path.exists(full_audio_path):
-        logger.info("Extracting audio segment...")
-        segment_path = os.path.join(temp_dir, f"segment_{soundbite_num}.mp3")
-        extract_audio_segment(
-            full_audio_path,
-            soundbite['start'],
-            soundbite['duration'],
-            segment_path,
-            audio=loaded_audio,
-        )
-    else:
-        logger.warning("Skipping audio extraction because full audio file is missing or invalid.")
-        segment_path = None
-
-    # Build transcript chunks
-    logger.info("Processing transcript...")
-    transcript_chunks = []
-    transcript_text = ""
-    if srt_content:
-        transcript_chunks = get_transcript_chunks(
-            selected.get('transcript_url'),
-            soundbite['start'],
-            soundbite['duration'],
-            srt_content=srt_content,
-            verify_ssl=verify_ssl,
-        )
-        # Extract full text for caption
-        transcript_text = get_transcript_text(
-            selected.get('transcript_url'),
-            soundbite['start'],
-            soundbite['duration'],
-            srt_content=srt_content,
-            verify_ssl=verify_ssl,
-        ) or (soundbite.get('text') or soundbite.get('title'))
-    else:
-        transcript_text = soundbite.get('text') or soundbite.get('title')
-
-    # Save MP3 segment to output directory
-    mp3_output_path = os.path.join(
-        output_dir,
-        f"ep{selected['number']}_sb{soundbite_num}.mp3"
-    )
-    if segment_path and os.path.exists(segment_path):
-        try:
-            shutil.copy2(segment_path, mp3_output_path)
-            logger.info("✓ Audio: %s", mp3_output_path)
-        except Exception as e:
-            logger.warning("Could not save audio file: %s", e)
-    else:
-        logger.warning("Audio segment was not generated, skipping MP3 output.")
-
-    # Generate audiogram for each enabled format
-    formats_info = {}
-    for fmt_name, fmt_config in formats_config.items():
-        if fmt_config.get('enabled', True):
-            formats_info[fmt_name] = fmt_config.get('description', fmt_name)
-
-    if not segment_path or not os.path.exists(segment_path):
-        logger.warning("Skipping audiogram video generation because audio segment is missing.")
-    else:
-        nosubs_suffix = "_nosubs" if not show_subtitles else ""
-        soundbite_title = soundbite.get('text') or soundbite.get('title')
-
-        def _render_one_format(format_name):
-            output_path = os.path.join(
-                output_dir,
-                f"ep{selected['number']}_sb{soundbite_num}{nosubs_suffix}_{format_name}.mp4"
-            )
-            logger.info("Generating audiogram %s...", formats_info[format_name])
-            generate_audiogram(
-                segment_path,
-                output_path,
-                format_name,
-                logo_path,
-                podcast_info['title'],
-                selected['title'],
-                transcript_chunks,
-                float(soundbite['duration']),
-                formats_config,
-                colors,
-                show_subtitles,
-                header_title_source=header_title_source,
-                header_soundbite_title=soundbite_title,
-                fonts=fonts,
-            )
-            logger.info("✓ %s: %s", format_name, output_path)
-            return format_name, output_path
-
-        with ThreadPoolExecutor(max_workers=len(formats_info)) as executor:
-            futures = {executor.submit(_render_one_format, fmt): fmt for fmt in formats_info}
-            for future in as_completed(futures):
-                try:
-                    future.result()
-                except Exception as e:
-                    logger.error("Format %s rendering failed: %s", futures[future], e)
-
-    # Generate caption file .txt
-    logger.info("Generating caption file...")
-    caption_path = os.path.join(
-        output_dir,
-        f"ep{selected['number']}_sb{soundbite_num}_caption.txt"
-    )
-    generate_caption_file(
-        caption_path,
-        selected['number'],
-        selected['title'],
-        selected['link'],
-        soundbite.get('text') or soundbite.get('title') or '',
-        transcript_text,
-        podcast_info.get('keywords'),
-        selected.get('keywords'),
-        config_hashtags
-    )
-    logger.info("✓ Caption: %s", caption_path)
-
-    # Generate SRT file
-    logger.info("Generating SRT file...")
-    srt_path = os.path.join(
-        output_dir,
-        f"ep{selected['number']}_sb{soundbite_num}.srt"
-    )
-    generate_srt_file(srt_path, transcript_chunks)
-    if os.path.exists(srt_path):
-        logger.info("✓ SRT: %s", srt_path)
-
-    return formats_info
-
-
-def _dry_run_episode(selected, soundbites_choice, verify_ssl: bool = False):
-    """
-    Print soundbite intervals and subtitles without generating any files.
-    
-    Args:
-        selected: Selected episode dictionary
-        soundbites_choice: Soundbite selection string
-    """
-    sbs = selected.get('soundbites') or []
-    logger.info("\nFound soundbites (%d):", len(sbs))
-    if not sbs:
-        logger.info("No soundbites available for this episode.")
-        return
-
-    # Determine which soundbites to print
-    try:
-        nums = parse_soundbite_selection(soundbites_choice, len(sbs))
-    except ValueError as e:
-        logger.warning("Soundbite selection error: %s", e)
-        return
-
-    logger.info("\n%s", "="*60)
-    logger.info("Dry-run: print start/end time and subtitle text")
-    logger.info("%s", "="*60)
-    
-    # Fetch SRT once for dry-run
-    srt_content = None
-    if selected.get('transcript_url'):
-        try:
-            srt_content = transcript_svc.fetch_srt(selected['transcript_url'], verify_ssl=verify_ssl)
-        except Exception as e:
-            logging.warning("Could not fetch SRT for dry-run preview: %s", e)
-
-    for idx in nums:
-        sb = sbs[idx - 1]
-        try:
-            start_s = float(sb['start'])
-            dur_s = float(sb['duration'])
-        except Exception:
-            logger.warning("Soundbite %d: invalid timing values (start=%s, duration=%s)", idx, sb.get('start'), sb.get('duration'))
-            continue
-        end_s = start_s + dur_s
-
-        # Retrieve transcript text or fallback to soundbite title
-        transcript_text = get_transcript_text(
-            selected.get('transcript_url'),
-            sb['start'],
-            sb['duration'],
-            srt_content=srt_content,
-            verify_ssl=verify_ssl,
-        )
-        text = (transcript_text or sb.get('text') or sb.get('title') or '').strip()
-
-        logger.info("\nSoundbite %d", idx)
-        logger.info("- Start: %.3fs (%s)", start_s, format_seconds(start_s))
-        logger.info("- Duration: %.3fs (%s)", dur_s, format_seconds(dur_s))
-        logger.info("- End:   %.3fs (%s)", end_s, format_seconds(end_s))
-        logger.info("- Subtitle text:")
-        logger.info("%s", text if text else "[Not available]")
-
-
-def _prepare_episode_resources(selected, output_dir, verify_ssl: bool = False):
-    """
-    Download full audio and transcript for an episode.
-    
-    Args:
-        selected: Selected episode dictionary
-        output_dir: Output directory path
-        
-    Returns:
-        Tuple of (full_audio_path, srt_content)
-    """
-    full_audio_path = None
-    srt_content = None
-
-    if selected['audio_url']:
-        full_audio_path = os.path.join(output_dir, f"ep{selected['number']}.mp3")
-        
-        # Verify if existing file is valid (not empty)
-        try:
-            if os.path.exists(full_audio_path) and os.path.getsize(full_audio_path) == 0:
-                logger.warning("Existing audio file %s is empty. Removing it.", full_audio_path)
-                os.remove(full_audio_path)
-        except OSError:
-            pass
-
-        if not os.path.exists(full_audio_path):
-            logger.info("\nDownloading full audio: %s", selected['audio_url'])
-            try:
-                download_audio(selected['audio_url'], full_audio_path, verify_ssl=verify_ssl)
-                logger.info("✓ Full audio: %s", full_audio_path)
-            except Exception as e:
-                logger.warning("Could not download full audio: %s", e)
-                full_audio_path = None
-        else:
-            logger.info("\nFull audio already exists: %s", full_audio_path)
-
-    if selected.get('transcript_url'):
-        logger.info("Processing full transcript...")
-        try:
-            srt_content = transcript_svc.fetch_srt(selected['transcript_url'], verify_ssl=verify_ssl)
-            if srt_content:
-                full_srt_path = os.path.join(output_dir, f"ep{selected['number']}.srt")
-                with open(full_srt_path, 'w', encoding='utf-8') as f:
-                    f.write(srt_content)
-                logger.info("✓ Full SRT: %s", full_srt_path)
-        except Exception as e:
-            logger.warning("Could not fetch or save full transcript: %s", e)
-
-    return full_audio_path, srt_content
-
-
-def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags, show_subtitles, output_dir, temp_dir_base, soundbites_choice, dry_run=False, use_episode_cover=False, header_title_source=None, fonts=None, verify_ssl: bool = False):
-    logger.info("\nEpisode %d: %s", selected['number'], selected['title'])
-    if selected['audio_url']:
-        logger.info("Audio: %s", selected['audio_url'])
-
-    # Choose artwork URL to use (episode if requested and available, otherwise podcast)
-    artwork_url = None
-    if use_episode_cover and selected.get('image_url'):
-        artwork_url = selected['image_url']
-    else:
-        artwork_url = podcast_info.get('image_url')
-
-    # Dry-run mode: print intervals and subtitles only, then exit
-    if dry_run:
-        _dry_run_episode(selected, soundbites_choice, verify_ssl=verify_ssl)
-        return
-
-    # Ensure output and temp directories exist
-    os.makedirs(output_dir, exist_ok=True)
-    os.makedirs(temp_dir_base, exist_ok=True)
-
-    # Download full audio and transcript if available
-    full_audio_path, srt_content = _prepare_episode_resources(selected, output_dir, verify_ssl=verify_ssl)
-
-    # Pre-load audio once — reused by all soundbite extractions to avoid repeated decoding
-    loaded_audio = None
-    if full_audio_path and os.path.exists(full_audio_path):
-        try:
-            logger.info("Pre-loading audio for segment extraction...")
-            loaded_audio = load_audio(full_audio_path)
-        except Exception as e:
-            logger.warning("Could not pre-load audio, will reload per soundbite: %s", e)
-
-    # Process soundbites if they exist
-    if selected['soundbites']:
-        # soundbites_choice is always resolved by the caller (main() handles interactive prompt)
-        choice = str(soundbites_choice) if soundbites_choice is not None else 'n'
-
-        if choice.lower() == 'a' or choice.lower() == 'all':
-            # Generate all soundbites
-            logger.info("\nGenerating audiograms for all %d soundbites...", len(selected['soundbites']))
-
-            # Create temporary directory
-            with tempfile.TemporaryDirectory(dir=temp_dir_base) as temp_dir:
-                # Warn about FFmpeg if missing (once)
-                _warn_if_no_ffmpeg()
-
-                # Download artwork once
-                logger.info("Downloading artwork...")
-                logo_path = os.path.join(temp_dir, "logo.png")
-                if artwork_url:
-                    download_image(artwork_url, logo_path, verify_ssl=verify_ssl)
-
-                # Process each soundbite
-                formats_info = {}
-                for soundbite_num, soundbite in enumerate(selected['soundbites'], 1):
-                    formats_info = _process_single_soundbite(
-                        soundbite=soundbite,
-                        soundbite_num=soundbite_num,
-                        total_soundbites=len(selected['soundbites']),
-                        selected=selected,
-                        podcast_info=podcast_info,
-                        temp_dir=temp_dir,
-                        logo_path=logo_path,
-                        srt_content=srt_content,
-                        full_audio_path=full_audio_path,
-                        output_dir=output_dir,
-                        formats_config=formats_config,
-                        colors=colors,
-                        show_subtitles=show_subtitles,
-                        config_hashtags=config_hashtags,
-                        header_title_source=header_title_source,
-                        fonts=fonts,
-                        loaded_audio=loaded_audio,
-                        verify_ssl=verify_ssl,
-                    )
-
-                logger.info("\n%s", "="*60)
-                logger.info("All audiograms generated successfully into the 'output' folder!")
-                logger.info("Total: %d soundbites × %d formats = %d videos",
-                            len(selected['soundbites']), len(formats_info),
-                            len(selected['soundbites']) * len(formats_info))
-                logger.info("%s", "="*60)
-
-        elif choice.lower() != 'n':
-            try:
-                # Support comma-separated list of numbers
-                if ',' in choice:
-                    soundbite_nums = [int(n.strip()) for n in choice.split(',')]
-                else:
-                    soundbite_nums = [int(choice)]
-
-                # Validate all numbers
-                for num in soundbite_nums:
-                    if not (1 <= num <= len(selected['soundbites'])):
-                        logger.error("Invalid number %d. Choose between 1 and %d", num, len(selected['soundbites']))
-                        return
-
-                # Generate audiogram for the selected soundbites
-                logger.info("\nGenerating audiogram for %d soundbite(s)...", len(soundbite_nums))
-
-                # Create temporary directory
-                with tempfile.TemporaryDirectory(dir=temp_dir_base) as temp_dir:
-                    # Warn about FFmpeg if missing (once)
-                    _warn_if_no_ffmpeg()
-
-                    # Download artwork once
-                    logger.info("Downloading artwork...")
-                    logo_path = os.path.join(temp_dir, "logo.png")
-                    if artwork_url:
-                        download_image(artwork_url, logo_path, verify_ssl=verify_ssl)
-
-                    # Process each selected soundbite
-                    for soundbite_num in soundbite_nums:
-                        soundbite = selected['soundbites'][soundbite_num - 1]
-                        _process_single_soundbite(
-                            soundbite=soundbite,
-                            soundbite_num=soundbite_num,
-                            total_soundbites=None,  # Don't show total for selected soundbites
-                            selected=selected,
-                            podcast_info=podcast_info,
-                            temp_dir=temp_dir,
-                            logo_path=logo_path,
-                            srt_content=srt_content,
-                            full_audio_path=full_audio_path,
-                            output_dir=output_dir,
-                            formats_config=formats_config,
-                            colors=colors,
-                            show_subtitles=show_subtitles,
-                            config_hashtags=config_hashtags,
-                            header_title_source=header_title_source,
-                            fonts=fonts,
-                            loaded_audio=loaded_audio,
-                            verify_ssl=verify_ssl,
-                        )
-
-                    logger.info("\n%s", "="*60)
-                    logger.info("Audiograms successfully generated in folder: %s", output_dir)
-                    logger.info("%s", "="*60)
-            except ValueError:
-                logger.warning("Invalid input")
-            except Exception as e:
-                logger.error("Error during generation: %s", e)
-    else:
-        logger.info("\nNo soundbites found for this episode.")
+    """Fetch the list of episodes from the RSS feed."""
+    return rss_svc.get_podcast_episodes(feed_url, manual_soundbites=manual_soundbites,
+                                         verify_ssl=verify_ssl)
 
 
 def main():
     """Main CLI function"""
-    # Argument parsing
-    # Minimal logging setup; default to WARNING (less noisy). Will adjust level
-    # after parsing if --log-level is set.
     logging.basicConfig(level=logging.WARNING)
     parser = argparse.ArgumentParser(description='Audiogram generator from podcast RSS')
     parser.add_argument('--config', type=str, help='Path to the YAML configuration file')
     parser.add_argument('--feed-url', type=str, help='URL of the podcast RSS feed')
-    parser.add_argument('--episode', type=str, help="Episode(s) to process: number (e.g., 5), list (e.g., 1,3,5), 'all'/'a' for all, or 'last' for the most recent episode")
-    parser.add_argument('--soundbites', type=str, help='Soundbites to generate: specific number, "all" for all, or comma-separated list (e.g., 1,3,5)')
+    parser.add_argument('--episode', type=str,
+                        help="Episode(s) to process: number (e.g., 5), list (e.g., 1,3,5), "
+                             "'all'/'a' for all, or 'last' for the most recent episode")
+    parser.add_argument('--soundbites', type=str,
+                        help='Soundbites to generate: specific number, "all" for all, '
+                             'or comma-separated list (e.g., 1,3,5)')
     parser.add_argument('--output-dir', type=str, help='Output directory for generated files')
     parser.add_argument('--temp-dir', type=str, help='Temporary directory for intermediate files')
-    parser.add_argument('--log-level', type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], help='Logging level (default: INFO)')
-    parser.add_argument('--dry-run', action='store_true', help='Print only soundbite intervals and subtitles without generating files')
+    parser.add_argument('--log-level', type=str,
+                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                        help='Logging level (default: INFO)')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='Print only soundbite intervals and subtitles without generating files')
     parser.add_argument(
         '--header-title-source',
         type=str,
         choices=['auto', 'podcast', 'episode', 'soundbite', 'none'],
-        help="Header title source: 'auto' (default), 'podcast', 'episode', 'soundbite', or 'none' to hide",
+        help="Header title source: 'auto' (default), 'podcast', 'episode', 'soundbite', "
+             "or 'none' to hide",
     )
-    # Subtitles on/off
+
     subs_group = parser.add_mutually_exclusive_group()
-    subs_group.add_argument('--show-subtitles', dest='show_subtitles', action='store_true', help='Enable subtitle display in the video')
-    subs_group.add_argument('--no-subtitles', dest='show_subtitles', action='store_false', help='Disable subtitle display in the video')
+    subs_group.add_argument('--show-subtitles', dest='show_subtitles', action='store_true',
+                             help='Enable subtitle display in the video')
+    subs_group.add_argument('--no-subtitles', dest='show_subtitles', action='store_false',
+                             help='Disable subtitle display in the video')
     parser.set_defaults(show_subtitles=None)
 
-    # Episode cover on/off
     cover_group = parser.add_mutually_exclusive_group()
-    cover_group.add_argument('--use-episode-cover', dest='use_episode_cover', action='store_true', help="Use episode-specific cover if available")
-    cover_group.add_argument('--no-use-episode-cover', dest='use_episode_cover', action='store_false', help="Do not use episode cover, use podcast cover instead")
+    cover_group.add_argument('--use-episode-cover', dest='use_episode_cover', action='store_true',
+                              help="Use episode-specific cover if available")
+    cover_group.add_argument('--no-use-episode-cover', dest='use_episode_cover',
+                              action='store_false',
+                              help="Do not use episode cover, use podcast cover instead")
     parser.set_defaults(use_episode_cover=None)
 
     args = parser.parse_args()
 
-    # Apply log level if provided
     if args.log_level:
         level = getattr(logging, args.log_level.upper(), logging.INFO)
         logging.getLogger().setLevel(level)
 
-    # Load configuration
-    # If --config is not passed, try to use a default file (config.yml or config.yaml)
     default_config_path = None
     if not args.config:
-        # Search in the current directory
         cwd = os.getcwd()
-        candidates = [
-            os.path.join(cwd, 'config.yml'),
-            os.path.join(cwd, 'config.yaml'),
-        ]
-        for candidate in candidates:
+        for candidate in [os.path.join(cwd, 'config.yml'), os.path.join(cwd, 'config.yaml')]:
             if os.path.exists(candidate):
                 default_config_path = candidate
                 break
     config = Config(config_file=args.config or default_config_path)
 
-    # Update configuration with CLI arguments (they take precedence)
     config.update_from_args({
         'feed_url': args.feed_url,
         'episode': args.episode,
@@ -656,14 +111,12 @@ def main():
         'header_title_source': args.header_title_source,
     })
 
-    # Use arguments or request interactive input
     feed_url = config.get('feed_url')
     episode_input = config.get('episode')
     soundbites_choice = config.get('soundbites')
     output_dir = config.get('output_dir', os.path.join(os.getcwd(), 'output'))
     temp_dir_base = config.get('temp_dir', os.path.join(os.getcwd(), 'temp'))
 
-    # Load color, format, hashtags, and CTA configuration
     colors = config.get('colors')
     formats_config = config.get('formats')
     config_hashtags = config.get('hashtags', [])
@@ -677,17 +130,19 @@ def main():
         logger.warning("SSL certificate verification is disabled (verify_ssl: false). "
                        "Set verify_ssl: true in config.yaml to enable it.")
 
-    # Caption labels (allow overriding fixed strings in caption)
     try:
         labels = config.get('caption_labels', {}) or {}
     except Exception as e:
         logging.warning("Could not read caption_labels from config: %s", e)
         labels = {}
-    global CAPTION_LABEL_EPISODE_PREFIX, CAPTION_LABEL_LISTEN_PREFIX
-    CAPTION_LABEL_EPISODE_PREFIX = labels.get('episode_prefix', CAPTION_LABEL_EPISODE_PREFIX)
-    CAPTION_LABEL_LISTEN_PREFIX = labels.get('listen_full_prefix', CAPTION_LABEL_LISTEN_PREFIX)
+    import audiogram_generator.pipeline as _pipeline
+    _pipeline.CAPTION_LABEL_EPISODE_PREFIX = labels.get(
+        'episode_prefix', _pipeline.CAPTION_LABEL_EPISODE_PREFIX
+    )
+    _pipeline.CAPTION_LABEL_LISTEN_PREFIX = labels.get(
+        'listen_full_prefix', _pipeline.CAPTION_LABEL_LISTEN_PREFIX
+    )
 
-    # Ask for feed_url interactively if not specified
     if feed_url is None:
         try:
             while True:
@@ -704,25 +159,23 @@ def main():
 
     logger.info("\nFetching episodes from feed...")
     manual_sbs = config.get('manual_soundbites', {})
-    episodes, podcast_info = get_podcast_episodes(feed_url, manual_soundbites=manual_sbs, verify_ssl=verify_ssl)
+    episodes, podcast_info = get_podcast_episodes(feed_url, manual_soundbites=manual_sbs,
+                                                   verify_ssl=verify_ssl)
 
     if not episodes:
         logger.warning("No episodes found in the feed.")
         return
 
-    # Show podcast info
-    logger.info("\n%s", "="*60)
+    logger.info("\n%s", "=" * 60)
     logger.info("Podcast: %s", podcast_info.get('title', 'N/A'))
     if podcast_info.get('image_url'):
         logger.info("Artwork: %s", podcast_info['image_url'])
-    logger.info("%s", "="*60)
+    logger.info("%s", "=" * 60)
 
-    # Show episodes from first to last
     logger.info("\nFound %d episodes:\n", len(episodes))
     for episode in episodes:
         logger.info("%d. %s", episode['number'], episode['title'])
 
-    # Determine which episodes to process (single, list, or all)
     max_episode = len(episodes)
     try:
         selected_episode_numbers = parse_episode_selection(episode_input, max_episode)
@@ -731,10 +184,12 @@ def main():
         return
 
     if not selected_episode_numbers:
-        # Interactive mode
         while True:
             try:
-                choice = input(f"\nSelect episode: number (e.g. 5), list (e.g. 1,3,5), 'all'/'a' for all, or 'last' for the last one: ").strip()
+                choice = input(
+                    f"\nSelect episode: number (e.g. 5), list (e.g. 1,3,5), "
+                    f"'all'/'a' for all, or 'last' for the last one: "
+                ).strip()
                 try:
                     selected_episode_numbers = parse_episode_selection(choice, max_episode)
                     break
@@ -744,7 +199,6 @@ def main():
                 logger.info("\nOperation cancelled.")
                 return
 
-    # Process selected episodes
     for episode_num in selected_episode_numbers:
         selected = None
         for ep in episodes:
@@ -765,7 +219,7 @@ def main():
                     logger.info("  %d. [Start: %ss, Duration: %ss] %s",
                                 i, sb['start'], sb['duration'],
                                 sb.get('text') or sb.get('title') or '')
-                logger.info("\n%s", "="*60)
+                logger.info("\n%s", "=" * 60)
                 try:
                     resolved_soundbites_choice = input(
                         "\nDo you want to generate an audiogram for a soundbite? "

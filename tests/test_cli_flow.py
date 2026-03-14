@@ -29,7 +29,7 @@ class TestCliFlow(unittest.TestCase):
 
     def test_dry_run_no_soundbites_prints_message(self):
         selected = self._make_selected(with_soundbites=False)
-        with self.assertLogs('audiogram_generator.cli', level='INFO') as cm:
+        with self.assertLogs('audiogram_generator.pipeline', level='INFO') as cm:
             cli.process_one_episode(
                 selected=selected,
                 podcast_info={'image_url': 'https://example/podcast.jpg', 'title': 'Podcast'},
@@ -46,10 +46,10 @@ class TestCliFlow(unittest.TestCase):
         combined = '\n'.join(cm.output)
         self.assertIn("No soundbites available for this episode.", combined)
 
-    @patch('audiogram_generator.cli.get_transcript_text', return_value=None)
+    @patch('audiogram_generator.pipeline.get_transcript_text', return_value=None)
     def test_dry_run_fallback_to_soundbite_title_when_no_transcript(self, _):
         selected = self._make_selected(with_soundbites=True, with_transcript=True)
-        with self.assertLogs('audiogram_generator.cli', level='INFO') as cm:
+        with self.assertLogs('audiogram_generator.pipeline', level='INFO') as cm:
             cli.process_one_episode(
                 selected=selected,
                 podcast_info={'image_url': 'https://example/podcast.jpg', 'title': 'Podcast'},
@@ -71,7 +71,7 @@ class TestCliFlow(unittest.TestCase):
 
     def test_dry_run_invalid_selection_prints_error(self):
         selected = self._make_selected(with_soundbites=True)
-        with self.assertLogs('audiogram_generator.cli', level='INFO') as cm:
+        with self.assertLogs('audiogram_generator.pipeline', level='INFO') as cm:
             cli.process_one_episode(
                 selected=selected,
                 podcast_info={'image_url': 'https://example/podcast.jpg', 'title': 'Podcast'},
@@ -88,10 +88,10 @@ class TestCliFlow(unittest.TestCase):
         combined = '\n'.join(cm.output)
         self.assertIn('Soundbite selection error', combined)
 
-    @patch('audiogram_generator.cli.generate_audiogram')
-    @patch('audiogram_generator.cli.download_image', return_value='/tmp/cover.jpg')
-    @patch('audiogram_generator.cli.extract_audio_segment', return_value='/tmp/seg.mp3')
-    @patch('audiogram_generator.cli.download_audio', return_value='/tmp/full.mp3')
+    @patch('audiogram_generator.pipeline.generate_audiogram')
+    @patch('audiogram_generator.pipeline.download_image', return_value='/tmp/cover.jpg')
+    @patch('audiogram_generator.pipeline.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('audiogram_generator.pipeline.download_audio', return_value='/tmp/full.mp3')
     @patch('os.path.exists', return_value=True) # Ensure it thinks audio exists
     def test_output_filenames_include_nosubs_when_disabled(self, *_mocks):
         selected = self._make_selected(with_soundbites=True, with_transcript=False)
@@ -100,7 +100,7 @@ class TestCliFlow(unittest.TestCase):
             'square': {'width': 1080, 'height': 1080, 'enabled': True},
         }
         # Run non-dry-run but with everything mocked; intercept calls
-        with patch('audiogram_generator.cli.generate_audiogram') as gen:
+        with patch('audiogram_generator.pipeline.generate_audiogram') as gen:
             cli.process_one_episode(
                 selected=selected,
                 podcast_info={'image_url': 'https://example/podcast.jpg', 'title': 'Podcast'},
@@ -122,8 +122,8 @@ class TestCliFlow(unittest.TestCase):
                 output_path = args[1] if len(args) >= 2 else kwargs.get('output_path')
                 self.assertIn('_nosubs', output_path)
 
-    @patch('audiogram_generator.cli.transcript_svc.fetch_srt', return_value='FAKE SRT')
-    @patch('audiogram_generator.cli.download_audio')
+    @patch('audiogram_generator.pipeline.transcript_svc.fetch_srt', return_value='FAKE SRT')
+    @patch('audiogram_generator.pipeline.download_audio')
     @patch('os.makedirs')
     @patch('builtins.open', new_callable=MagicMock)
     @patch('os.path.exists', return_value=False)
@@ -172,11 +172,11 @@ class TestProcessOneEpisodeLoadsAudioOnce(unittest.TestCase):
             'image_url': None,
         }
 
-    @patch('audiogram_generator.cli.generate_audiogram')
-    @patch('audiogram_generator.cli.extract_audio_segment', return_value='/tmp/seg.mp3')
-    @patch('audiogram_generator.cli.load_audio')
-    @patch('audiogram_generator.cli.download_image')
-    @patch('audiogram_generator.cli.download_audio')
+    @patch('audiogram_generator.pipeline.generate_audiogram')
+    @patch('audiogram_generator.pipeline.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('audiogram_generator.pipeline.load_audio')
+    @patch('audiogram_generator.pipeline.download_image')
+    @patch('audiogram_generator.pipeline.download_audio')
     @patch('os.path.exists', return_value=True)
     def test_load_audio_called_once_for_multiple_soundbites(
         self, mock_exists, mock_dl_audio,
