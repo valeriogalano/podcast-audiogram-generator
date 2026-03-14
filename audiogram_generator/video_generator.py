@@ -294,131 +294,164 @@ LAYOUT_CONFIGS = {
 }
 
 
-def _render_header(draw, width, height, layout_config, colors, podcast_title, episode_title,
-                   header_title_source=None, header_soundbite_title=None, fonts=None):
+def _resolve_header_text(podcast_title, episode_title, header_title_source, header_soundbite_title):
+    """Resolve which text to show in the header based on source config."""
+    src = (header_title_source or 'auto').lower()
+    if src == 'none':
+        return None
+    if src == 'podcast':
+        return (podcast_title or '').strip() or None
+    if src == 'episode':
+        return (episode_title or '').strip() or None
+    if src == 'soundbite':
+        text = (header_soundbite_title or '').strip()
+        return text or (episode_title or podcast_title or '').strip() or None
+    # auto
+    if episode_title and str(episode_title).strip():
+        return str(episode_title).strip()
+    if podcast_title and str(podcast_title).strip():
+        return str(podcast_title).strip()
+    return None
+
+
+def _precompute_header(width, height, layout_config, fonts, podcast_title, episode_title,
+                       header_title_source=None, header_soundbite_title=None):
+    """Run the font size-negotiation once and return a cache dict for _render_header.
+
+    Creates a temporary Image/Draw just for measurement — no pixels are kept.
+    Returns None if there is no text to display.
     """
-    Render the header bar with title text.
-    
-    Args:
-        draw: ImageDraw object
-        width, height: Frame dimensions
-        layout_config: Layout configuration dictionary
-        colors: Colors dictionary
-        podcast_title: Podcast title
-        episode_title: Episode title
-        header_title_source: Source for header title ('auto', 'podcast', 'episode', 'soundbite', 'none')
-        header_soundbite_title: Soundbite title (used when header_title_source='soundbite')
-        fonts: Fonts configuration dictionary
-        
+    header_height = int(height * layout_config['header_ratio'])
+    header_text = _resolve_header_text(podcast_title, episode_title, header_title_source, header_soundbite_title)
+    if not header_text:
+        return {'header_height': header_height, 'lines': [], 'font': None, 'base_h': 0,
+                'total_text_h': 0, 'pad_x': 0, 'pad_y': 0}
+
+    pad_x = int(width * 0.04)
+    pad_y = int(header_height * 0.04)
+    max_width = width - 2 * pad_x
+    max_height = header_height - 2 * pad_y
+
+    # Temporary draw for measurements only
+    tmp_img = Image.new('RGB', (width, header_height))
+    tmp_draw = ImageDraw.Draw(tmp_img)
+
+    header_font_path = "/System/Library/Fonts/Helvetica.ttc"
+    if fonts and fonts.get('header'):
+        header_font_path = fonts['header']
+
+    size = max(16, int(header_height * 0.26))
+    min_size = 12
+    font_header = ImageFont.load_default()
+    lines: list = []
+    base_h = 0
+    total_text_h = 0
+
+    while size >= min_size:
+        try:
+            font_header = ImageFont.truetype(header_font_path, size=size)
+        except Exception:
+            font_header = ImageFont.load_default()
+
+        words = header_text.split()
+        lines = []
+        cur = ""
+        for w in words:
+            test = (cur + (" " if cur else "") + w)
+            bbox = tmp_draw.textbbox((0, 0), test, font=font_header)
+            if (bbox[2] - bbox[0]) <= max_width:
+                cur = test
+            else:
+                if cur:
+                    lines.append(cur)
+                cur = w
+            if len(lines) >= 3:
+                break
+        if cur and len(lines) < 3:
+            lines.append(cur)
+
+        if lines:
+            lines = lines[:3]
+
+            def ellipsize(text_line: str) -> str:
+                if not text_line:
+                    return text_line
+                ell = "…"
+                while True:
+                    b = tmp_draw.textbbox((0, 0), text_line, font=font_header)
+                    if (b[2] - b[0]) <= max_width or len(text_line) <= 1:
+                        return text_line
+                    text_line = text_line[:-2] + ell if len(text_line) > 2 else ell
+
+            lines[-1] = ellipsize(lines[-1])
+
+            line_heights = [tmp_draw.textbbox((0, 0), ln, font=font_header)[3]
+                            - tmp_draw.textbbox((0, 0), ln, font=font_header)[1]
+                            for ln in lines]
+            base_h = max(line_heights) if line_heights else 0
+            total_text_h = sum(
+                base_h if i == 0 else int(base_h * HEADER_LINE_SPACING)
+                for i in range(len(line_heights))
+            )
+        else:
+            base_h = 0
+            total_text_h = 0
+
+        if total_text_h <= max_height:
+            break
+        size -= 2
+
+    tmp_img.close()
+    return {
+        'header_height': header_height,
+        'lines': lines,
+        'font': font_header,
+        'base_h': base_h,
+        'total_text_h': total_text_h,
+        'pad_x': pad_x,
+        'pad_y': pad_y,
+    }
+
+
+def _render_header(draw, width, height, layout_config, colors, podcast_title, episode_title,
+                   header_title_source=None, header_soundbite_title=None, fonts=None,
+                   header_cache=None):
+    """Render the header bar with title text.
+
+    If ``header_cache`` is provided (from _precompute_header) the expensive
+    size-negotiation and font loading are skipped entirely.
+
     Returns:
         header_height: Height of the header in pixels
     """
-    header_top = 0
     header_height = int(height * layout_config['header_ratio'])
-    draw.rectangle([(0, header_top), (width, header_top + header_height)], fill=colors['primary'])
+    draw.rectangle([(0, 0), (width, header_height)], fill=colors['primary'])
 
-    # Header title selection according to configuration
-    src = (header_title_source or 'auto').lower()
-    header_text = None
-    if src == 'none':
-        header_text = None
-    elif src == 'podcast':
-        header_text = (podcast_title or '').strip()
-    elif src == 'episode':
-        header_text = (episode_title or '').strip()
-    elif src == 'soundbite':
-        header_text = (header_soundbite_title or '').strip()
-        if not header_text:
-            # fallback gracefully
-            header_text = (episode_title or podcast_title or '').strip()
-    else:  # auto
-        if episode_title and str(episode_title).strip():
-            header_text = str(episode_title).strip()
-        elif podcast_title and str(podcast_title).strip():
-            header_text = str(podcast_title).strip()
+    if header_cache is not None:
+        lines = header_cache['lines']
+        font_header = header_cache['font']
+        base_h = header_cache['base_h']
+        total_text_h = header_cache['total_text_h']
+        pad_x = header_cache['pad_x']
+        pad_y = header_cache['pad_y']
+    else:
+        # Fallback: run negotiation inline (no cache provided)
+        cache = _precompute_header(width, height, layout_config, fonts, podcast_title, episode_title,
+                                   header_title_source, header_soundbite_title)
+        lines = cache['lines']
+        font_header = cache['font']
+        base_h = cache['base_h']
+        total_text_h = cache['total_text_h']
+        pad_x = cache['pad_x']
+        pad_y = cache['pad_y']
 
-    if header_text:
-        # Font size tuned per layout height; slightly smaller than header to leave padding
-        pad_x = int(width * 0.04)
-        pad_y = int(header_height * 0.04)
-        max_width = width - 2 * pad_x
-        max_height = header_height - 2 * pad_y
-
-        # Start from a size proportionate to header and go down until fits
-        size = max(16, int(header_height * 0.26))
-        min_size = 12
-        lines = []
-        base_h = 0
-        total_text_h = 0
-
-        while size >= min_size:
-            try:
-                header_font_path = "/System/Library/Fonts/Helvetica.ttc"
-                if fonts and fonts.get('header'):
-                    header_font_path = fonts['header']
-                font_header = ImageFont.truetype(header_font_path, size=size)
-            except Exception:
-                font_header = ImageFont.load_default()
-
-            # Simple word wrap to fit within header width
-            words = header_text.split()
-            lines = []
-            cur = ""
-            for w in words:
-                test = (cur + (" " if cur else "") + w)
-                bbox = draw.textbbox((0, 0), test, font=font_header)
-                if (bbox[2] - bbox[0]) <= max_width:
-                    cur = test
-                else:
-                    if cur:
-                        lines.append(cur)
-                    cur = w
-                if len(lines) >= 3:
-                    break
-            if cur and len(lines) < 3:
-                lines.append(cur)
-
-            if lines:
-                lines = lines[:3]
-                # Ellipsize last line until it fits in width
-                def ellipsize(text_line: str) -> str:
-                    if not text_line:
-                        return text_line
-                    ell = "…"
-                    while True:
-                        bbox2 = draw.textbbox((0, 0), text_line, font=font_header)
-                        if (bbox2[2] - bbox2[0]) <= max_width or len(text_line) <= 1:
-                            return text_line
-                        text_line = text_line[:-2] + ell if len(text_line) > 2 else ell
-
-                lines[-1] = ellipsize(lines[-1])
-
-                # Compute total height
-                line_heights = []
-                for ln in lines:
-                    bbox = draw.textbbox((0, 0), ln, font=font_header)
-                    line_heights.append(bbox[3] - bbox[1])
-                base_h = max(line_heights) if line_heights else 0
-                total_text_h = 0
-                for i, _lh in enumerate(line_heights):
-                    total_text_h += (base_h if i == 0 else int(base_h * HEADER_LINE_SPACING))
-            else:
-                base_h = 0
-                total_text_h = 0
-
-            if total_text_h <= max_height:
-                break
-            size -= 2
-
-        # Draw lines if any
-        if lines:
-            start_y = header_top + header_height - pad_y - total_text_h
-            x = pad_x
-            text_fill = tuple(colors.get('text', COLOR_WHITE))
-            cy = start_y
-            for i, ln in enumerate(lines):
-                draw.text((x, cy), ln, font=font_header, fill=text_fill)
-                cy += (base_h if i == 0 else int(base_h * HEADER_LINE_SPACING))
+    if lines:
+        start_y = header_height - pad_y - total_text_h
+        text_fill = tuple(colors.get('text', COLOR_WHITE))
+        cy = start_y
+        for i, ln in enumerate(lines):
+            draw.text((pad_x, cy), ln, font=font_header, fill=text_fill)
+            cy += (base_h if i == 0 else int(base_h * HEADER_LINE_SPACING))
 
     return header_height
 
@@ -589,16 +622,17 @@ def _render_transcript(img, draw, width, height, central_top, central_height, ce
 def _create_unified_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                            waveform_data, current_time, transcript_chunks, audio_duration, colors, layout_config,
                            header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
-                           fonts=None, waveform_sensitivities=None):
+                           fonts=None, waveform_sensitivities=None, header_cache=None):
     """
     Unified layout for all video formats.
     Uses format-specific configurations passed via layout_config.
     """
-    # Render header
+    # Render header (uses pre-computed cache when available to skip per-frame size negotiation)
     header_height = _render_header(
         draw, width, height, layout_config, colors,
         podcast_title, episode_title,
-        header_title_source, header_soundbite_title, fonts
+        header_title_source, header_soundbite_title, fonts,
+        header_cache=header_cache,
     )
 
     # Central area
@@ -628,7 +662,7 @@ def _create_unified_layout(img, draw, width, height, logo_img, podcast_title, ep
 def create_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                   waveform_data, current_time, transcript_chunks, audio_duration, colors, format_name='vertical',
                   header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
-                  fonts=None, waveform_sensitivities=None):
+                  fonts=None, waveform_sensitivities=None, header_cache=None):
     """
     Creates the layout for the specified format.
 
@@ -644,14 +678,14 @@ def create_layout(img, draw, width, height, logo_img, podcast_title, episode_tit
     return _create_unified_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                                   waveform_data, current_time, transcript_chunks, audio_duration, colors,
                                   layout_config, header_title_source, header_soundbite_title, fonts=fonts,
-                                  waveform_sensitivities=waveform_sensitivities)
+                                  waveform_sensitivities=waveform_sensitivities, header_cache=header_cache)
 
 
 def create_audiogram_frame(width, height, logo_img, podcast_title, episode_title,
                            waveform_data, current_time, transcript_chunks, audio_duration, colors_tuples,
                            format_name='vertical',
                            header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
-                           fonts=None, waveform_sensitivities=None):
+                           fonts=None, waveform_sensitivities=None, header_cache=None):
     """
     Creates a single audiogram frame by delegating to the format-specific layout.
 
@@ -675,7 +709,7 @@ def create_audiogram_frame(width, height, logo_img, podcast_title, episode_title
     img = create_layout(img, draw, width, height, logo_img, podcast_title,
                        episode_title, waveform_data, current_time, transcript_chunks,
                        audio_duration, colors_tuples, format_name, header_title_source, header_soundbite_title,
-                       fonts=fonts, waveform_sensitivities=waveform_sensitivities)
+                       fonts=fonts, waveform_sensitivities=waveform_sensitivities, header_cache=header_cache)
 
     # Ensure the array is in RGB for MoviePy
     if img.mode != 'RGB':
@@ -762,6 +796,14 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
         half = rng.uniform(0.6, 1.4, num_bars // 2)
         waveform_sensitivities = np.concatenate([half, half[::-1]])
 
+    print(f"  - Pre-computing header layout...")
+    # Run font size-negotiation once — title and dimensions never change between frames
+    header_cache = _precompute_header(
+        width, height, layout_config, fonts,
+        podcast_title, episode_title,
+        header_title_source, header_soundbite_title,
+    )
+
     print(f"  - Video frame generation...")
     # Prepare subtitle chunks according to flag
     chunks_for_render = transcript_chunks if show_subtitles else []
@@ -782,6 +824,7 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
             header_soundbite_title,
             fonts=fonts,
             waveform_sensitivities=waveform_sensitivities,  # Pre-computed, no recalc per frame
+            header_cache=header_cache,  # Pre-computed font + layout, no size-negotiation per frame
         )
 
     # Create video clip
