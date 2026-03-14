@@ -43,8 +43,9 @@ def _warn_if_no_ffmpeg():
         if shutil.which('ffmpeg') is None:
             print("Warning: FFmpeg not found on PATH. Rendering may fail. See README for install instructions.")
         _ffmpeg_warned = True
-    except Exception:
+    except Exception as e:
         # Never fail due to env probing
+        logging.warning("FFmpeg check failed: %s", e)
         _ffmpeg_warned = True
 
 
@@ -73,8 +74,8 @@ def get_transcript_text(transcript_url, start_time, duration, srt_content=None):
 
         if srt_content:
             return transcript_svc.get_transcript_text_from_srt(srt_content, start_time, duration)
-    except Exception:
-        pass
+    except Exception as e:
+        logging.warning("Could not load transcript text: %s", e)
     return None
 
 
@@ -89,8 +90,8 @@ def get_transcript_chunks(transcript_url, start_time, duration, srt_content=None
 
         if srt_content:
             return transcript_svc.parse_srt_to_chunks(srt_content, float(start_time), float(duration))
-    except Exception:
-        pass
+    except Exception as e:
+        logging.warning("Could not load transcript chunks: %s", e)
     return []
 
 
@@ -344,8 +345,8 @@ def _dry_run_episode(selected, soundbites_choice):
     if selected.get('transcript_url'):
         try:
             srt_content = transcript_svc.fetch_srt(selected['transcript_url'])
-        except Exception:
-            pass
+        except Exception as e:
+            logging.warning("Could not fetch SRT for dry-run preview: %s", e)
 
     for idx in nums:
         sb = sbs[idx - 1]
@@ -679,7 +680,8 @@ def main():
     # Caption labels (allow overriding fixed strings in caption)
     try:
         labels = config.get('caption_labels', {}) or {}
-    except Exception:
+    except Exception as e:
+        logging.warning("Could not read caption_labels from config: %s", e)
         labels = {}
     global CAPTION_LABEL_EPISODE_PREFIX, CAPTION_LABEL_LISTEN_PREFIX
     CAPTION_LABEL_EPISODE_PREFIX = labels.get('episode_prefix', CAPTION_LABEL_EPISODE_PREFIX)

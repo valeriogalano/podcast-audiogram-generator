@@ -35,7 +35,7 @@ Attenzione: MoviePy e PIL rilasciano il GIL durante l'encoding, quindi `ProcessP
 
 | # | Fix | File | Priorità | Stato |
 |---|-----|------|----------|-------|
-| C1 | `except Exception: pass` → log warning con contesto | `cli.py` | Alta | ⬜ Todo |
+| C1 | `except Exception: pass` → log warning con contesto | `cli.py` | Alta | ✅ Done |
 | C2 | `download_image()` duplicata rimossa da `video_generator.py` (usare `services/assets.py`) | `video_generator.py` | Alta | ✅ Done |
 | C3 | `_SAVED_SEGMENTS = set()` rimosso (dead code, mai letto) | `video_generator.py` | Bassa | ✅ Done |
 | C4 | `librosa` rimosso da `setup.py` (non usato, non in `requirements.txt`) | `setup.py` | Alta | ✅ Done |
