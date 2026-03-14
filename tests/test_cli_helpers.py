@@ -2,6 +2,8 @@
 Tests for CLI module helper functions (without external I/O)
 """
 import unittest
+import unittest.mock
+from unittest.mock import patch, MagicMock
 from audiogram_generator import cli
 
 
@@ -61,6 +63,87 @@ class TestCliHelpers(unittest.TestCase):
             cli.parse_soundbite_selection("x,y", 3)
         with self.assertRaises(ValueError):
             cli.parse_soundbite_selection("", 3)
+
+
+class TestProcessSingleSoundbitePassesLoadedAudio(unittest.TestCase):
+    """T11 — _process_single_soundbite passes loaded_audio to extract_audio_segment."""
+
+    def _make_soundbite(self):
+        return {'start': 10, 'duration': 5, 'title': 'Test SB', 'text': 'hello'}
+
+    def _make_selected(self):
+        return {
+            'number': 1,
+            'title': 'Episode',
+            'link': 'https://example.com/ep1',
+            'audio_url': 'https://example.com/audio.mp3',
+            'transcript_url': None,
+            'soundbites': [self._make_soundbite()],
+            'keywords': '',
+            'image_url': None,
+        }
+
+    @patch('audiogram_generator.cli.generate_audiogram')
+    @patch('audiogram_generator.cli.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('os.path.exists', return_value=True)
+    def test_loaded_audio_forwarded_to_extract(self, mock_exists, mock_extract, mock_gen):
+        """loaded_audio kwarg must be forwarded to extract_audio_segment."""
+        import tempfile, os
+        pre_loaded = unittest.mock.MagicMock()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cli._process_single_soundbite(
+                soundbite=self._make_soundbite(),
+                soundbite_num=1,
+                total_soundbites=1,
+                selected=self._make_selected(),
+                podcast_info={'title': 'Podcast', 'image_url': None},
+                temp_dir=tmp,
+                logo_path=os.path.join(tmp, 'logo.png'),
+                srt_content=None,
+                full_audio_path='/fake/full.mp3',
+                output_dir=tmp,
+                formats_config={'vertical': {'width': 64, 'height': 64, 'enabled': True}},
+                colors=cli.Config.DEFAULT_CONFIG['colors'],
+                show_subtitles=False,
+                config_hashtags=None,
+                loaded_audio=pre_loaded,
+            )
+
+        # extract_audio_segment must have been called with audio=pre_loaded
+        mock_extract.assert_called_once()
+        _, kwargs = mock_extract.call_args
+        self.assertIs(kwargs.get('audio'), pre_loaded)
+
+    @patch('audiogram_generator.cli.generate_audiogram')
+    @patch('audiogram_generator.cli.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('os.path.exists', return_value=True)
+    def test_none_loaded_audio_still_calls_extract(self, mock_exists, mock_extract, mock_gen):
+        """When loaded_audio=None, extract_audio_segment is still called (fallback)."""
+        import tempfile, os
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cli._process_single_soundbite(
+                soundbite=self._make_soundbite(),
+                soundbite_num=1,
+                total_soundbites=1,
+                selected=self._make_selected(),
+                podcast_info={'title': 'Podcast', 'image_url': None},
+                temp_dir=tmp,
+                logo_path=os.path.join(tmp, 'logo.png'),
+                srt_content=None,
+                full_audio_path='/fake/full.mp3',
+                output_dir=tmp,
+                formats_config={'vertical': {'width': 64, 'height': 64, 'enabled': True}},
+                colors=cli.Config.DEFAULT_CONFIG['colors'],
+                show_subtitles=False,
+                config_hashtags=None,
+                loaded_audio=None,
+            )
+
+        mock_extract.assert_called_once()
+        _, kwargs = mock_extract.call_args
+        self.assertIsNone(kwargs.get('audio'))
 
 
 if __name__ == "__main__":
