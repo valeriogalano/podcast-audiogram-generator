@@ -81,6 +81,8 @@ tests/                      # pytest suite (unittest.TestCase style)
 ## Testing conventions
 
 - All network I/O (`fetch_srt`, `download_audio`, `download_image`, RSS fetching) must be mocked.
+- `audio_utils` uses lazy imports (`from pydub import AudioSegment` inside functions); patch
+  `pydub.AudioSegment.from_file` directly, not `audiogram_generator.audio_utils.AudioSegment`.
 - Video rendering (`generate_audiogram`) must always be mocked — it requires FFmpeg and is slow.
 - For `video_generator` unit tests, mock `ImageFont.truetype` and `Image.open` to avoid
   requiring real fonts or image files on disk.
