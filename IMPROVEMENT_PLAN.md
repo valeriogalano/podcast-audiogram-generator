@@ -97,7 +97,7 @@ DEFAULT_FONT_PATH = _DEFAULT_FONT_PATHS.get(sys.platform, "")
 
 | # | Fix | Impatto | Stato |
 |---|-----|---------|-------|
-| A1 | Suddividere `video_generator.py` (809 righe) in moduli: `waveform.py`, `compositor.py`, `layouts.py`, `encoder.py` | Manutenibilità | ⬜ Todo |
+| A1 | Suddividere `video_generator.py` (809 righe) in moduli: `waveform.py`, `compositor.py`, `layouts.py`, `encoder.py` | Manutenibilità | ✅ Done |
 | A2 | Estrarre logica di business da `cli.py` (763 righe) in un layer separato | Manutenibilità | ⬜ Todo |
 | A3 | Test smoke del rendering (frame 64×64 senza audio reale) per coprire casi font mancanti ecc. | Qualità test | ✅ Done (T10) |
 | A4 | Separare il layer interattivo da `process_one_episode()`: estrarre i prompt `input()` in una funzione dedicata in modo che la logica di orchestrazione sia testabile senza stdin | Testabilità | ✅ Done |

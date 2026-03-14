@@ -76,9 +76,9 @@ class TestPrecomputeHeader(unittest.TestCase):
         font.getmetrics.return_value = (12, 3)
         return font
 
-    @patch("audiogram_generator.video_generator.ImageDraw.Draw", return_value=_mock_draw())
-    @patch("audiogram_generator.video_generator.ImageFont.truetype")
-    @patch("audiogram_generator.video_generator.ImageFont.load_default")
+    @patch("audiogram_generator.rendering.layouts.ImageDraw.Draw", return_value=_mock_draw())
+    @patch("audiogram_generator.rendering.layouts.ImageFont.truetype")
+    @patch("audiogram_generator.rendering.layouts.ImageFont.load_default")
     def test_returns_required_keys(self, mock_default, mock_truetype, mock_draw_cls):
         mock_truetype.return_value = self._mock_font()
         layout = LAYOUT_CONFIGS['vertical']
@@ -93,8 +93,8 @@ class TestPrecomputeHeader(unittest.TestCase):
         self.assertEqual(cache['lines'], [])
         self.assertIsNone(cache['font'])
 
-    @patch("audiogram_generator.video_generator.ImageDraw.Draw", return_value=_mock_draw())
-    @patch("audiogram_generator.video_generator.ImageFont.truetype")
+    @patch("audiogram_generator.rendering.layouts.ImageDraw.Draw", return_value=_mock_draw())
+    @patch("audiogram_generator.rendering.layouts.ImageFont.truetype")
     def test_header_height_matches_layout(self, mock_truetype, mock_draw_cls):
         mock_truetype.return_value = self._mock_font()
         layout = LAYOUT_CONFIGS['square']
@@ -102,12 +102,12 @@ class TestPrecomputeHeader(unittest.TestCase):
         expected = int(1080 * layout['header_ratio'])
         self.assertEqual(cache['header_height'], expected)
 
-    @patch("audiogram_generator.video_generator.ImageDraw.Draw", return_value=_mock_draw())
-    @patch("audiogram_generator.video_generator.ImageFont.truetype")
+    @patch("audiogram_generator.rendering.layouts.ImageDraw.Draw", return_value=_mock_draw())
+    @patch("audiogram_generator.rendering.layouts.ImageFont.truetype")
     def test_falls_back_to_default_font_on_error(self, mock_truetype, mock_draw_cls):
         mock_truetype.side_effect = OSError("font not found")
         layout = LAYOUT_CONFIGS['vertical']
-        with patch("audiogram_generator.video_generator.ImageFont.load_default") as mock_default:
+        with patch("audiogram_generator.rendering.layouts.ImageFont.load_default") as mock_default:
             mock_default.return_value = self._mock_font()
             cache = _precompute_header(1080, 1920, layout, None, "Podcast", "Episode")
         mock_default.assert_called()
@@ -121,7 +121,7 @@ class TestPrecomputeTranscript(unittest.TestCase):
         return {'primary': (242, 101, 34), 'background': (235, 213, 197),
                 'text': (255, 255, 255), 'transcript_bg': (50, 50, 50)}
 
-    @patch("audiogram_generator.video_generator.ImageFont.truetype")
+    @patch("audiogram_generator.rendering.layouts.ImageFont.truetype")
     def test_returns_required_keys(self, mock_truetype):
         mock_truetype.return_value = MagicMock()
         layout = LAYOUT_CONFIGS['vertical']
@@ -129,7 +129,7 @@ class TestPrecomputeTranscript(unittest.TestCase):
         for key in ('font', 'style', 'max_width', 'transcript_y'):
             self.assertIn(key, cache)
 
-    @patch("audiogram_generator.video_generator.ImageFont.truetype")
+    @patch("audiogram_generator.rendering.layouts.ImageFont.truetype")
     def test_max_lines_capped_by_layout(self, mock_truetype):
         mock_truetype.return_value = MagicMock()
         for fmt, layout in LAYOUT_CONFIGS.items():
@@ -137,7 +137,7 @@ class TestPrecomputeTranscript(unittest.TestCase):
                 cache = _precompute_transcript(1080, 1080, layout, self._colors())
                 self.assertLessEqual(cache['style']['max_lines'], layout['max_lines'])
 
-    @patch("audiogram_generator.video_generator.ImageFont.truetype")
+    @patch("audiogram_generator.rendering.layouts.ImageFont.truetype")
     def test_transcript_y_is_positive(self, mock_truetype):
         mock_truetype.return_value = MagicMock()
         for fmt, layout in LAYOUT_CONFIGS.items():
@@ -145,11 +145,11 @@ class TestPrecomputeTranscript(unittest.TestCase):
                 cache = _precompute_transcript(1080, 1080, layout, self._colors())
                 self.assertGreater(cache['transcript_y'], 0)
 
-    @patch("audiogram_generator.video_generator.ImageFont.truetype")
+    @patch("audiogram_generator.rendering.layouts.ImageFont.truetype")
     def test_falls_back_to_default_font(self, mock_truetype):
         mock_truetype.side_effect = OSError("no font")
         layout = LAYOUT_CONFIGS['vertical']
-        with patch("audiogram_generator.video_generator.ImageFont.load_default") as mock_def:
+        with patch("audiogram_generator.rendering.layouts.ImageFont.load_default") as mock_def:
             mock_def.return_value = MagicMock()
             cache = _precompute_transcript(1080, 1920, layout, self._colors())
         mock_def.assert_called()
@@ -228,9 +228,9 @@ class TestCreateAudiogramFrameSmoke(unittest.TestCase):
         draw_instance = MagicMock()
         draw_instance.textbbox.return_value = (0, 0, 30, 12)
         return (
-            patch("audiogram_generator.video_generator.ImageFont.truetype", return_value=mock_font),
-            patch("audiogram_generator.video_generator.ImageFont.load_default", return_value=mock_font),
-            patch("audiogram_generator.video_generator.ImageDraw.Draw", return_value=draw_instance),
+            patch("audiogram_generator.rendering.layouts.ImageFont.truetype", return_value=mock_font),
+            patch("audiogram_generator.rendering.layouts.ImageFont.load_default", return_value=mock_font),
+            patch("audiogram_generator.rendering.layouts.ImageDraw.Draw", return_value=draw_instance),
         )
 
     def test_returns_correct_shape(self):
