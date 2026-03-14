@@ -12,7 +12,7 @@ import tempfile
 import argparse
 import shutil
 from typing import List
-from .audio_utils import download_audio, extract_audio_segment
+from .audio_utils import download_audio, extract_audio_segment, load_audio
 from .services.assets import download_image
 from .rendering.facade import generate_audiogram
 from .config import Config
@@ -161,7 +161,8 @@ def _process_single_soundbite(
     show_subtitles,
     config_hashtags,
     header_title_source=None,
-    fonts=None
+    fonts=None,
+    loaded_audio=None,
 ):
     """
     Process a single soundbite: extract audio, generate audiograms, caption and SRT.
@@ -194,7 +195,7 @@ def _process_single_soundbite(
         print(f"Soundbite {soundbite_num}: {soundbite.get('text') or soundbite.get('title')}")
         print(f"{'='*60}")
 
-    # Extract audio segment
+    # Extract audio segment (use pre-loaded audio when available to avoid re-reading the file)
     if full_audio_path and os.path.exists(full_audio_path):
         print("Extracting audio segment...")
         segment_path = os.path.join(temp_dir, f"segment_{soundbite_num}.mp3")
@@ -202,7 +203,8 @@ def _process_single_soundbite(
             full_audio_path,
             soundbite['start'],
             soundbite['duration'],
-            segment_path
+            segment_path,
+            audio=loaded_audio,
         )
     else:
         print("Warning: skipping audio extraction because full audio file is missing or invalid.")
@@ -447,6 +449,15 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
     # Download full audio and transcript if available
     full_audio_path, srt_content = _prepare_episode_resources(selected, output_dir)
 
+    # Pre-load audio once — reused by all soundbite extractions to avoid repeated decoding
+    loaded_audio = None
+    if full_audio_path and os.path.exists(full_audio_path):
+        try:
+            print("Pre-loading audio for segment extraction...")
+            loaded_audio = load_audio(full_audio_path)
+        except Exception as e:
+            print(f"Warning: could not pre-load audio, will reload per soundbite: {e}")
+
     # Show soundbites if they exist
     if selected['soundbites']:
         print(f"\nFound soundbites ({len(selected['soundbites'])}):")
@@ -509,6 +520,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                         config_hashtags=config_hashtags,
                         header_title_source=header_title_source,
                         fonts=fonts,
+                        loaded_audio=loaded_audio,
                     )
 
                 print(f"\n{'='*60}")
@@ -564,6 +576,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                             config_hashtags=config_hashtags,
                             header_title_source=header_title_source,
                             fonts=fonts,
+                            loaded_audio=loaded_audio,
                         )
 
                     print(f"\n{'='*60}")
