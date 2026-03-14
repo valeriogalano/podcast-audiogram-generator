@@ -6,8 +6,6 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from typing import Optional
 from moviepy import VideoClip, AudioFileClip
-import urllib.request
-import ssl
 import re
 import unicodedata
 import shutil
@@ -205,18 +203,6 @@ def _draw_pill_with_text(img, draw, text, font, center_x, y, padding_x=24, paddi
     else:
         draw.text((text_x, text_y), text, font=font, fill=text_color)
     return img, text_x, text_y
-
-
-def download_image(url, output_path):
-    """Downloads an image from URL"""
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
-
-    request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    with urllib.request.urlopen(request, context=ssl_context) as response:
-        with open(output_path, 'wb') as f:
-            f.write(response.read())
 
 
 def get_waveform_data(audio_path, fps=24):
