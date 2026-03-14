@@ -2,6 +2,7 @@
 Audiogram video generator
 """
 import os
+import sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from typing import Optional
@@ -9,6 +10,14 @@ from moviepy import VideoClip, AudioFileClip
 import re
 import unicodedata
 import shutil
+
+# Default font path resolved per platform; overridable via config.yaml `fonts.header` / `fonts.transcript`
+_PLATFORM_DEFAULT_FONTS = {
+    "darwin": "/System/Library/Fonts/Helvetica.ttc",
+    "linux":  "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "win32":  "C:/Windows/Fonts/Arial.ttf",
+}
+DEFAULT_FONT_PATH = _PLATFORM_DEFAULT_FONTS.get(sys.platform, "")
 
 # Social media video formats
 FORMATS = {
@@ -319,7 +328,7 @@ def _precompute_header(width, height, layout_config, fonts, podcast_title, episo
     tmp_img = Image.new('RGB', (width, header_height))
     tmp_draw = ImageDraw.Draw(tmp_img)
 
-    header_font_path = "/System/Library/Fonts/Helvetica.ttc"
+    header_font_path = DEFAULT_FONT_PATH
     if fonts and fonts.get('header'):
         header_font_path = fonts['header']
 
@@ -539,7 +548,7 @@ def _precompute_transcript(width, height, layout_config, colors, fonts=None):
     Returns a cache dict to be passed to _render_transcript every frame.
     """
     try:
-        transcript_font_path = "/System/Library/Fonts/Helvetica.ttc"
+        transcript_font_path = DEFAULT_FONT_PATH
         if fonts and fonts.get('transcript'):
             transcript_font_path = fonts['transcript']
         font_transcript = ImageFont.truetype(transcript_font_path,
