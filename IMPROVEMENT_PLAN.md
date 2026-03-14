@@ -11,7 +11,7 @@
 | P5 | Font transcript + style + posizione pre-computati (`_precompute_transcript`) | `video_generator.py` | Alto | ✅ Done |
 | P6 | Audio caricato una volta per episodio (`load_audio` + `loaded_audio` passato ai soundbite) | `audio_utils.py`, `cli.py` | Alto | ✅ Done |
 | P7 | Rendering formati in parallelo con `concurrent.futures.ProcessPoolExecutor` | `cli.py` | Alto | ⬜ Todo |
-| P8 | PIL images non chiuse in `_draw_rounded_box_with_shadow` (memory leak su run lunghi) | `video_generator.py` | Basso | ⬜ Todo |
+| P8 | PIL images non chiuse in `_draw_rounded_box_with_shadow` (memory leak su run lunghi) | `video_generator.py` | Basso | ✅ Done |
 
 ### Dettaglio P7 — Rendering parallelo
 

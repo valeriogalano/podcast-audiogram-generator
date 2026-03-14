@@ -94,12 +94,16 @@ def _draw_rounded_box_with_shadow(base_img, box, fill, radius=16, shadow=True, s
         shadow_overlay = Image.new('RGBA', base_img.size, (0, 0, 0, 0))
         sdraw = ImageDraw.Draw(shadow_overlay)
         sdraw.rounded_rectangle([(sx, sy), (ex, ey)], radius=radius, fill=(0, 0, 0, 140))
-        shadow_overlay = shadow_overlay.filter(ImageFilter.GaussianBlur(shadow_blur))
-        base_img = Image.alpha_composite(base_img, shadow_overlay)
+        blurred = shadow_overlay.filter(ImageFilter.GaussianBlur(shadow_blur))
+        shadow_overlay.close()
+        composited = Image.alpha_composite(base_img, blurred)
+        blurred.close()
+        base_img = composited
 
     odraw.rounded_rectangle([box[:2], box[2:]], radius=radius, fill=fill)
-    base_img = Image.alpha_composite(base_img, overlay)
-    return base_img
+    result = Image.alpha_composite(base_img, overlay)
+    overlay.close()
+    return result
 
 
 def _render_subtitle_lines(img, draw, text, font, start_y, max_width, style):
