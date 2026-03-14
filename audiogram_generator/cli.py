@@ -473,33 +473,10 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
         except Exception as e:
             logger.warning("Could not pre-load audio, will reload per soundbite: %s", e)
 
-    # Show soundbites if they exist
+    # Process soundbites if they exist
     if selected['soundbites']:
-        logger.info("\nFound soundbites (%d):", len(selected['soundbites']))
-
-        for i, soundbite in enumerate(selected['soundbites'], 1):
-            logger.info("\n  %d. [Start: %ss, Duration: %ss]", i, soundbite['start'], soundbite['duration'])
-            logger.info("     Title: %s", soundbite.get('text') or soundbite.get('title'))
-
-            # Extract text from transcript if available
-            transcript_text = get_transcript_text(
-                selected.get('transcript_url'),
-                soundbite['start'],
-                soundbite['duration'],
-                srt_content=srt_content,
-                verify_ssl=verify_ssl,
-            )
-            if transcript_text:
-                logger.info("     Text: %s", transcript_text[:100] + "..." if len(transcript_text) > 100 else transcript_text)
-            else:
-                logger.info("     Text: [Not available]")
-
-        # Ask which soundbite to generate if not specified
-        logger.info("\n%s", "="*60)
-        if soundbites_choice is None:
-            choice = input("\nDo you want to generate an audiogram for a soundbite? (number, 'a' for all, or 'n' to exit): ")
-        else:
-            choice = str(soundbites_choice)
+        # soundbites_choice is always resolved by the caller (main() handles interactive prompt)
+        choice = str(soundbites_choice) if soundbites_choice is not None else 'n'
 
         if choice.lower() == 'a' or choice.lower() == 'all':
             # Generate all soundbites
@@ -778,6 +755,26 @@ def main():
             logger.warning("Episode %d not found in the feed. Skipping.", episode_num)
             continue
 
+        # Resolve soundbite choice interactively when not specified via config/CLI
+        resolved_soundbites_choice = soundbites_choice
+        if resolved_soundbites_choice is None and not dry_run:
+            sbs = selected.get('soundbites') or []
+            if sbs:
+                logger.info("\nFound soundbites (%d):", len(sbs))
+                for i, sb in enumerate(sbs, 1):
+                    logger.info("  %d. [Start: %ss, Duration: %ss] %s",
+                                i, sb['start'], sb['duration'],
+                                sb.get('text') or sb.get('title') or '')
+                logger.info("\n%s", "="*60)
+                try:
+                    resolved_soundbites_choice = input(
+                        "\nDo you want to generate an audiogram for a soundbite? "
+                        "(number, 'a' for all, or 'n' to exit): "
+                    )
+                except KeyboardInterrupt:
+                    logger.info("\nOperation cancelled.")
+                    return
+
         process_one_episode(
             selected=selected,
             podcast_info=podcast_info,
@@ -787,7 +784,7 @@ def main():
             show_subtitles=show_subtitles,
             output_dir=output_dir,
             temp_dir_base=temp_dir_base,
-            soundbites_choice=soundbites_choice,
+            soundbites_choice=resolved_soundbites_choice,
             dry_run=dry_run,
             use_episode_cover=use_episode_cover,
             header_title_source=header_title_source,
