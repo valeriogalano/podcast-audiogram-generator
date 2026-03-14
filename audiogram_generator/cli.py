@@ -11,6 +11,7 @@ import os
 import tempfile
 import argparse
 import shutil
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List
 from .audio_utils import download_audio, extract_audio_segment, load_audio
 from .services.assets import download_image
@@ -257,15 +258,15 @@ def _process_single_soundbite(
     if not segment_path or not os.path.exists(segment_path):
         logger.warning("Skipping audiogram video generation because audio segment is missing.")
     else:
-        for format_name, format_desc in formats_info.items():
-            logger.info("Generating audiogram %s...", format_desc)
-            # Add a suffix to filename if subtitles are disabled
-            nosubs_suffix = "_nosubs" if not show_subtitles else ""
+        nosubs_suffix = "_nosubs" if not show_subtitles else ""
+        soundbite_title = soundbite.get('text') or soundbite.get('title')
+
+        def _render_one_format(format_name):
             output_path = os.path.join(
                 output_dir,
                 f"ep{selected['number']}_sb{soundbite_num}{nosubs_suffix}_{format_name}.mp4"
             )
-
+            logger.info("Generating audiogram %s...", formats_info[format_name])
             generate_audiogram(
                 segment_path,
                 output_path,
@@ -279,11 +280,19 @@ def _process_single_soundbite(
                 colors,
                 show_subtitles,
                 header_title_source=header_title_source,
-                header_soundbite_title=(soundbite.get('text') or soundbite.get('title')),
+                header_soundbite_title=soundbite_title,
                 fonts=fonts,
             )
-
             logger.info("✓ %s: %s", format_name, output_path)
+            return format_name, output_path
+
+        with ThreadPoolExecutor(max_workers=len(formats_info)) as executor:
+            futures = {executor.submit(_render_one_format, fmt): fmt for fmt in formats_info}
+            for future in as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    logger.error("Format %s rendering failed: %s", futures[future], e)
 
     # Generate caption file .txt
     logger.info("Generating caption file...")
