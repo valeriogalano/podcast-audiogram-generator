@@ -150,7 +150,7 @@ Mancano coperture per le seguenti aree.
 
 | # | Funzionalità | File coinvolti | Stato |
 |---|--------------|----------------|-------|
-| F1 | Video audiogram per l'intero episodio (opzionale, flag `--full-episode`) | `cli.py`, `audio_utils.py`, `rendering/facade.py` | ⬜ Todo |
+| F1 | Video audiogram per l'intero episodio (opzionale, flag `--full-episode`) | `cli.py`, `audio_utils.py`, `rendering/facade.py` | ✅ Done |
 
 ### Dettaglio F1 — Video episodio intero
 

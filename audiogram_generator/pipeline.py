@@ -355,10 +355,93 @@ def _process_single_soundbite(
     return formats_info
 
 
+def _process_full_episode(selected, podcast_info, full_audio_path, srt_content,
+                           artwork_url, output_dir, temp_dir_base, formats_config, colors,
+                           show_subtitles, header_title_source=None, fonts=None,
+                           verify_ssl: bool = False):
+    """Generate audiograms for the entire episode (no soundbite extraction).
+
+    Uses the full audio file and all transcript chunks. Outputs are named
+    ``ep{N}_full_{format}.mp4``.
+    """
+    if not full_audio_path or not os.path.exists(full_audio_path):
+        logger.warning("Full audio file missing — cannot generate full-episode audiogram.")
+        return
+
+    # Parse transcript chunks for the full episode (no time window restriction)
+    transcript_chunks: List = []
+    if srt_content:
+        try:
+            transcript_chunks = transcript_svc.parse_srt_to_chunks(srt_content, 0.0, float('inf'))
+        except Exception as e:
+            logger.warning("Could not parse transcript chunks for full episode: %s", e)
+
+    # Duration from loaded audio
+    try:
+        loaded = load_audio(full_audio_path)
+        duration = len(loaded) / 1000.0
+    except Exception as e:
+        logger.warning("Could not determine episode duration: %s", e)
+        return
+
+    logger.warning(
+        "Generating full-episode audiogram (duration: %.0fs). This may take a while.", duration
+    )
+
+    formats_info = {}
+    for fmt_name, fmt_config in formats_config.items():
+        if fmt_config.get('enabled', True):
+            formats_info[fmt_name] = fmt_config.get('description', fmt_name)
+
+    with tempfile.TemporaryDirectory(dir=temp_dir_base) as temp_dir:
+        _warn_if_no_ffmpeg()
+
+        logger.info("Downloading artwork...")
+        logo_path = os.path.join(temp_dir, "logo.png")
+        if artwork_url:
+            download_image(artwork_url, logo_path, verify_ssl=verify_ssl)
+
+        def _render_one_format(format_name):
+            output_path = os.path.join(
+                output_dir,
+                f"ep{selected['number']}_full_{format_name}.mp4"
+            )
+            logger.info("Generating full-episode audiogram %s...", formats_info[format_name])
+            generate_audiogram(
+                full_audio_path,
+                output_path,
+                format_name,
+                logo_path,
+                podcast_info['title'],
+                selected['title'],
+                transcript_chunks if show_subtitles else [],
+                duration,
+                formats_config,
+                colors,
+                show_subtitles,
+                header_title_source=header_title_source,
+                fonts=fonts,
+            )
+            logger.info("✓ %s: %s", format_name, output_path)
+            return format_name, output_path
+
+        with ThreadPoolExecutor(max_workers=len(formats_info)) as executor:
+            futures = {executor.submit(_render_one_format, fmt): fmt for fmt in formats_info}
+            for future in as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    logger.error("Format %s rendering failed: %s", futures[future], e)
+
+    logger.info("\n%s", "=" * 60)
+    logger.info("Full-episode audiograms generated in folder: %s", output_dir)
+    logger.info("%s", "=" * 60)
+
+
 def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags,
                          show_subtitles, output_dir, temp_dir_base, soundbites_choice,
                          dry_run=False, use_episode_cover=False, header_title_source=None,
-                         fonts=None, verify_ssl: bool = False):
+                         fonts=None, verify_ssl: bool = False, full_episode: bool = False):
     """Orchestrate all steps for a single episode.
 
     ``soundbites_choice`` must be resolved by the caller (main() handles
@@ -384,6 +467,25 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
     full_audio_path, srt_content = _prepare_episode_resources(
         selected, output_dir, verify_ssl=verify_ssl
     )
+
+    # Full-episode mode: generate audiogram for the entire episode
+    if full_episode:
+        _process_full_episode(
+            selected=selected,
+            podcast_info=podcast_info,
+            full_audio_path=full_audio_path,
+            srt_content=srt_content,
+            artwork_url=artwork_url,
+            output_dir=output_dir,
+            temp_dir_base=temp_dir_base,
+            formats_config=formats_config,
+            colors=colors,
+            show_subtitles=show_subtitles,
+            header_title_source=header_title_source,
+            fonts=fonts,
+            verify_ssl=verify_ssl,
+        )
+        return
 
     loaded_audio = None
     if full_audio_path and os.path.exists(full_audio_path):

@@ -61,6 +61,8 @@ def main():
                         help='Logging level (default: INFO)')
     parser.add_argument('--dry-run', action='store_true',
                         help='Print only soundbite intervals and subtitles without generating files')
+    parser.add_argument('--full-episode', action='store_true',
+                        help='Generate an audiogram for the entire episode without selecting a soundbite')
     parser.add_argument(
         '--header-title-source',
         type=str,
@@ -109,6 +111,7 @@ def main():
         'show_subtitles': args.show_subtitles,
         'use_episode_cover': args.use_episode_cover,
         'header_title_source': args.header_title_source,
+        'full_episode': args.full_episode if args.full_episode else None,
     })
 
     feed_url = config.get('feed_url')
@@ -126,6 +129,7 @@ def main():
     header_title_source = config.get('header_title_source', 'auto')
     fonts = config.get('fonts')
     verify_ssl = config.get('verify_ssl', False)
+    full_episode = bool(config.get('full_episode', False))
     if not verify_ssl:
         logger.warning("SSL certificate verification is disabled (verify_ssl: false). "
                        "Set verify_ssl: true in config.yaml to enable it.")
@@ -211,7 +215,7 @@ def main():
 
         # Resolve soundbite choice interactively when not specified via config/CLI
         resolved_soundbites_choice = soundbites_choice
-        if resolved_soundbites_choice is None and not dry_run:
+        if resolved_soundbites_choice is None and not dry_run and not full_episode:
             sbs = selected.get('soundbites') or []
             if sbs:
                 logger.info("\nFound soundbites (%d):", len(sbs))
@@ -244,6 +248,7 @@ def main():
             header_title_source=header_title_source,
             fonts=fonts,
             verify_ssl=verify_ssl,
+            full_episode=full_episode,
         )
 
     return
