@@ -550,40 +550,11 @@ def _render_footer(draw, width, height, central_bottom, colors):
     draw.rectangle([(0, central_bottom), (width, height)], fill=colors['primary'])
 
 
-def _render_transcript(img, draw, width, height, central_top, central_height, central_bottom,
-                       transcript_chunks, current_time, layout_config, colors, fonts=None):
-    """
-    Render the transcript/subtitle text.
-    
-    Args:
-        img: PIL Image object
-        draw: ImageDraw object
-        width, height: Frame dimensions
-        central_top: Top position of central area
-        central_height: Height of central area
-        central_bottom: Bottom position of central area
-        transcript_chunks: List of transcript chunks with timing
-        current_time: Current time in seconds
-        layout_config: Layout configuration dictionary
-        colors: Colors dictionary
-        fonts: Fonts configuration dictionary
-        
-    Returns:
-        Updated img and draw objects
-    """
-    if not transcript_chunks:
-        return img, draw
-        
-    current_text = ""
-    for chunk in transcript_chunks:
-        if chunk['start'] <= current_time < chunk['end']:
-            current_text = chunk['text']
-            break
+def _precompute_transcript(width, height, layout_config, colors, fonts=None):
+    """Pre-compute all static transcript rendering data (font, style, position).
 
-    if not current_text:
-        return img, draw
-        
-    current_text = _strip_punctuation(current_text)
+    Returns a cache dict to be passed to _render_transcript every frame.
+    """
     try:
         transcript_font_path = "/System/Library/Fonts/Helvetica.ttc"
         if fonts and fonts.get('transcript'):
@@ -593,17 +564,66 @@ def _render_transcript(img, draw, width, height, central_top, central_height, ce
     except Exception:
         font_transcript = ImageFont.load_default()
 
-    # Transcription positioning: from bottom for square and horizontal, from top for vertical
-    if layout_config['transcript_y_offset'] < 0.5:
-        # From bottom (square, horizontal)
-        transcript_y = central_bottom - int(central_height * layout_config['transcript_y_offset'])
-    else:
-        # From top (vertical)
-        transcript_y = central_top + int(central_height * layout_config['transcript_y_offset'])
-
     style = _subtitle_default_style(colors)
     style['max_lines'] = min(style.get('max_lines', 5), layout_config['max_lines'])
     max_width = int(width * style['width_ratio'])
+
+    # central_top and central_bottom depend on header/central ratios, constant per format
+    header_height = int(height * layout_config['header_ratio'])
+    central_height = int(height * layout_config['central_ratio'])
+    central_top = header_height
+    central_bottom = central_top + central_height
+
+    if layout_config['transcript_y_offset'] < 0.5:
+        transcript_y = central_bottom - int(central_height * layout_config['transcript_y_offset'])
+    else:
+        transcript_y = central_top + int(central_height * layout_config['transcript_y_offset'])
+
+    return {
+        'font': font_transcript,
+        'style': style,
+        'max_width': max_width,
+        'transcript_y': transcript_y,
+    }
+
+
+def _render_transcript(img, draw, width, height, central_top, central_height, central_bottom,
+                       transcript_chunks, current_time, layout_config, colors, fonts=None,
+                       transcript_cache=None):
+    """Render the transcript/subtitle text.
+
+    If ``transcript_cache`` is provided (from _precompute_transcript) font loading
+    and style/position calculation are skipped entirely.
+
+    Returns:
+        Updated img and draw objects
+    """
+    if not transcript_chunks:
+        return img, draw
+
+    current_text = ""
+    for chunk in transcript_chunks:
+        if chunk['start'] <= current_time < chunk['end']:
+            current_text = chunk['text']
+            break
+
+    if not current_text:
+        return img, draw
+
+    current_text = _strip_punctuation(current_text)
+
+    if transcript_cache is not None:
+        font_transcript = transcript_cache['font']
+        style = transcript_cache['style']
+        max_width = transcript_cache['max_width']
+        transcript_y = transcript_cache['transcript_y']
+    else:
+        # Fallback: compute inline if no cache provided
+        cache = _precompute_transcript(width, height, layout_config, colors, fonts)
+        font_transcript = cache['font']
+        style = cache['style']
+        max_width = cache['max_width']
+        transcript_y = cache['transcript_y']
 
     img, _ = _render_subtitle_lines(
         img,
@@ -622,7 +642,7 @@ def _render_transcript(img, draw, width, height, central_top, central_height, ce
 def _create_unified_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                            waveform_data, current_time, transcript_chunks, audio_duration, colors, layout_config,
                            header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
-                           fonts=None, waveform_sensitivities=None, header_cache=None):
+                           fonts=None, waveform_sensitivities=None, header_cache=None, transcript_cache=None):
     """
     Unified layout for all video formats.
     Uses format-specific configurations passed via layout_config.
@@ -650,10 +670,11 @@ def _create_unified_layout(img, draw, width, height, logo_img, podcast_title, ep
     # Render footer
     _render_footer(draw, width, height, central_bottom, colors)
 
-    # Render transcript
+    # Render transcript (uses pre-computed cache when available to skip per-frame font loading)
     img, draw = _render_transcript(
         img, draw, width, height, central_top, central_height, central_bottom,
-        transcript_chunks, current_time, layout_config, colors, fonts
+        transcript_chunks, current_time, layout_config, colors, fonts,
+        transcript_cache=transcript_cache,
     )
 
     return img
@@ -662,7 +683,7 @@ def _create_unified_layout(img, draw, width, height, logo_img, podcast_title, ep
 def create_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                   waveform_data, current_time, transcript_chunks, audio_duration, colors, format_name='vertical',
                   header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
-                  fonts=None, waveform_sensitivities=None, header_cache=None):
+                  fonts=None, waveform_sensitivities=None, header_cache=None, transcript_cache=None):
     """
     Creates the layout for the specified format.
 
@@ -678,14 +699,15 @@ def create_layout(img, draw, width, height, logo_img, podcast_title, episode_tit
     return _create_unified_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                                   waveform_data, current_time, transcript_chunks, audio_duration, colors,
                                   layout_config, header_title_source, header_soundbite_title, fonts=fonts,
-                                  waveform_sensitivities=waveform_sensitivities, header_cache=header_cache)
+                                  waveform_sensitivities=waveform_sensitivities, header_cache=header_cache,
+                                  transcript_cache=transcript_cache)
 
 
 def create_audiogram_frame(width, height, logo_img, podcast_title, episode_title,
                            waveform_data, current_time, transcript_chunks, audio_duration, colors_tuples,
                            format_name='vertical',
                            header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
-                           fonts=None, waveform_sensitivities=None, header_cache=None):
+                           fonts=None, waveform_sensitivities=None, header_cache=None, transcript_cache=None):
     """
     Creates a single audiogram frame by delegating to the format-specific layout.
 
@@ -709,7 +731,8 @@ def create_audiogram_frame(width, height, logo_img, podcast_title, episode_title
     img = create_layout(img, draw, width, height, logo_img, podcast_title,
                        episode_title, waveform_data, current_time, transcript_chunks,
                        audio_duration, colors_tuples, format_name, header_title_source, header_soundbite_title,
-                       fonts=fonts, waveform_sensitivities=waveform_sensitivities, header_cache=header_cache)
+                       fonts=fonts, waveform_sensitivities=waveform_sensitivities, header_cache=header_cache,
+                       transcript_cache=transcript_cache)
 
     # Ensure the array is in RGB for MoviePy
     if img.mode != 'RGB':
@@ -796,6 +819,10 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
         half = rng.uniform(0.6, 1.4, num_bars // 2)
         waveform_sensitivities = np.concatenate([half, half[::-1]])
 
+    print(f"  - Pre-computing transcript layout...")
+    # Load transcript font and compute style/position once — never change between frames
+    transcript_cache = _precompute_transcript(width, height, layout_config, colors_tuples, fonts)
+
     print(f"  - Pre-computing header layout...")
     # Run font size-negotiation once — title and dimensions never change between frames
     header_cache = _precompute_header(
@@ -824,7 +851,8 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
             header_soundbite_title,
             fonts=fonts,
             waveform_sensitivities=waveform_sensitivities,  # Pre-computed, no recalc per frame
-            header_cache=header_cache,  # Pre-computed font + layout, no size-negotiation per frame
+            header_cache=header_cache,      # Pre-computed font + layout, no size-negotiation per frame
+            transcript_cache=transcript_cache,  # Pre-computed font + style, no per-frame loading
         )
 
     # Create video clip
