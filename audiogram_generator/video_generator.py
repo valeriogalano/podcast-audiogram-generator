@@ -246,21 +246,19 @@ def get_waveform_data(audio_path, fps=24):
         samples = samples / np.max(np.abs(samples))
 
     # Calculate audio samples per video frame
-    sample_rate = audio.frame_rate
     duration_seconds = len(audio) / 1000.0
     total_frames = int(duration_seconds * fps)
     samples_per_frame = len(samples) // total_frames if total_frames > 0 else len(samples)
 
-    # Extract mean amplitude for each frame
-    frame_amplitudes = []
-    for i in range(total_frames):
-        start = i * samples_per_frame
-        end = min(start + samples_per_frame, len(samples))
-        if start < len(samples):
-            chunk = samples[start:end]
-            frame_amplitudes.append(np.abs(chunk).mean())
+    # Vectorized: trim samples to exact multiple of samples_per_frame, reshape and mean per frame
+    n_complete = (len(samples) // samples_per_frame) * samples_per_frame
+    trimmed = np.abs(samples[:n_complete]).reshape(-1, samples_per_frame)
+    frame_amplitudes = trimmed.mean(axis=1)
 
-    return np.array(frame_amplitudes)
+    # Trim or pad to exactly total_frames
+    frame_amplitudes = frame_amplitudes[:total_frames]
+
+    return frame_amplitudes
 
 
 # Configurations for different layouts
@@ -425,10 +423,11 @@ def _render_header(draw, width, height, layout_config, colors, podcast_title, ep
     return header_height
 
 
-def _render_waveform(draw, width, central_top, central_height, waveform_data, current_time, audio_duration, colors):
+def _render_waveform(draw, width, central_top, central_height, waveform_data, current_time, audio_duration, colors,
+                     sensitivities=None):
     """
     Render the waveform visualizer in the central area.
-    
+
     Args:
         draw: ImageDraw object
         width: Frame width
@@ -438,10 +437,11 @@ def _render_waveform(draw, width, central_top, central_height, waveform_data, cu
         current_time: Current time in seconds
         audio_duration: Total audio duration
         colors: Colors dictionary
+        sensitivities: Pre-computed bar sensitivities array (optional, computed on first use)
     """
     if waveform_data is None or len(waveform_data) == 0:
         return
-        
+
     bar_spacing = 3
     bar_width = 12
     total_bar_width = bar_width + bar_spacing
@@ -452,14 +452,15 @@ def _render_waveform(draw, width, central_top, central_height, waveform_data, cu
 
     if num_bars < 2:
         return
-        
+
     frame_idx = int((current_time / audio_duration) * len(waveform_data)) if audio_duration > 0 else 0
     frame_idx = min(frame_idx, len(waveform_data) - 1)
     current_amplitude = waveform_data[frame_idx]
 
-    np.random.seed(42)
-    sensitivities = np.random.uniform(0.6, 1.4, num_bars // 2)
-    sensitivities = np.concatenate([sensitivities, sensitivities[::-1]])
+    if sensitivities is None or len(sensitivities) != num_bars:
+        rng = np.random.default_rng(42)
+        half = rng.uniform(0.6, 1.4, num_bars // 2)
+        sensitivities = np.concatenate([half, half[::-1]])
 
     for i in range(num_bars):
         x = i * total_bar_width
@@ -588,7 +589,7 @@ def _render_transcript(img, draw, width, height, central_top, central_height, ce
 def _create_unified_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                            waveform_data, current_time, transcript_chunks, audio_duration, colors, layout_config,
                            header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
-                           fonts=None):
+                           fonts=None, waveform_sensitivities=None):
     """
     Unified layout for all video formats.
     Uses format-specific configurations passed via layout_config.
@@ -605,8 +606,9 @@ def _create_unified_layout(img, draw, width, height, logo_img, podcast_title, ep
     central_height = int(height * layout_config['central_ratio'])
     central_bottom = central_top + central_height
 
-    # Render waveform
-    _render_waveform(draw, width, central_top, central_height, waveform_data, current_time, audio_duration, colors)
+    # Render waveform (pass pre-computed sensitivities to avoid recalculation per frame)
+    _render_waveform(draw, width, central_top, central_height, waveform_data, current_time, audio_duration, colors,
+                     sensitivities=waveform_sensitivities)
 
     # Render logo (pre-loaded image, no disk I/O per frame)
     _render_logo(img, width, central_top, central_height, logo_img)
@@ -626,7 +628,7 @@ def _create_unified_layout(img, draw, width, height, logo_img, podcast_title, ep
 def create_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                   waveform_data, current_time, transcript_chunks, audio_duration, colors, format_name='vertical',
                   header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
-                  fonts=None):
+                  fonts=None, waveform_sensitivities=None):
     """
     Creates the layout for the specified format.
 
@@ -641,14 +643,15 @@ def create_layout(img, draw, width, height, logo_img, podcast_title, episode_tit
     layout_config = LAYOUT_CONFIGS.get(format_name, LAYOUT_CONFIGS['vertical'])
     return _create_unified_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                                   waveform_data, current_time, transcript_chunks, audio_duration, colors,
-                                  layout_config, header_title_source, header_soundbite_title, fonts=fonts)
+                                  layout_config, header_title_source, header_soundbite_title, fonts=fonts,
+                                  waveform_sensitivities=waveform_sensitivities)
 
 
 def create_audiogram_frame(width, height, logo_img, podcast_title, episode_title,
                            waveform_data, current_time, transcript_chunks, audio_duration, colors_tuples,
                            format_name='vertical',
                            header_title_source: Optional[str] = None, header_soundbite_title: Optional[str] = None,
-                           fonts=None):
+                           fonts=None, waveform_sensitivities=None):
     """
     Creates a single audiogram frame by delegating to the format-specific layout.
 
@@ -672,7 +675,7 @@ def create_audiogram_frame(width, height, logo_img, podcast_title, episode_title
     img = create_layout(img, draw, width, height, logo_img, podcast_title,
                        episode_title, waveform_data, current_time, transcript_chunks,
                        audio_duration, colors_tuples, format_name, header_title_source, header_soundbite_title,
-                       fonts=fonts)
+                       fonts=fonts, waveform_sensitivities=waveform_sensitivities)
 
     # Ensure the array is in RGB for MoviePy
     if img.mode != 'RGB':
@@ -747,6 +750,18 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
         logo_img = logo.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
         logo.close()
 
+    # Pre-compute waveform bar sensitivities (fixed seed → same every frame, no need to recompute)
+    bar_spacing = 3
+    bar_width = 12
+    num_bars = width // (bar_width + bar_spacing)
+    if num_bars % 2 != 0:
+        num_bars -= 1
+    waveform_sensitivities = None
+    if num_bars >= 2:
+        rng = np.random.default_rng(42)
+        half = rng.uniform(0.6, 1.4, num_bars // 2)
+        waveform_sensitivities = np.concatenate([half, half[::-1]])
+
     print(f"  - Video frame generation...")
     # Prepare subtitle chunks according to flag
     chunks_for_render = transcript_chunks if show_subtitles else []
@@ -754,18 +769,19 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
     def make_frame(t):
         return create_audiogram_frame(
             width, height,
-            logo_img,           # Pre-loaded PIL Image, no disk I/O per frame
+            logo_img,                   # Pre-loaded PIL Image, no disk I/O per frame
             podcast_title,
             episode_title,
             waveform_data,
             t,
             chunks_for_render,
             duration,
-            colors_tuples,      # Pre-converted tuples, no per-frame conversion
+            colors_tuples,              # Pre-converted tuples, no per-frame conversion
             format_name,
             header_title_source,
             header_soundbite_title,
             fonts=fonts,
+            waveform_sensitivities=waveform_sensitivities,  # Pre-computed, no recalc per frame
         )
 
     # Create video clip
