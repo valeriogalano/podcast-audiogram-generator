@@ -325,20 +325,20 @@ Each generated video includes:
 
 ## Tests
 
-Run the test suite with Python’s unittest:
+Run the test suite with pytest (activate your virtual environment first):
 
 ```bash
-python -m unittest discover tests
+.venv/bin/python -m pytest tests/ -v
 ```
 
 Examples:
 
 ```bash
 # Specific module
-python -m unittest tests.test_config -v
+.venv/bin/python -m pytest tests/test_config.py -v
 
 # Single test
-python -m unittest tests.test_config.TestConfig.test_configuration_precedence -v
+.venv/bin/python -m pytest tests/test_config.py::TestConfig::test_configuration_precedence -v
 ```
 
 ## Dependencies
