@@ -28,6 +28,7 @@ from .services import rss as rss_svc
 
 
 _ffmpeg_warned = False
+logger = logging.getLogger(__name__)
 
 
 def _warn_if_no_ffmpeg():
@@ -41,7 +42,7 @@ def _warn_if_no_ffmpeg():
         return
     try:
         if shutil.which('ffmpeg') is None:
-            print("Warning: FFmpeg not found on PATH. Rendering may fail. See README for install instructions.")
+            logger.warning("FFmpeg not found on PATH. Rendering may fail. See README for install instructions.")
         _ffmpeg_warned = True
     except Exception as e:
         # Never fail due to env probing
@@ -188,17 +189,17 @@ def _process_single_soundbite(
     """
     # Print header
     if total_soundbites:
-        print(f"\n{'='*60}")
-        print(f"Soundbite {soundbite_num}/{total_soundbites}: {soundbite.get('text') or soundbite.get('title')}")
-        print(f"{'='*60}")
+        logger.info("\n%s", "="*60)
+        logger.info("Soundbite %d/%d: %s", soundbite_num, total_soundbites, soundbite.get('text') or soundbite.get('title'))
+        logger.info("%s", "="*60)
     else:
-        print(f"\n{'='*60}")
-        print(f"Soundbite {soundbite_num}: {soundbite.get('text') or soundbite.get('title')}")
-        print(f"{'='*60}")
+        logger.info("\n%s", "="*60)
+        logger.info("Soundbite %d: %s", soundbite_num, soundbite.get('text') or soundbite.get('title'))
+        logger.info("%s", "="*60)
 
     # Extract audio segment (use pre-loaded audio when available to avoid re-reading the file)
     if full_audio_path and os.path.exists(full_audio_path):
-        print("Extracting audio segment...")
+        logger.info("Extracting audio segment...")
         segment_path = os.path.join(temp_dir, f"segment_{soundbite_num}.mp3")
         extract_audio_segment(
             full_audio_path,
@@ -208,11 +209,11 @@ def _process_single_soundbite(
             audio=loaded_audio,
         )
     else:
-        print("Warning: skipping audio extraction because full audio file is missing or invalid.")
+        logger.warning("Skipping audio extraction because full audio file is missing or invalid.")
         segment_path = None
 
     # Build transcript chunks
-    print("Processing transcript...")
+    logger.info("Processing transcript...")
     transcript_chunks = []
     transcript_text = ""
     if srt_content:
@@ -240,11 +241,11 @@ def _process_single_soundbite(
     if segment_path and os.path.exists(segment_path):
         try:
             shutil.copy2(segment_path, mp3_output_path)
-            print(f"✓ Audio: {mp3_output_path}")
+            logger.info("✓ Audio: %s", mp3_output_path)
         except Exception as e:
-            print(f"Warning: could not save audio file: {e}")
+            logger.warning("Could not save audio file: %s", e)
     else:
-        print("Warning: audio segment was not generated, skipping MP3 output.")
+        logger.warning("Audio segment was not generated, skipping MP3 output.")
 
     # Generate audiogram for each enabled format
     formats_info = {}
@@ -253,10 +254,10 @@ def _process_single_soundbite(
             formats_info[fmt_name] = fmt_config.get('description', fmt_name)
 
     if not segment_path or not os.path.exists(segment_path):
-        print("Warning: skipping audiogram video generation because audio segment is missing.")
+        logger.warning("Skipping audiogram video generation because audio segment is missing.")
     else:
         for format_name, format_desc in formats_info.items():
-            print(f"Generating audiogram {format_desc}...")
+            logger.info("Generating audiogram %s...", format_desc)
             # Add a suffix to filename if subtitles are disabled
             nosubs_suffix = "_nosubs" if not show_subtitles else ""
             output_path = os.path.join(
@@ -281,10 +282,10 @@ def _process_single_soundbite(
                 fonts=fonts,
             )
 
-            print(f"✓ {format_name}: {output_path}")
+            logger.info("✓ %s: %s", format_name, output_path)
 
     # Generate caption file .txt
-    print("Generating caption file...")
+    logger.info("Generating caption file...")
     caption_path = os.path.join(
         output_dir,
         f"ep{selected['number']}_sb{soundbite_num}_caption.txt"
@@ -300,17 +301,17 @@ def _process_single_soundbite(
         selected.get('keywords'),
         config_hashtags
     )
-    print(f"✓ Caption: {caption_path}")
+    logger.info("✓ Caption: %s", caption_path)
 
     # Generate SRT file
-    print("Generating SRT file...")
+    logger.info("Generating SRT file...")
     srt_path = os.path.join(
         output_dir,
         f"ep{selected['number']}_sb{soundbite_num}.srt"
     )
     generate_srt_file(srt_path, transcript_chunks)
     if os.path.exists(srt_path):
-        print(f"✓ SRT: {srt_path}")
+        logger.info("✓ SRT: %s", srt_path)
 
     return formats_info
 
@@ -324,21 +325,21 @@ def _dry_run_episode(selected, soundbites_choice):
         soundbites_choice: Soundbite selection string
     """
     sbs = selected.get('soundbites') or []
-    print(f"\nFound soundbites ({len(sbs)}):")
+    logger.info("\nFound soundbites (%d):", len(sbs))
     if not sbs:
-        print("No soundbites available for this episode.")
+        logger.info("No soundbites available for this episode.")
         return
-    
+
     # Determine which soundbites to print
     try:
         nums = parse_soundbite_selection(soundbites_choice, len(sbs))
     except ValueError as e:
-        print(f"Soundbite selection error: {e}")
+        logger.warning("Soundbite selection error: %s", e)
         return
-    
-    print("\n" + "="*60)
-    print("Dry-run: print start/end time and subtitle text")
-    print("="*60)
+
+    logger.info("\n%s", "="*60)
+    logger.info("Dry-run: print start/end time and subtitle text")
+    logger.info("%s", "="*60)
     
     # Fetch SRT once for dry-run
     srt_content = None
@@ -354,7 +355,7 @@ def _dry_run_episode(selected, soundbites_choice):
             start_s = float(sb['start'])
             dur_s = float(sb['duration'])
         except Exception:
-            print(f"Soundbite {idx}: invalid timing values (start={sb.get('start')}, duration={sb.get('duration')})")
+            logger.warning("Soundbite %d: invalid timing values (start=%s, duration=%s)", idx, sb.get('start'), sb.get('duration'))
             continue
         end_s = start_s + dur_s
         
@@ -367,12 +368,12 @@ def _dry_run_episode(selected, soundbites_choice):
         )
         text = (transcript_text or sb.get('text') or sb.get('title') or '').strip()
 
-        print(f"\nSoundbite {idx}")
-        print(f"- Start: {start_s:.3f}s ({format_seconds(start_s)})")
-        print(f"- Duration: {dur_s:.3f}s ({format_seconds(dur_s)})")
-        print(f"- End:   {end_s:.3f}s ({format_seconds(end_s)})")
-        print(f"- Subtitle text:")
-        print(text if text else "[Not available]")
+        logger.info("\nSoundbite %d", idx)
+        logger.info("- Start: %.3fs (%s)", start_s, format_seconds(start_s))
+        logger.info("- Duration: %.3fs (%s)", dur_s, format_seconds(dur_s))
+        logger.info("- End:   %.3fs (%s)", end_s, format_seconds(end_s))
+        logger.info("- Subtitle text:")
+        logger.info("%s", text if text else "[Not available]")
 
 
 def _prepare_episode_resources(selected, output_dir):
@@ -395,41 +396,41 @@ def _prepare_episode_resources(selected, output_dir):
         # Verify if existing file is valid (not empty)
         try:
             if os.path.exists(full_audio_path) and os.path.getsize(full_audio_path) == 0:
-                print(f"Warning: existing audio file {full_audio_path} is empty. Removing it.")
+                logger.warning("Existing audio file %s is empty. Removing it.", full_audio_path)
                 os.remove(full_audio_path)
         except OSError:
             pass
 
         if not os.path.exists(full_audio_path):
-            print(f"\nDownloading full audio: {selected['audio_url']}")
+            logger.info("\nDownloading full audio: %s", selected['audio_url'])
             try:
                 download_audio(selected['audio_url'], full_audio_path)
-                print(f"✓ Full audio: {full_audio_path}")
+                logger.info("✓ Full audio: %s", full_audio_path)
             except Exception as e:
-                print(f"Warning: could not download full audio: {e}")
+                logger.warning("Could not download full audio: %s", e)
                 full_audio_path = None
         else:
-            print(f"\nFull audio already exists: {full_audio_path}")
+            logger.info("\nFull audio already exists: %s", full_audio_path)
 
     if selected.get('transcript_url'):
-        print("Processing full transcript...")
+        logger.info("Processing full transcript...")
         try:
             srt_content = transcript_svc.fetch_srt(selected['transcript_url'])
             if srt_content:
                 full_srt_path = os.path.join(output_dir, f"ep{selected['number']}.srt")
                 with open(full_srt_path, 'w', encoding='utf-8') as f:
                     f.write(srt_content)
-                print(f"✓ Full SRT: {full_srt_path}")
+                logger.info("✓ Full SRT: %s", full_srt_path)
         except Exception as e:
-            print(f"Warning: could not fetch or save full transcript: {e}")
+            logger.warning("Could not fetch or save full transcript: %s", e)
 
     return full_audio_path, srt_content
 
 
 def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags, show_subtitles, output_dir, temp_dir_base, soundbites_choice, dry_run=False, use_episode_cover=False, header_title_source=None, fonts=None):
-    print(f"\nEpisode {selected['number']}: {selected['title']}")
+    logger.info("\nEpisode %d: %s", selected['number'], selected['title'])
     if selected['audio_url']:
-        print(f"Audio: {selected['audio_url']}")
+        logger.info("Audio: %s", selected['audio_url'])
 
     # Choose artwork URL to use (episode if requested and available, otherwise podcast)
     artwork_url = None
@@ -454,18 +455,18 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
     loaded_audio = None
     if full_audio_path and os.path.exists(full_audio_path):
         try:
-            print("Pre-loading audio for segment extraction...")
+            logger.info("Pre-loading audio for segment extraction...")
             loaded_audio = load_audio(full_audio_path)
         except Exception as e:
-            print(f"Warning: could not pre-load audio, will reload per soundbite: {e}")
+            logger.warning("Could not pre-load audio, will reload per soundbite: %s", e)
 
     # Show soundbites if they exist
     if selected['soundbites']:
-        print(f"\nFound soundbites ({len(selected['soundbites'])}):")
-        
+        logger.info("\nFound soundbites (%d):", len(selected['soundbites']))
+
         for i, soundbite in enumerate(selected['soundbites'], 1):
-            print(f"\n  {i}. [Start: {soundbite['start']}s, Duration: {soundbite['duration']}s]")
-            print(f"     Title: {soundbite.get('text') or soundbite.get('title')}")
+            logger.info("\n  %d. [Start: %ss, Duration: %ss]", i, soundbite['start'], soundbite['duration'])
+            logger.info("     Title: %s", soundbite.get('text') or soundbite.get('title'))
 
             # Extract text from transcript if available
             transcript_text = get_transcript_text(
@@ -475,12 +476,12 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                 srt_content=srt_content
             )
             if transcript_text:
-                print(f"     Text: {transcript_text[:100]}..." if len(transcript_text) > 100 else f"     Text: {transcript_text}")
+                logger.info("     Text: %s", transcript_text[:100] + "..." if len(transcript_text) > 100 else transcript_text)
             else:
-                print(f"     Text: [Not available]")
+                logger.info("     Text: [Not available]")
 
         # Ask which soundbite to generate if not specified
-        print("\n" + "="*60)
+        logger.info("\n%s", "="*60)
         if soundbites_choice is None:
             choice = input("\nDo you want to generate an audiogram for a soundbite? (number, 'a' for all, or 'n' to exit): ")
         else:
@@ -488,7 +489,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
 
         if choice.lower() == 'a' or choice.lower() == 'all':
             # Generate all soundbites
-            print(f"\nGenerating audiograms for all {len(selected['soundbites'])} soundbites...")
+            logger.info("\nGenerating audiograms for all %d soundbites...", len(selected['soundbites']))
 
             # Create temporary directory
             with tempfile.TemporaryDirectory(dir=temp_dir_base) as temp_dir:
@@ -496,7 +497,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                 _warn_if_no_ffmpeg()
 
                 # Download artwork once
-                print("Downloading artwork...")
+                logger.info("Downloading artwork...")
                 logo_path = os.path.join(temp_dir, "logo.png")
                 if artwork_url:
                     download_image(artwork_url, logo_path)
@@ -524,10 +525,12 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                         loaded_audio=loaded_audio,
                     )
 
-                print(f"\n{'='*60}")
-                print(f"All audiograms generated successfully into the 'output' folder!")
-                print(f"Total: {len(selected['soundbites'])} soundbites × {len(formats_info)} formats = {len(selected['soundbites']) * len(formats_info)} videos")
-                print(f"{'='*60}")
+                logger.info("\n%s", "="*60)
+                logger.info("All audiograms generated successfully into the 'output' folder!")
+                logger.info("Total: %d soundbites × %d formats = %d videos",
+                            len(selected['soundbites']), len(formats_info),
+                            len(selected['soundbites']) * len(formats_info))
+                logger.info("%s", "="*60)
 
         elif choice.lower() != 'n':
             try:
@@ -540,11 +543,11 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                 # Validate all numbers
                 for num in soundbite_nums:
                     if not (1 <= num <= len(selected['soundbites'])):
-                        print(f"Error: invalid number {num}. Choose between 1 and {len(selected['soundbites'])}")
+                        logger.error("Invalid number %d. Choose between 1 and %d", num, len(selected['soundbites']))
                         return
 
                 # Generate audiogram for the selected soundbites
-                print(f"\nGenerating audiogram for {len(soundbite_nums)} soundbite(s)...")
+                logger.info("\nGenerating audiogram for %d soundbite(s)...", len(soundbite_nums))
 
                 # Create temporary directory
                 with tempfile.TemporaryDirectory(dir=temp_dir_base) as temp_dir:
@@ -552,7 +555,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                     _warn_if_no_ffmpeg()
 
                     # Download artwork once
-                    print("Downloading artwork...")
+                    logger.info("Downloading artwork...")
                     logo_path = os.path.join(temp_dir, "logo.png")
                     if artwork_url:
                         download_image(artwork_url, logo_path)
@@ -580,15 +583,15 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                             loaded_audio=loaded_audio,
                         )
 
-                    print(f"\n{'='*60}")
-                    print(f"Audiograms successfully generated in folder: {output_dir}")
-                    print(f"{'='*60}")
+                    logger.info("\n%s", "="*60)
+                    logger.info("Audiograms successfully generated in folder: %s", output_dir)
+                    logger.info("%s", "="*60)
             except ValueError:
-                print("Invalid input")
+                logger.warning("Invalid input")
             except Exception as e:
-                print(f"Error during generation: {e}")
+                logger.error("Error during generation: %s", e)
     else:
-        print("\nNo soundbites found for this episode.")
+        logger.info("\nNo soundbites found for this episode.")
 
 
 def main():
@@ -694,40 +697,40 @@ def main():
                 user_input = input("\nEnter the podcast RSS feed URL: ").strip()
                 if user_input:
                     feed_url = user_input
-                    print(f"Using feed: {feed_url}")
+                    logger.info("Using feed: %s", feed_url)
                     break
                 else:
-                    print("The feed URL cannot be empty. Try again.")
+                    logger.warning("The feed URL cannot be empty. Try again.")
         except KeyboardInterrupt:
-            print("\nOperation cancelled.")
+            logger.info("\nOperation cancelled.")
             return
 
-    print("\nFetching episodes from feed...")
+    logger.info("\nFetching episodes from feed...")
     manual_sbs = config.get('manual_soundbites', {})
     episodes, podcast_info = get_podcast_episodes(feed_url, manual_soundbites=manual_sbs)
 
     if not episodes:
-        print("No episodes found in the feed.")
+        logger.warning("No episodes found in the feed.")
         return
 
     # Show podcast info
-    print(f"\n{'='*60}")
-    print(f"Podcast: {podcast_info.get('title', 'N/A')}")
+    logger.info("\n%s", "="*60)
+    logger.info("Podcast: %s", podcast_info.get('title', 'N/A'))
     if podcast_info.get('image_url'):
-        print(f"Artwork: {podcast_info['image_url']}")
-    print(f"{'='*60}")
+        logger.info("Artwork: %s", podcast_info['image_url'])
+    logger.info("%s", "="*60)
 
     # Show episodes from first to last
-    print(f"\nFound {len(episodes)} episodes:\n")
+    logger.info("\nFound %d episodes:\n", len(episodes))
     for episode in episodes:
-        print(f"{episode['number']}. {episode['title']}")
+        logger.info("%d. %s", episode['number'], episode['title'])
 
     # Determine which episodes to process (single, list, or all)
     max_episode = len(episodes)
     try:
         selected_episode_numbers = parse_episode_selection(episode_input, max_episode)
     except ValueError as e:
-        print(f"Episode input error: {e}")
+        logger.error("Episode input error: %s", e)
         return
 
     if not selected_episode_numbers:
@@ -739,9 +742,9 @@ def main():
                     selected_episode_numbers = parse_episode_selection(choice, max_episode)
                     break
                 except ValueError as e:
-                    print(f"Invalid input: {e}")
+                    logger.warning("Invalid input: %s", e)
             except KeyboardInterrupt:
-                print("\nOperation cancelled.")
+                logger.info("\nOperation cancelled.")
                 return
 
     # Process selected episodes
@@ -752,7 +755,7 @@ def main():
                 selected = ep
                 break
         if selected is None:
-            print(f"Episode {episode_num} not found in the feed. Skipping.")
+            logger.warning("Episode %d not found in the feed. Skipping.", episode_num)
             continue
 
         process_one_episode(

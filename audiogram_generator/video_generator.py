@@ -1,6 +1,7 @@
 """
 Audiogram video generator
 """
+import logging
 import os
 import sys
 import numpy as np
@@ -18,6 +19,8 @@ _PLATFORM_DEFAULT_FONTS = {
     "win32":  "C:/Windows/Fonts/Arial.ttf",
 }
 DEFAULT_FONT_PATH = _PLATFORM_DEFAULT_FONTS.get(sys.platform, "")
+
+logger = logging.getLogger(__name__)
 
 # Social media video formats
 FORMATS = {
@@ -780,11 +783,11 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
             'transcript_bg': tuple(colors.get('transcript_bg', COLOR_BLACK)),
         }
 
-    print(f"  - Extracting waveform...")
+    logger.info("  - Extracting waveform...")
     # Extract waveform once, sampled per frame
     waveform_data = get_waveform_data(audio_path, fps=fps)
 
-    print(f"  - Pre-loading logo...")
+    logger.info("  - Pre-loading logo...")
     # Pre-load and resize the logo once using the correct layout dimensions
     layout_config = LAYOUT_CONFIGS.get(format_name, LAYOUT_CONFIGS['vertical'])
     logo_img = None
@@ -811,11 +814,11 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
         half = rng.uniform(0.6, 1.4, num_bars // 2)
         waveform_sensitivities = np.concatenate([half, half[::-1]])
 
-    print(f"  - Pre-computing transcript layout...")
+    logger.info("  - Pre-computing transcript layout...")
     # Load transcript font and compute style/position once — never change between frames
     transcript_cache = _precompute_transcript(width, height, layout_config, colors_tuples, fonts)
 
-    print(f"  - Pre-computing header layout...")
+    logger.info("  - Pre-computing header layout...")
     # Run font size-negotiation once — title and dimensions never change between frames
     header_cache = _precompute_header(
         width, height, layout_config, fonts,
@@ -823,7 +826,7 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
         header_title_source, header_soundbite_title,
     )
 
-    print(f"  - Video frame generation...")
+    logger.info("  - Video frame generation...")
     # Prepare subtitle chunks according to flag
     chunks_for_render = transcript_chunks if show_subtitles else []
     # Function to generate frame — all static data captured from outer scope
@@ -851,12 +854,12 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
     video = VideoClip(make_frame, duration=duration)
     video.fps = fps
 
-    print(f"  - Adding audio...")
+    logger.info("  - Adding audio...")
     # Add audio
     audio = AudioFileClip(audio_path)
     video = video.with_audio(audio)
 
-    print(f"  - Rendering video...")
+    logger.info("  - Rendering video...")
     # Export with threads to speed up
     video.write_videofile(
         output_path,
@@ -880,4 +883,4 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
             shutil.copyfile(audio_path, dest_path)
     except Exception as e:
         # Do not stop video generation in case of copy error
-        print(f"  - Warning: could not save audio segment in output: {e}")
+        logger.warning("Could not save audio segment in output: %s", e)

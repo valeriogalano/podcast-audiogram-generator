@@ -1,10 +1,8 @@
 """
 Tests for the CLI flow in dry-run mode and verification of the _nosubs suffix in filenames (mock I/O).
 """
-import io
 import tempfile
 import unittest
-from contextlib import redirect_stdout
 from unittest.mock import patch, MagicMock
 
 from audiogram_generator import cli
@@ -31,8 +29,7 @@ class TestCliFlow(unittest.TestCase):
 
     def test_dry_run_no_soundbites_prints_message(self):
         selected = self._make_selected(with_soundbites=False)
-        buf = io.StringIO()
-        with redirect_stdout(buf):
+        with self.assertLogs('audiogram_generator.cli', level='INFO') as cm:
             cli.process_one_episode(
                 selected=selected,
                 podcast_info={'image_url': 'https://example/podcast.jpg', 'title': 'Podcast'},
@@ -46,14 +43,13 @@ class TestCliFlow(unittest.TestCase):
                 dry_run=True,
                 use_episode_cover=False,
             )
-        out = buf.getvalue()
-        self.assertIn("No soundbites available for this episode.", out)
+        combined = '\n'.join(cm.output)
+        self.assertIn("No soundbites available for this episode.", combined)
 
     @patch('audiogram_generator.cli.get_transcript_text', return_value=None)
     def test_dry_run_fallback_to_soundbite_title_when_no_transcript(self, _):
         selected = self._make_selected(with_soundbites=True, with_transcript=True)
-        buf = io.StringIO()
-        with redirect_stdout(buf):
+        with self.assertLogs('audiogram_generator.cli', level='INFO') as cm:
             cli.process_one_episode(
                 selected=selected,
                 podcast_info={'image_url': 'https://example/podcast.jpg', 'title': 'Podcast'},
@@ -67,16 +63,15 @@ class TestCliFlow(unittest.TestCase):
                 dry_run=True,
                 use_episode_cover=False,
             )
-        out = buf.getvalue()
-        # Should print the SB title as fallback (when transcript=None)
-        self.assertIn('SB1', out)
-        # Should also print formatted times
-        self.assertIn('00:00:05', out)
+        combined = '\n'.join(cm.output)
+        # Should log the SB title as fallback (when transcript=None)
+        self.assertIn('SB1', combined)
+        # Should also log formatted times
+        self.assertIn('00:00:05', combined)
 
     def test_dry_run_invalid_selection_prints_error(self):
         selected = self._make_selected(with_soundbites=True)
-        buf = io.StringIO()
-        with redirect_stdout(buf):
+        with self.assertLogs('audiogram_generator.cli', level='INFO') as cm:
             cli.process_one_episode(
                 selected=selected,
                 podcast_info={'image_url': 'https://example/podcast.jpg', 'title': 'Podcast'},
@@ -90,8 +85,8 @@ class TestCliFlow(unittest.TestCase):
                 dry_run=True,
                 use_episode_cover=False,
             )
-        out = buf.getvalue()
-        self.assertIn('Soundbite selection error', out)
+        combined = '\n'.join(cm.output)
+        self.assertIn('Soundbite selection error', combined)
 
     @patch('audiogram_generator.cli.generate_audiogram')
     @patch('audiogram_generator.cli.download_image', return_value='/tmp/cover.jpg')
@@ -134,23 +129,20 @@ class TestCliFlow(unittest.TestCase):
     @patch('os.path.exists', return_value=False)
     def test_always_downloads_full_mp3_and_srt(self, mock_exists, mock_open, mock_makedirs, mock_download_audio, mock_fetch_srt):
         selected = self._make_selected(with_soundbites=False) # No soundbites
-        
-        # Intercept output to avoid clutter
-        buf = io.StringIO()
-        with redirect_stdout(buf):
-            cli.process_one_episode(
-                selected=selected,
-                podcast_info={'image_url': 'https://example/podcast.jpg', 'title': 'Podcast'},
-                colors=cli.Config.DEFAULT_CONFIG['colors'],
-                formats_config=cli.Config.DEFAULT_CONFIG['formats'],
-                config_hashtags=None,
-                show_subtitles=True,
-                output_dir='./output',
-                temp_dir_base='./temp',
-                soundbites_choice=None,
-                dry_run=False,
-                use_episode_cover=False,
-            )
+
+        cli.process_one_episode(
+            selected=selected,
+            podcast_info={'image_url': 'https://example/podcast.jpg', 'title': 'Podcast'},
+            colors=cli.Config.DEFAULT_CONFIG['colors'],
+            formats_config=cli.Config.DEFAULT_CONFIG['formats'],
+            config_hashtags=None,
+            show_subtitles=True,
+            output_dir='./output',
+            temp_dir_base='./temp',
+            soundbites_choice=None,
+            dry_run=False,
+            use_episode_cover=False,
+        )
         
         # Verify full audio download attempt
         mock_download_audio.assert_called_once_with(selected['audio_url'], './output/ep142.mp3')
