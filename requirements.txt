@@ -13,5 +13,4 @@ audioop-lts>=0.2.1; python_version >= "3.13"
 
 # Utilities
 numpy>=1.24.0
-requests>=2.31.0
 pyyaml>=6.0

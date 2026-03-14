@@ -30,27 +30,24 @@ python3 -m pytest tests/
 
 ### Correct command
 
-Always invoke pytest via the venv Python interpreter using `-m pytest`, which bypasses the
-broken shebang:
+Use `.venv` (not `venv` — that one has broken symlinks). Always invoke pytest via the venv
+Python interpreter using `-m pytest`:
 
 ```bash
-venv/bin/python -m pytest tests/ -v
+.venv/bin/python -m pytest tests/ -v --tb=short 2>&1
 ```
 
 Since shell state does not persist between Bash tool calls, run everything in a single command:
 
 ```bash
 # Run the full test suite
-venv/bin/python -m pytest tests/ -v 2>&1
+.venv/bin/python -m pytest tests/ -v --tb=short 2>&1
 
 # Run a single test file
-venv/bin/python -m pytest tests/test_config.py -v 2>&1
+.venv/bin/python -m pytest tests/test_config.py -v 2>&1
 
 # Run a single test case
-venv/bin/python -m pytest tests/test_config.py::TestConfig::test_defaults -v 2>&1
-
-# Show short tracebacks on failure
-venv/bin/python -m pytest tests/ -v --tb=short 2>&1
+.venv/bin/python -m pytest tests/test_config.py::TestConfig::test_defaults -v 2>&1
 ```
 
 > Always append `2>&1` to capture stderr, where pytest writes warnings and import errors.

@@ -12,9 +12,6 @@ import re
 import unicodedata
 import shutil
 
-# Track already saved audio segments to avoid multiple copies for the same soundbite
-_SAVED_SEGMENTS = set()
-
 # Social media video formats
 FORMATS = {
     # Vertical 9:16 - Instagram Reels/Stories, YouTube Shorts, TikTok, Twitter

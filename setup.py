@@ -8,7 +8,6 @@ setup(
     packages=find_packages(),
     install_requires=[
         "pydub>=0.25.1",
-        "librosa>=0.10.0",
         "moviepy>=1.0.3",
         "pillow>=10.0.0",
         "numpy>=1.24.0",
