@@ -42,6 +42,9 @@ output/
 *.mp4
 *.wav
 
+# Logs
+*.log
+
 # Config files
 config.*.yaml
 config.yaml
