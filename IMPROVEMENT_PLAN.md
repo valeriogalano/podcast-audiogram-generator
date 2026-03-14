@@ -134,7 +134,7 @@ Mancano coperture per le seguenti aree.
 | T6 | `_precompute_transcript()` — verifica font, style e transcript_y per i 3 layout | `test_video_generator.py` (nuovo) | Media | ✅ Done |
 | T7 | `get_waveform_data()` — verifica output vettorizzato: lunghezza array = `int(duration * fps)` | `test_video_generator.py` (nuovo) | Alta | ✅ Done |
 | T8 | `_render_logo()` con `logo_img=None` — verifica che non sollevi eccezioni | `test_video_generator.py` (nuovo) | Bassa | ✅ Done |
-| T9 | `process_one_episode()` con `loaded_audio` pre-caricato — verifica che `extract_audio_segment` non rilegga il file | `test_cli_flow.py` | Alta | ⬜ Todo |
+| T9 | `process_one_episode()` con `loaded_audio` pre-caricato — verifica che `extract_audio_segment` non rilegga il file | `test_cli_flow.py` | Alta | ✅ Done |
 | T10 | Smoke test rendering: generare un frame 64×64 con dati minimali e verificare shape array numpy | `test_video_generator.py` (nuovo) | Media | ✅ Done |
 | T11 | `_process_single_soundbite()` — verifica che `loaded_audio` venga passato a `extract_audio_segment` | `test_cli_helpers.py` | Alta | ✅ Done |
 

@@ -2,6 +2,7 @@
 Tests for the CLI flow in dry-run mode and verification of the _nosubs suffix in filenames (mock I/O).
 """
 import io
+import tempfile
 import unittest
 from contextlib import redirect_stdout
 from unittest.mock import patch, MagicMock
@@ -159,6 +160,63 @@ class TestCliFlow(unittest.TestCase):
         
         # Verify SRT file save attempt
         mock_open.assert_any_call('./output/ep142.srt', 'w', encoding='utf-8')
+
+
+class TestProcessOneEpisodeLoadsAudioOnce(unittest.TestCase):
+    """T9 — process_one_episode pre-loads audio once and passes it to each soundbite."""
+
+    def _make_selected(self):
+        return {
+            'number': 7,
+            'title': 'Episode 7',
+            'link': 'https://example.com/ep7',
+            'audio_url': 'https://example.com/ep7.mp3',
+            'transcript_url': None,
+            'soundbites': [
+                {'start': 0, 'duration': 5, 'title': 'SB1', 'text': 'hello'},
+                {'start': 10, 'duration': 5, 'title': 'SB2', 'text': 'world'},
+            ],
+            'keywords': '',
+            'image_url': None,
+        }
+
+    @patch('audiogram_generator.cli.generate_audiogram')
+    @patch('audiogram_generator.cli.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('audiogram_generator.cli.load_audio')
+    @patch('audiogram_generator.cli.download_image')
+    @patch('audiogram_generator.cli.download_audio')
+    @patch('os.path.exists', return_value=True)
+    def test_load_audio_called_once_for_multiple_soundbites(
+        self, mock_exists, mock_dl_audio,
+        mock_dl_image, mock_load_audio, mock_extract, mock_gen
+    ):
+        """load_audio must be called exactly once regardless of soundbite count."""
+        mock_pre_loaded = MagicMock()
+        mock_load_audio.return_value = mock_pre_loaded
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cli.process_one_episode(
+                selected=self._make_selected(),
+                podcast_info={'title': 'Podcast', 'image_url': 'https://example.com/img.jpg'},
+                colors=cli.Config.DEFAULT_CONFIG['colors'],
+                formats_config={'vertical': {'width': 64, 'height': 64, 'enabled': True}},
+                config_hashtags=None,
+                show_subtitles=False,
+                output_dir=tmp,
+                temp_dir_base=tmp,
+                soundbites_choice='a',
+                dry_run=False,
+            )
+
+        # Audio loaded from disk exactly once
+        mock_load_audio.assert_called_once()
+
+        # Both soundbites received the same pre-loaded audio object
+        calls = mock_extract.call_args_list
+        self.assertEqual(len(calls), 2)
+        for c in calls:
+            _, kwargs = c
+            self.assertIs(kwargs.get('audio'), mock_pre_loaded)
 
 
 if __name__ == '__main__':
