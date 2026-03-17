@@ -10,6 +10,7 @@ from .compositor import (
     _strip_punctuation,
     _draw_rounded_box_with_shadow,
     _render_subtitle_lines,
+    _draw_text_with_stroke,
 )
 
 # Social media video formats: (width, height)
@@ -89,7 +90,7 @@ def _precompute_header(width, height, layout_config, fonts, podcast_title, episo
                 'base_h': 0, 'total_text_h': 0, 'pad_x': 0, 'pad_y': 0}
 
     pad_x = int(width * 0.04)
-    pad_y = int(header_height * 0.04)
+    pad_y = int(header_height * 0.10)
     max_width = width - 2 * pad_x
     max_height = header_height - 2 * pad_y
 
@@ -100,7 +101,7 @@ def _precompute_header(width, height, layout_config, fonts, podcast_title, episo
     if fonts and fonts.get('header'):
         header_font_path = fonts['header']
 
-    size = max(16, int(header_height * 0.26))
+    size = max(16, int(header_height * 0.15))
     min_size = 12
     font_header = ImageFont.load_default()
     lines: list = []
@@ -109,7 +110,10 @@ def _precompute_header(width, height, layout_config, fonts, podcast_title, episo
 
     while size >= min_size:
         try:
-            font_header = ImageFont.truetype(header_font_path, size=size)
+            try:
+                font_header = ImageFont.truetype(header_font_path, size=size, index=1)
+            except Exception:
+                font_header = ImageFont.truetype(header_font_path, size=size)
         except Exception:
             font_header = ImageFont.load_default()
 
@@ -207,7 +211,11 @@ def _render_header(draw, width, height, layout_config, colors, podcast_title, ep
         text_fill = tuple(colors.get('text', COLOR_WHITE))
         cy = start_y
         for i, ln in enumerate(lines):
-            draw.text((pad_x, cy), ln, font=font_header, fill=text_fill)
+            bbox = draw.textbbox((0, 0), ln, font=font_header)
+            lw = bbox[2] - bbox[0]
+            text_x = (width - lw) // 2
+            _draw_text_with_stroke(draw, (text_x, cy), ln, font_header, text_fill,
+                                   stroke_width=2, stroke_fill=(30, 30, 30))
             cy += (base_h if i == 0 else int(base_h * HEADER_LINE_SPACING))
 
     return header_height
