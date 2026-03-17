@@ -277,7 +277,10 @@ def _process_single_soundbite(
     else:
         transcript_text = soundbite.get('text') or soundbite.get('title')
 
-    mp3_output_path = os.path.join(output_dir, f"ep{selected['number']}_sb{soundbite_num}.mp3")
+    sb_dir = os.path.join(output_dir, f"sb{soundbite_num}")
+    os.makedirs(sb_dir, exist_ok=True)
+
+    mp3_output_path = os.path.join(sb_dir, f"ep{selected['number']}_sb{soundbite_num}.mp3")
     if segment_path and os.path.exists(segment_path):
         try:
             shutil.copy2(segment_path, mp3_output_path)
@@ -300,7 +303,7 @@ def _process_single_soundbite(
 
         def _render_one_format(format_name):
             output_path = os.path.join(
-                output_dir,
+                sb_dir,
                 f"ep{selected['number']}_sb{soundbite_num}{nosubs_suffix}_{format_name}.mp4"
             )
             logger.info("Generating audiogram %s...", formats_info[format_name])
@@ -332,7 +335,7 @@ def _process_single_soundbite(
                     logger.error("Format %s rendering failed: %s", futures[future], e)
 
     logger.info("Generating caption file...")
-    caption_path = os.path.join(output_dir, f"ep{selected['number']}_sb{soundbite_num}_caption.txt")
+    caption_path = os.path.join(sb_dir, f"ep{selected['number']}_sb{soundbite_num}_caption.txt")
     generate_caption_file(
         caption_path,
         selected['number'],
@@ -347,7 +350,7 @@ def _process_single_soundbite(
     logger.info("✓ Caption: %s", caption_path)
 
     logger.info("Generating SRT file...")
-    srt_path = os.path.join(output_dir, f"ep{selected['number']}_sb{soundbite_num}.srt")
+    srt_path = os.path.join(sb_dir, f"ep{selected['number']}_sb{soundbite_num}.srt")
     generate_srt_file(srt_path, transcript_chunks)
     if os.path.exists(srt_path):
         logger.info("✓ SRT: %s", srt_path)
@@ -461,11 +464,12 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
         _dry_run_episode(selected, soundbites_choice, verify_ssl=verify_ssl)
         return
 
-    os.makedirs(output_dir, exist_ok=True)
+    episode_dir = os.path.join(output_dir, f"ep{selected['number']}")
+    os.makedirs(episode_dir, exist_ok=True)
     os.makedirs(temp_dir_base, exist_ok=True)
 
     full_audio_path, srt_content = _prepare_episode_resources(
-        selected, output_dir, verify_ssl=verify_ssl
+        selected, episode_dir, verify_ssl=verify_ssl
     )
 
     # Full-episode mode: generate audiogram for the entire episode
@@ -476,7 +480,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
             full_audio_path=full_audio_path,
             srt_content=srt_content,
             artwork_url=artwork_url,
-            output_dir=output_dir,
+            output_dir=episode_dir,
             temp_dir_base=temp_dir_base,
             formats_config=formats_config,
             colors=colors,
@@ -522,7 +526,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                         logo_path=logo_path,
                         srt_content=srt_content,
                         full_audio_path=full_audio_path,
-                        output_dir=output_dir,
+                        output_dir=episode_dir,
                         formats_config=formats_config,
                         colors=colors,
                         show_subtitles=show_subtitles,
@@ -534,7 +538,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                     )
 
                 logger.info("\n%s", "=" * 60)
-                logger.info("All audiograms generated successfully into the 'output' folder!")
+                logger.info("All audiograms generated successfully into: %s", episode_dir)
                 logger.info("Total: %d soundbites × %d formats = %d videos",
                             len(selected['soundbites']), len(formats_info),
                             len(selected['soundbites']) * len(formats_info))
@@ -575,7 +579,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                             logo_path=logo_path,
                             srt_content=srt_content,
                             full_audio_path=full_audio_path,
-                            output_dir=output_dir,
+                            output_dir=episode_dir,
                             formats_config=formats_config,
                             colors=colors,
                             show_subtitles=show_subtitles,
@@ -587,7 +591,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                         )
 
                     logger.info("\n%s", "=" * 60)
-                    logger.info("Audiograms successfully generated in folder: %s", output_dir)
+                    logger.info("Audiograms successfully generated in folder: %s", episode_dir)
                     logger.info("%s", "=" * 60)
             except ValueError:
                 logger.warning("Invalid input")

@@ -145,13 +145,13 @@ class TestCliFlow(unittest.TestCase):
         )
         
         # Verify full audio download attempt
-        mock_download_audio.assert_called_once_with(selected['audio_url'], './output/ep142.mp3', verify_ssl=False)
+        mock_download_audio.assert_called_once_with(selected['audio_url'], './output/ep142/ep142.mp3', verify_ssl=False)
 
         # Verify full SRT fetch attempt
         mock_fetch_srt.assert_called_once_with(selected['transcript_url'], verify_ssl=False)
-        
+
         # Verify SRT file save attempt
-        mock_open.assert_any_call('./output/ep142.srt', 'w', encoding='utf-8')
+        mock_open.assert_any_call('./output/ep142/ep142.srt', 'w', encoding='utf-8')
 
 
 class TestProcessOneEpisodeLoadsAudioOnce(unittest.TestCase):
