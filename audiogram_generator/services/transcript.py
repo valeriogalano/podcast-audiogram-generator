@@ -87,4 +87,5 @@ def get_transcript_text_from_srt(srt_text: str, start_time: float, duration: flo
     chunks = parse_srt_to_chunks(srt_text, start_time, duration)
     if not chunks:
         return None
-    return ' '.join(c['text'] for c in chunks if c.get('text')) or None
+    raw = ' '.join(c['text'].strip() for c in chunks if c.get('text'))
+    return re.sub(r' +', ' ', raw).strip() or None
