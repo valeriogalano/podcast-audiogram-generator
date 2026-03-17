@@ -1,17 +1,24 @@
 # Podcast Audiogram Generator
 
-Automatic audiogram generator for podcasts. It downloads episodes from an RSS feed, extracts soundbites with their transcripts, and generates audiogram videos optimized for major social platforms.
+> **Vibe Coding experiment** — This project was built through Vibe Coding: iterative,
+> AI-assisted development where the human steers intent and the AI writes most of the code.
+> It works, it's tested, but it is first and foremost an experiment. Expect rough edges,
+> quick evolution, and the occasional surprise. Issues and PRs are welcome.
+
+Automatic audiogram generator for podcasts. Downloads episodes from an RSS feed, extracts
+soundbites with their transcripts, and renders videos optimized for the major social platforms.
 
 ## At a glance
 
-- Parse podcast RSS to extract episodes, soundbites, transcripts, and cover art
-- Download and save full episode audio (MP3) and transcript (SRT) automatically
+- Parse a podcast RSS feed to extract episodes, soundbites, transcripts, and cover art
+- Download and save the full episode audio (MP3) and transcript (SRT) automatically
 - Generate audiograms in 3 social-friendly formats: vertical (9:16), square (1:1), horizontal (16:9)
-- Live transcript on video, animated waveform, and customizable colors/branding
-- Interactive CLI or fully automatic via command-line flags or YAML config
-- Manual soundbites support (for feeds without soundbite tags)
+- Live transcript on video, animated waveform, and fully customizable colors/branding
+- Optional Call-to-Action badge overlay (e.g. "Link in bio")
+- Interactive CLI or fully automated via command-line flags or YAML config
+- Manual soundbite support for feeds that do not include `<podcast:soundbite>` tags
 - Customizable caption labels for easy localization
-- Dry‑run mode to preview timings and transcript text without generating files
+- Dry-run mode to preview timings and transcript text without generating any file
 
 ## Requirements
 
@@ -28,8 +35,7 @@ Automatic audiogram generator for podcasts. It downloads episodes from an RSS fe
   ```bash
   sudo apt-get install ffmpeg
   ```
-- Windows:
-  Download from https://ffmpeg.org/download.html and add `ffmpeg` to your PATH.
+- Windows: download from https://ffmpeg.org/download.html and add `ffmpeg` to your PATH.
 
 ## Quick start
 
@@ -37,340 +43,360 @@ Automatic audiogram generator for podcasts. It downloads episodes from an RSS fe
 git clone https://github.com/vgalano/podcast-audiogram-generator.git
 cd podcast-audiogram-generator
 
-# 1) Create and activate a virtual environment (recommended)
+# 1) Create a virtual environment and install dependencies
 python3 -m venv .venv
-source .venv/bin/activate            # on Windows: .venv\Scripts\activate
+.venv/bin/pip install -U pip
+.venv/bin/pip install -r requirements.txt
 
-# 2) Upgrade pip and install dependencies
-python -m pip install -U pip
-pip install -r requirements.txt
-
-# 3) Copy and edit the example config
+# 2) Copy and edit the example config
 cp config.yaml.example config.yaml
-$EDITOR config.yaml                   # set your RSS feed URL and options
+$EDITOR config.yaml   # set feed_url and any other options
 
-# 4) Run in interactive mode
-python -m audiogram_generator
+# 3) Run
+.venv/bin/python -m audiogram_generator
 ```
 
-Tip: Keep using the same virtual environment in future sessions by running `source .venv/bin/activate` (or `.venv\Scripts\activate` on Windows) before commands.
+## Running with the virtual environment
+
+There are two equivalent ways to use the `.venv` after creating it.
+
+**Option A — activate once per shell session (convenient for interactive use):**
+
+```bash
+source .venv/bin/activate           # macOS / Linux
+.venv\Scripts\activate              # Windows
+
+python -m audiogram_generator       # works for the rest of the session
+python -m pytest tests/ -v
+deactivate                          # when done
+```
+
+**Option B — invoke the venv Python directly (no activation needed, safer for scripts):**
+
+```bash
+.venv/bin/python -m audiogram_generator
+.venv/bin/python -m pytest tests/ -v
+```
+
+Option B is the recommended approach in this README because it works regardless of which
+shell or working directory you are in, and it makes the Python version explicit.
 
 ## Usage
 
 ### Interactive mode
 
-Run without arguments to be guided through podcast selection, episode selection, and soundbite generation:
+Run without arguments to be guided through feed selection, episode selection, and soundbite
+generation:
 
 ```bash
-python -m audiogram_generator
+.venv/bin/python -m audiogram_generator
 ```
 
 ### Command-line mode
 
-All parameters can be passed as flags for non‑interactive execution:
+All parameters can be passed as flags for non-interactive or automated execution:
 
 ```bash
-python -m audiogram_generator [options]
+.venv/bin/python -m audiogram_generator [options]
 ```
 
 Available options:
 
-- `--config PATH` — YAML configuration file
-- `--feed-url URL` — RSS feed URL (required if not provided in config)
-- `--episode EPISODES` — Episodes to process: `5`, `1,3,5`, `all`, or `last` (most recent)
-- `--soundbites CHOICE` — Soundbites: `1`, `1,3`, or `all`
-- `--output-dir PATH` — Output directory (default: `./output`)
-- `--header-title-source CHOICE` — Source for the header title: `auto` (default), `podcast`, `episode`, `soundbite`, or `none`
-- `--log-level LEVEL` — Logging level: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
-- `--dry-run` — Print timings and transcript text only (no files generated)
-- `--full-episode` — Generate an audiogram for the entire episode (no soundbite selection)
-- `--show-subtitles` / `--no-subtitles` — Force enable/disable on‑video subtitles
-- `--use-episode-cover` / `--no-use-episode-cover` — Prefer the episode-specific cover art when available (fallback to podcast cover)
+| Flag | Description |
+|---|---|
+| `--config PATH` | YAML configuration file |
+| `--feed-url URL` | RSS feed URL (required if not in config) |
+| `--episode N` | Episodes to process: `5`, `1,3,5`, `all`, or `last` |
+| `--soundbites N` | Soundbites: `1`, `1,3`, or `all` |
+| `--output-dir PATH` | Output directory (default: `./output`) |
+| `--temp-dir PATH` | Temporary directory for intermediate files (default: `./temp`) |
+| `--header-title-source` | Header title: `auto`, `podcast`, `episode`, `soundbite`, `none` |
+| `--log-level LEVEL` | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
+| `--dry-run` | Preview only — no files generated |
+| `--full-episode` | Render the entire episode instead of individual soundbites |
+| `--show-subtitles` / `--no-subtitles` | Force enable/disable on-video subtitles |
+| `--use-episode-cover` / `--no-use-episode-cover` | Use episode-specific cover art when available |
 
-Precedence: CLI flags > config file > defaults.
+Precedence: CLI flags > config file > built-in defaults.
 
 Examples:
 
 ```bash
 # Generate all soundbites for episode 142
-python -m audiogram_generator --episode 142 --soundbites all
+.venv/bin/python -m audiogram_generator --episode 142 --soundbites all
 
 # Generate soundbites 1 and 3 for episode 100
-python -m audiogram_generator --episode 100 --soundbites 1,3
+.venv/bin/python -m audiogram_generator --episode 100 --soundbites 1,3
 
-# Use a custom RSS feed and a custom output directory
-python -m audiogram_generator --feed-url https://example.com/feed.xml \
+# Custom feed and output directory
+.venv/bin/python -m audiogram_generator \
+  --feed-url https://example.com/feed.xml \
   --episode 5 --soundbites all --output-dir ~/videos
 
-# Use a configuration file and override an option
-python -m audiogram_generator --config config.yaml --episode 150
+# Use a config file and override one option
+.venv/bin/python -m audiogram_generator --config config.yaml --episode 150
 
-# Process the most recent episode from the feed
-python -m audiogram_generator --episode last --soundbites all
+# Most recent episode from the feed
+.venv/bin/python -m audiogram_generator --episode last --soundbites all
 
-# Use the episode cover instead of the podcast cover (when available)
-python -m audiogram_generator --episode 142 --soundbites all --use-episode-cover
+# Episode-specific cover art
+.venv/bin/python -m audiogram_generator --episode 142 --soundbites all --use-episode-cover
 ```
 
-### Dry‑run mode
+### Dry-run mode
 
-Preview what will be generated without downloading or rendering audio/video. For each selected soundbite it prints start, end, duration, and transcript text (from SRT if available, otherwise the soundbite title).
-
-From CLI:
+Preview timings and transcript text without downloading or rendering anything. For each
+selected soundbite it prints start, end, duration, and transcript text.
 
 ```bash
-python -m audiogram_generator --config config.yaml --episode 142 --soundbites all --dry-run
+.venv/bin/python -m audiogram_generator --episode 142 --soundbites all --dry-run
 
-# Or without a config file
-python -m audiogram_generator --feed-url <RSS_URL> --episode 1 --soundbites 1,3 --dry-run
+# Without a config file
+.venv/bin/python -m audiogram_generator --feed-url <RSS_URL> --episode 1 --soundbites 1,3 --dry-run
 ```
 
-Enable from config (optional):
-
+YAML equivalent:
 ```yaml
 dry_run: true
 ```
 
 ### Full-episode audiogram
 
-Generate an audiogram for the entire episode without selecting a soundbite. Useful for short episodes or promotional clips where you want to render the complete audio.
+Render an audiogram for the entire episode instead of individual soundbites. Useful for
+short episodes or complete promotional clips.
 
-**Note:** Full episodes can be 30–90 minutes long. Rendering time is proportional to duration — the generator will warn you before starting.
-
-From CLI:
+> **Note:** Full episodes can be 30–90 minutes long. Rendering time scales with duration —
+> the tool warns you before starting.
 
 ```bash
-python -m audiogram_generator --episode 142 --full-episode
+.venv/bin/python -m audiogram_generator --episode 142 --full-episode
 ```
 
-Enable from config (optional):
-
+YAML equivalent:
 ```yaml
 full_episode: true
 ```
 
-Output files follow the pattern `ep{N}_full_{format}.mp4`, for example:
-- `ep142_full_vertical.mp4`
-- `ep142_full_square.mp4`
-- `ep142_full_horizontal.mp4`
+### Subtitles and cover art
 
-### Subtitles and Cover options
+Control on-video subtitles and cover art via CLI flags or YAML. CLI flags always take
+precedence.
 
-Control on‑video subtitles and cover art preferences via CLI flags or YAML. CLI flags always win.
+```bash
+# Disable on-video subtitles
+.venv/bin/python -m audiogram_generator --no-subtitles
 
-- Subtitles:
-  - Disable: `python -m audiogram_generator --no-subtitles`
-  - Enable:  `python -m audiogram_generator --show-subtitles` (default)
-- Episode cover:
-  - Enable:  `python -m audiogram_generator --use-episode-cover`
-  - Disable: `python -m audiogram_generator --no-use-episode-cover` (default)
+# Use episode-specific cover art (fallback to podcast cover if unavailable)
+.venv/bin/python -m audiogram_generator --use-episode-cover
+```
 
-YAML (`config.yaml`):
+YAML:
 ```yaml
 show_subtitles: false
 use_episode_cover: true
 ```
 
-When subtitles are disabled, generated video filenames include a `_nosubs` suffix to make files easy to identify, for example: `ep142_sb1_nosubs_vertical.mp4`.
+When subtitles are disabled, video filenames include a `_nosubs` suffix
+(e.g. `ep142_sb1_nosubs_vertical.mp4`) so they are easy to tell apart.
 
 ## Configuration
 
-The application reads settings from a YAML file (see `config.yaml.example`). CLI flags override YAML values, which in turn override internal defaults.
-
-Start from the example and adjust to your needs:
+Settings are read from a YAML file. CLI flags override YAML values, which override
+built-in defaults.
 
 ```bash
 cp config.yaml.example config.yaml
 ```
 
-Example `config.yaml`:
+Full annotated `config.yaml`:
 
 ```yaml
 # REQUIRED
-feed_url: https://pensieriincodice.it/podcast/index.xml
+feed_url: https://example.com/podcast/feed.xml
 
 # Output
 output_dir: ./output
+temp_dir: ./temp        # intermediate files, cleaned up automatically
 
 # Selection
-episode: 142
-soundbites: "all"
+episode: last           # last, all, 142, or "1,3,5"
+soundbites: "all"       # all, 1, or "1,3"
 
 # Behavior
 dry_run: false
+full_episode: false
 show_subtitles: true
 use_episode_cover: false
-header_title_source: auto
+header_title_source: auto   # auto | podcast | episode | soundbite | none
 
-# Appearance (optional)
+# SSL (default false to tolerate self-signed certs on some feeds)
+verify_ssl: false
+
+# Colors — RGB arrays [R, G, B] in 0–255
 colors:
-  primary: [242, 101, 34]
-  background: [235, 213, 197]
-  text: [255, 255, 255]
-  transcript_bg: [0, 0, 0]
+  primary: [242, 101, 34]       # header, footer, waveform bars
+  background: [235, 213, 197]   # central area background
+  text: [255, 255, 255]         # header text
+  transcript_bg: [0, 0, 0]      # subtitle box background
 
-# Fonts (optional)
+# Fonts — path to a .ttf or .ttc file (optional)
 fonts:
   header: "/path/to/font.ttf"
   transcript: "/path/to/font.ttf"
 
+# Video formats
 formats:
   vertical:
     width: 1080
     height: 1920
     enabled: true
+    description: "Verticale 9:16 (Reels, Stories, Shorts, TikTok)"
   square:
+    width: 1080
+    height: 1080
     enabled: true
+    description: "Quadrato 1:1 (Post Instagram, Twitter, Mastodon)"
   horizontal:
+    width: 1920
+    height: 1080
     enabled: false
+    description: "Orizzontale 16:9 (YouTube)"
 
 # Social hashtags (merged with feed keywords, duplicates removed)
 hashtags:
   - podcast
   - tech
-  - development
-```
 
-Notes:
-- RGB colors are expressed as `[R, G, B]` with values 0–255.
-- Fonts can be customized by providing the path to a TrueType font file (.ttf or .ttc).
-- Formats can be enabled/disabled and resized per needs.
-
-### Header title source
-
-Customize what title appears in the video header. Available values:
-- `auto` (default): uses episode title if available, otherwise podcast title
-- `podcast`: always use podcast title
-- `episode`: always use episode title
-- `soundbite`: use soundbite title
-- `none`: hide the header title
-
-CLI: `--header-title-source CHOICE`
-YAML: `header_title_source: CHOICE`
-
-### Caption labels (customizable fixed strings)
-
-You can customize the fixed strings used in the generated caption `.txt` files, for example to localize them. Add the following section to your `config.yaml`:
-
-```
+# Caption file labels — customize or translate these fixed strings
 caption_labels:
-  # Prefix before the episode number and title
-  # Result example: "Episode 42: Title"
-  episode_prefix: "Episode"
-  # Text before the link to the full episode
-  # Result example: "Listen to the full episode: https://..."
-  listen_full_prefix: "Listen to the full episode"
-```
+  episode_prefix: "Episode"              # "Episode 42: Title"
+  listen_full_prefix: "Listen to the full episode"   # "Listen to...: https://..."
 
-If omitted, the defaults are used (`Episode` and `Listen to the full episode`).
+# Call-to-Action badge — optional overlay text on the video
+cta:
+  enabled: false
+  text: "Link in bio"
+  # Vertical position per format (0.0 = top, 1.0 = bottom)
+  vertical:
+    y_offset: 0.82
+  square:
+    y_offset: 0.85
+  horizontal:
+    y_offset: 0.85
 
-### Manual Soundbites
-
-If your podcast feed does not include `<podcast:soundbite>` tags, you can define them manually in your `config.yaml` file. You can identify episodes by their number (1-based, oldest to newest) or by their unique GUID.
-
-```yaml
+# Manual soundbites — for feeds without <podcast:soundbite> tags
 manual_soundbites:
-  "142": # By episode number
+  "142":                      # episode number (string)
     - start: 120.5
       duration: 30.0
       text: "A very interesting moment"
-  "unique-guid-here": # By episode GUID
+  "unique-guid-here":         # or episode GUID
     - start: 500
       duration: 15
       text: "Another segment"
 ```
 
-Manual soundbites are merged with any soundbites found in the feed, with manual ones appearing first in the list.
+### Header title source
 
-### Recommended Workflow for Precise Soundbites
+Configures what text appears in the video header bar:
 
-If you need to pinpoint exact start and duration values for your soundbites (especially for manual ones), follow this optimized workflow:
+| Value | Behaviour |
+|---|---|
+| `auto` | Episode title if available, otherwise podcast title (default) |
+| `episode` | Always the episode title |
+| `podcast` | Always the podcast title |
+| `soundbite` | The soundbite title; falls back to episode/podcast if empty |
+| `none` | No title in the header |
 
-1.  **Locate the text**: Run the script once for the desired episode. The generator automatically downloads the subtitles file to the `output/` folder (e.g., `output/ep147.srt`). Open this file with a text editor to find the exact timestamps (in `HH:MM:SS,mmm` format) for the segment you want to capture.
-2.  **Configure**: Enter the `start` value (in seconds, e.g., `307.96`) and `duration` in your `config.yaml` file under the `manual_soundbites` section.
-3.  **Verify with Dry-run**: To ensure the timings are correct without waiting for the video to render, run the script with the `--dry-run` flag. The program will print a preview of the extracted text for the specified timings:
-    ```bash
-    python -m audiogram_generator --episode <episode_number> --soundbites all --dry-run
-    ```
-4.  **Generate**: Once you confirm the terminal output matches the desired fragment, run the final command without the `--dry-run` flag to generate the videos.
+### Call-to-Action badge
 
-## Output
+When `cta.enabled: true`, a small pill-shaped badge is overlaid on the video at the
+configured vertical position. Useful for "Link in bio" or similar social prompts.
 
-Files are saved to `output/` by default.
-
-### Full Episode Assets
-
-Regardless of whether you generate soundbites, the generator always downloads and saves the full assets for the selected episode:
-- `ep{episode_number}.mp3` — Full episode audio
-- `ep{episode_number}.srt` — Full episode transcript (if available in the feed)
-
-### Full-episode Audiogram Assets
-
-When `--full-episode` is used, the following videos are generated:
-```
-ep{episode_number}_full_{format}.mp4
+```yaml
+cta:
+  enabled: true
+  text: "Link in bio"
+  vertical:
+    y_offset: 0.82
 ```
 
-Example for episode 142 with all formats enabled:
-- `ep142_full_vertical.mp4`
-- `ep142_full_square.mp4`
-- `ep142_full_horizontal.mp4`
+### Manual soundbites
 
-### Soundbite Assets
+If your podcast feed does not include `<podcast:soundbite>` tags, define soundbites
+manually in `config.yaml`. You can identify episodes by number or by their GUID:
 
-For each selected soundbite, the following files are generated:
-
-#### Videos
-```
-ep{episode_number}_sb{soundbite_number}_{format}.mp4
-# When subtitles are disabled:
-ep{episode_number}_sb{soundbite_number}_nosubs_{format}.mp4
-```
-
-#### Other assets
-```
-ep{episode_number}_sb{soundbite_number}_caption.txt  # Text for social posts
-ep{episode_number}_sb{soundbite_number}.srt          # Subtitles for the soundbite
-ep{episode_number}_sb{soundbite_number}.mp3          # Audio segment for the soundbite
+```yaml
+manual_soundbites:
+  "142":
+    - start: 120.5
+      duration: 30.0
+      text: "A very interesting moment"
+  "unique-guid-here":
+    - start: 500
+      duration: 15
+      text: "Another segment"
 ```
 
-Example for soundbite 1 of episode 142:
-- `ep142.mp3`
-- `ep142.srt`
-- `ep142_sb1_vertical.mp4`
-- `ep142_sb1_square.mp4`
-- `ep142_sb1_horizontal.mp4`
-- `ep142_sb1_caption.txt`
-- `ep142_sb1.srt`
-- `ep142_sb1.mp3`
+Manual soundbites are merged with any found in the feed, with manual ones appearing first.
 
-If subtitles are disabled:
-- `ep142_sb1_nosubs_vertical.mp4`
-- `ep142_sb1_nosubs_square.mp4`
-- `ep142_sb1_nosubs_horizontal.mp4`
+### Workflow for precise soundbite timings
 
-Each `_caption.txt` contains: episode title/number, soundbite title, full transcript text, link to full episode, and suggested hashtags.
+1. **Find the timestamps** — run the script once on the target episode. The full SRT
+   transcript is saved to `output/ep{N}/ep{N}.srt`. Open it in a text editor to find
+   exact timestamps (format: `HH:MM:SS,mmm`).
+2. **Add to config** — set `start` (in seconds) and `duration` under `manual_soundbites`.
+3. **Verify with dry-run** — check the extracted text without rendering:
+   ```bash
+   .venv/bin/python -m audiogram_generator --episode 142 --soundbites all --dry-run
+   ```
+4. **Generate** — once the preview looks right, remove `--dry-run` and run for real.
+
+## Output structure
+
+Files are organized in a two-level folder hierarchy inside `output_dir`:
+
+```
+output/
+└── ep142/                          ← one folder per episode
+    ├── ep142.mp3                   ← full episode audio
+    ├── ep142.srt                   ← full episode transcript
+    ├── ep142_full_vertical.mp4     ← full-episode mode only
+    ├── ep142_full_square.mp4
+    ├── sb1/                        ← one subfolder per soundbite
+    │   ├── ep142_sb1.mp3
+    │   ├── ep142_sb1.srt
+    │   ├── ep142_sb1_caption.txt
+    │   ├── ep142_sb1_vertical.mp4
+    │   ├── ep142_sb1_square.mp4
+    │   └── ep142_sb1_horizontal.mp4
+    └── sb2/
+        └── ...
+```
+
+When subtitles are disabled, video names include `_nosubs`:
+`ep142_sb1_nosubs_vertical.mp4`.
+
+Each `_caption.txt` file contains: episode number and title, soundbite title, full
+transcript text, link to the full episode, and suggested hashtags.
 
 ## How an audiogram is composed
 
-Each generated video includes:
-- Header with a "LISTEN" label and audio icons
-- Central area: podcast cover and animated waveform synchronized with audio
-- Live transcript at the bottom of the central area
-- Footer with podcast title and episode/soundbite title
+Each generated video frame consists of three vertical zones:
+
+- **Header** — coloured bar at the top containing the episode/podcast/soundbite title
+- **Central area** — podcast cover art with an animated waveform synchronized to the audio;
+  the live transcript subtitle is overlaid here
+- **Footer** — coloured bar at the bottom
+
+Colors, fonts, and format dimensions are all configurable (see [Configuration](#configuration)).
 
 ## Tests
 
-Run the test suite with pytest (activate your virtual environment first):
-
 ```bash
-.venv/bin/python -m pytest tests/ -v
-```
+.venv/bin/python -m pytest tests/ -v --tb=short
 
-Examples:
-
-```bash
-# Specific module
+# Single module
 .venv/bin/python -m pytest tests/test_config.py -v
 
 # Single test
@@ -379,28 +405,22 @@ Examples:
 
 ## Dependencies
 
-- feedparser (≥6.0.10)
-- moviepy (≥1.0.3)
-- pillow (≥10.0.0)
-- pydub (≥0.25.1)
-- audioop-lts (≥0.2.1) — only required on Python 3.13+ where stdlib `audioop` was removed
-- numpy (≥1.24.0)
-- requests (≥2.31.0)
-- pyyaml (≥6.0)
-
-Note for Python 3.13+: The standard library module `audioop` was removed. We use the maintained backport `audioop-lts` to restore compatibility for audio processing libraries like `pydub`. It is declared as a conditional dependency in `requirements.txt` and will be installed automatically on Python 3.13+.
+- feedparser >= 6.0.10
+- moviepy >= 1.0.3
+- pillow >= 10.0.0
+- pydub >= 0.25.1
+- numpy >= 1.24.0
+- requests >= 2.31.0
+- pyyaml >= 6.0
+- audioop-lts >= 0.2.1 — required only on Python 3.13+ (replaces the removed stdlib `audioop`)
 
 ## Roadmap
 
 - Better document subtitle configuration
-- Handle tags with spaces
+- Handle hashtags with spaces
 - Support for more than 3 formats
 - Custom background images
 
 ## License
 
 See the [LICENSE](LICENSE) file for details.
-
-## Note
-
-This project started as a *vibe code* experiment and may evolve quickly. Issues and PRs are welcome.
