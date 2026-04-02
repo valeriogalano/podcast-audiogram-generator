@@ -51,6 +51,9 @@ _warn_if_no_ffmpeg.warned = False  # type: ignore[attr-defined]
 CAPTION_LABEL_EPISODE_PREFIX = "Episode"
 CAPTION_LABEL_LISTEN_PREFIX = "Listen to the full episode"
 
+# Suffix appended to output filenames when subtitles are disabled
+_NOSUBS_SUFFIX = "_nosubs"
+
 
 def get_transcript_text(transcript_url, start_time, duration, srt_content=None,
                          verify_ssl: bool = False):
@@ -128,8 +131,8 @@ def _prepare_episode_resources(selected, output_dir, verify_ssl: bool = False):
             if os.path.exists(full_audio_path) and os.path.getsize(full_audio_path) == 0:
                 logger.warning("Existing audio file %s is empty. Removing it.", full_audio_path)
                 os.remove(full_audio_path)
-        except OSError:
-            pass
+        except OSError as e:
+            logger.warning("Could not remove empty audio file %s: %s", full_audio_path, e)
 
         if not os.path.exists(full_audio_path):
             logger.info("\nDownloading full audio: %s", selected['audio_url'])
@@ -298,7 +301,7 @@ def _process_single_soundbite(
     if not segment_path or not os.path.exists(segment_path):
         logger.warning("Skipping audiogram video generation because audio segment is missing.")
     else:
-        nosubs_suffix = "_nosubs" if not show_subtitles else ""
+        nosubs_suffix = _NOSUBS_SUFFIX if not show_subtitles else ""
         soundbite_title = soundbite.get('text') or soundbite.get('title')
 
         def _render_one_format(format_name):
@@ -441,6 +444,70 @@ def _process_full_episode(selected, podcast_info, full_audio_path, srt_content,
     logger.info("%s", "=" * 60)
 
 
+def _render_soundbites_batch(
+    soundbite_nums,
+    selected,
+    podcast_info,
+    artwork_url,
+    srt_content,
+    full_audio_path,
+    output_dir,
+    temp_dir_base,
+    formats_config,
+    colors,
+    show_subtitles,
+    config_hashtags,
+    header_title_source=None,
+    fonts=None,
+    loaded_audio=None,
+    verify_ssl: bool = False,
+):
+    """Download artwork once, then render the given soundbite numbers in sequence."""
+    total = len(soundbite_nums) if len(soundbite_nums) > 1 else None
+
+    with tempfile.TemporaryDirectory(dir=temp_dir_base) as temp_dir:
+        _warn_if_no_ffmpeg()
+
+        logger.info("Downloading artwork...")
+        logo_path = os.path.join(temp_dir, "logo.png")
+        if artwork_url:
+            download_image(artwork_url, logo_path, verify_ssl=verify_ssl)
+
+        formats_info = {}
+        for soundbite_num in soundbite_nums:
+            soundbite = selected['soundbites'][soundbite_num - 1]
+            formats_info = _process_single_soundbite(
+                soundbite=soundbite,
+                soundbite_num=soundbite_num,
+                total_soundbites=total,
+                selected=selected,
+                podcast_info=podcast_info,
+                temp_dir=temp_dir,
+                logo_path=logo_path,
+                srt_content=srt_content,
+                full_audio_path=full_audio_path,
+                output_dir=output_dir,
+                formats_config=formats_config,
+                colors=colors,
+                show_subtitles=show_subtitles,
+                config_hashtags=config_hashtags,
+                header_title_source=header_title_source,
+                fonts=fonts,
+                loaded_audio=loaded_audio,
+                verify_ssl=verify_ssl,
+            )
+
+    logger.info("\n%s", "=" * 60)
+    if total:
+        logger.info("All audiograms generated successfully into: %s", output_dir)
+        logger.info("Total: %d soundbites × %d formats = %d videos",
+                    len(soundbite_nums), len(formats_info),
+                    len(soundbite_nums) * len(formats_info))
+    else:
+        logger.info("Audiograms successfully generated in folder: %s", output_dir)
+    logger.info("%s", "=" * 60)
+
+
 def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags,
                          show_subtitles, output_dir, temp_dir_base, soundbites_choice,
                          dry_run=False, use_episode_cover=False, header_title_source=None,
@@ -502,48 +569,27 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
     if selected['soundbites']:
         choice = str(soundbites_choice) if soundbites_choice is not None else 'n'
 
-        if choice.lower() == 'a' or choice.lower() == 'all':
-            logger.info("\nGenerating audiograms for all %d soundbites...",
-                        len(selected['soundbites']))
-
-            with tempfile.TemporaryDirectory(dir=temp_dir_base) as temp_dir:
-                _warn_if_no_ffmpeg()
-
-                logger.info("Downloading artwork...")
-                logo_path = os.path.join(temp_dir, "logo.png")
-                if artwork_url:
-                    download_image(artwork_url, logo_path, verify_ssl=verify_ssl)
-
-                formats_info = {}
-                for soundbite_num, soundbite in enumerate(selected['soundbites'], 1):
-                    formats_info = _process_single_soundbite(
-                        soundbite=soundbite,
-                        soundbite_num=soundbite_num,
-                        total_soundbites=len(selected['soundbites']),
-                        selected=selected,
-                        podcast_info=podcast_info,
-                        temp_dir=temp_dir,
-                        logo_path=logo_path,
-                        srt_content=srt_content,
-                        full_audio_path=full_audio_path,
-                        output_dir=episode_dir,
-                        formats_config=formats_config,
-                        colors=colors,
-                        show_subtitles=show_subtitles,
-                        config_hashtags=config_hashtags,
-                        header_title_source=header_title_source,
-                        fonts=fonts,
-                        loaded_audio=loaded_audio,
-                        verify_ssl=verify_ssl,
-                    )
-
-                logger.info("\n%s", "=" * 60)
-                logger.info("All audiograms generated successfully into: %s", episode_dir)
-                logger.info("Total: %d soundbites × %d formats = %d videos",
-                            len(selected['soundbites']), len(formats_info),
-                            len(selected['soundbites']) * len(formats_info))
-                logger.info("%s", "=" * 60)
-
+        if choice.lower() in ('a', 'all'):
+            soundbite_nums = list(range(1, len(selected['soundbites']) + 1))
+            logger.info("\nGenerating audiograms for all %d soundbites...", len(soundbite_nums))
+            _render_soundbites_batch(
+                soundbite_nums=soundbite_nums,
+                selected=selected,
+                podcast_info=podcast_info,
+                artwork_url=artwork_url,
+                srt_content=srt_content,
+                full_audio_path=full_audio_path,
+                output_dir=episode_dir,
+                temp_dir_base=temp_dir_base,
+                formats_config=formats_config,
+                colors=colors,
+                show_subtitles=show_subtitles,
+                config_hashtags=config_hashtags,
+                header_title_source=header_title_source,
+                fonts=fonts,
+                loaded_audio=loaded_audio,
+                verify_ssl=verify_ssl,
+            )
         elif choice.lower() != 'n':
             try:
                 if ',' in choice:
@@ -558,43 +604,26 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                         return
 
                 logger.info("\nGenerating audiogram for %d soundbite(s)...", len(soundbite_nums))
-
-                with tempfile.TemporaryDirectory(dir=temp_dir_base) as temp_dir:
-                    _warn_if_no_ffmpeg()
-
-                    logger.info("Downloading artwork...")
-                    logo_path = os.path.join(temp_dir, "logo.png")
-                    if artwork_url:
-                        download_image(artwork_url, logo_path, verify_ssl=verify_ssl)
-
-                    for soundbite_num in soundbite_nums:
-                        soundbite = selected['soundbites'][soundbite_num - 1]
-                        _process_single_soundbite(
-                            soundbite=soundbite,
-                            soundbite_num=soundbite_num,
-                            total_soundbites=None,
-                            selected=selected,
-                            podcast_info=podcast_info,
-                            temp_dir=temp_dir,
-                            logo_path=logo_path,
-                            srt_content=srt_content,
-                            full_audio_path=full_audio_path,
-                            output_dir=episode_dir,
-                            formats_config=formats_config,
-                            colors=colors,
-                            show_subtitles=show_subtitles,
-                            config_hashtags=config_hashtags,
-                            header_title_source=header_title_source,
-                            fonts=fonts,
-                            loaded_audio=loaded_audio,
-                            verify_ssl=verify_ssl,
-                        )
-
-                    logger.info("\n%s", "=" * 60)
-                    logger.info("Audiograms successfully generated in folder: %s", episode_dir)
-                    logger.info("%s", "=" * 60)
-            except ValueError:
-                logger.warning("Invalid input")
+                _render_soundbites_batch(
+                    soundbite_nums=soundbite_nums,
+                    selected=selected,
+                    podcast_info=podcast_info,
+                    artwork_url=artwork_url,
+                    srt_content=srt_content,
+                    full_audio_path=full_audio_path,
+                    output_dir=episode_dir,
+                    temp_dir_base=temp_dir_base,
+                    formats_config=formats_config,
+                    colors=colors,
+                    show_subtitles=show_subtitles,
+                    config_hashtags=config_hashtags,
+                    header_title_source=header_title_source,
+                    fonts=fonts,
+                    loaded_audio=loaded_audio,
+                    verify_ssl=verify_ssl,
+                )
+            except ValueError as e:
+                logger.warning("Invalid input: %s", e)
             except Exception as e:
                 logger.error("Error during generation: %s", e)
     else:

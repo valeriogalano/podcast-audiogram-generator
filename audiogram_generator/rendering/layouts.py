@@ -149,9 +149,10 @@ def _precompute_header(width, height, layout_config, fonts, podcast_title, episo
 
             lines[-1] = ellipsize(lines[-1])
 
-            line_heights = [tmp_draw.textbbox((0, 0), ln, font=font_header)[3]
-                            - tmp_draw.textbbox((0, 0), ln, font=font_header)[1]
-                            for ln in lines]
+            line_heights = []
+            for ln in lines:
+                b = tmp_draw.textbbox((0, 0), ln, font=font_header)
+                line_heights.append(b[3] - b[1])
             base_h = max(line_heights) if line_heights else 0
             total_text_h = sum(
                 base_h if i == 0 else int(base_h * HEADER_LINE_SPACING)

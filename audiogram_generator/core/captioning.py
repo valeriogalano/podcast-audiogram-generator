@@ -7,6 +7,8 @@ from __future__ import annotations
 from typing import Iterable, List, Optional
 import re
 
+from .timeutils import format_seconds
+
 
 def normalize_hashtags(*sources: Optional[Iterable[str]]) -> List[str]:
     """Normalize and merge hashtag sources.
@@ -83,23 +85,7 @@ def build_caption_text(
 
 def format_srt_time(seconds: float) -> str:
     """Format seconds into SRT timestamp format: HH:MM:SS,mmm"""
-    import math
-    s = abs(seconds)
-    hours = int(s // 3600)
-    minutes = int((s % 3600) // 60)
-    secs = int(s % 60)
-    millis = int(round((s - math.floor(s)) * 1000))
-    # Correct possible overflow from rounding
-    if millis == 1000:
-        millis = 0
-        secs += 1
-        if secs == 60:
-            secs = 0
-            minutes += 1
-            if minutes == 60:
-                minutes = 0
-                hours += 1
-    return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
+    return format_seconds(seconds).replace('.', ',')
 
 
 def generate_srt_content(chunks: List[dict]) -> str:

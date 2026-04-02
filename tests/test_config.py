@@ -33,16 +33,15 @@ class TestConfig(unittest.TestCase):
         # Chiave non esistente senza default
         self.assertIsNone(config.get('non_existent_key'))
 
-    def test_get_all_configuration(self):
-        """Test del metodo get_all"""
+    def test_config_dict_contains_expected_keys(self):
+        """Test che config contenga le chiavi di default attese"""
         config = Config()
-        all_config = config.get_all()
 
-        self.assertIsInstance(all_config, dict)
-        self.assertIn('feed_url', all_config)
-        self.assertIn('output_dir', all_config)
-        self.assertIn('episode', all_config)
-        self.assertIn('soundbites', all_config)
+        self.assertIsInstance(config.config, dict)
+        self.assertIn('feed_url', config.config)
+        self.assertIn('output_dir', config.config)
+        self.assertIn('episode', config.config)
+        self.assertIn('soundbites', config.config)
 
     def test_load_from_valid_yaml_file(self):
         """Test caricamento configurazione da file YAML valido"""
@@ -256,12 +255,12 @@ class TestConfig(unittest.TestCase):
         finally:
             os.unlink(temp_file)
 
-    def test_config_immutability_via_get_all(self):
-        """Test che get_all restituisca una copia e non modifichi l'originale"""
+    def test_config_dict_is_independent_copy(self):
+        """Test che modificare una copia di config.config non modifichi l'originale"""
         config = Config()
 
-        # Ottieni una copia della configurazione
-        config_copy = config.get_all()
+        # Copia manuale del dizionario
+        config_copy = config.config.copy()
 
         # Modifica la copia
         config_copy['feed_url'] = 'https://modified.com/feed.xml'

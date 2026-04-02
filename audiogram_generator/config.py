@@ -134,11 +134,3 @@ class Config:
         """
         return self.config.get(key, default)
 
-    def get_all(self) -> Dict[str, Any]:
-        """
-        Gets all configuration.
-
-        Returns:
-            Dictionary with all configuration
-        """
-        return self.config.copy()
