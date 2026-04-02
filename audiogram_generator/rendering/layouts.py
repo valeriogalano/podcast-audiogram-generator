@@ -11,6 +11,7 @@ from .compositor import (
     _draw_rounded_box_with_shadow,
     _render_subtitle_lines,
     _draw_text_with_stroke,
+    _draw_pill_with_text,
 )
 
 # Social media video formats: (width, height)
@@ -361,13 +362,57 @@ def _render_transcript(img, draw, width, height, central_top, central_height, ce
     return img, draw
 
 
+def _precompute_cta(height, fonts=None):
+    """Pre-compute the CTA font. Returns a cache dict with the font object."""
+    cta_font_size = max(16, int(height * 0.025))
+    font_path = DEFAULT_FONT_PATH
+    if fonts and fonts.get('header'):
+        font_path = fonts['header']
+    try:
+        try:
+            font = ImageFont.truetype(font_path, size=cta_font_size, index=1)
+        except Exception:
+            font = ImageFont.truetype(font_path, size=cta_font_size)
+    except Exception:
+        font = ImageFont.load_default()
+    return {'font': font}
+
+
+def _render_cta(img, width, height, format_name, cta_config, cta_cache=None):
+    """Render the CTA pill badge at the configured y_offset position.
+
+    Does nothing when ``cta_config`` is None, missing, or ``enabled`` is False.
+    """
+    if not cta_config or not cta_config.get('enabled'):
+        return img
+
+    text = str(cta_config.get('text', 'Link in bio'))
+    fmt_cfg = cta_config.get(format_name) or {}
+    y_offset = fmt_cfg.get('y_offset', 0.85)
+    y = int(height * y_offset)
+    center_x = width // 2
+
+    font = cta_cache['font'] if cta_cache else ImageFont.load_default()
+    draw = ImageDraw.Draw(img)
+    img, _, _ = _draw_pill_with_text(
+        img, draw, text, font,
+        center_x=center_x, y=y,
+        padding_x=24, padding_y=12,
+        pill_color=(255, 255, 255, 230),
+        radius=22, shadow=True,
+        text_color=(0, 0, 0),
+    )
+    return img
+
+
 def _create_unified_layout(img, draw, width, height, logo_img, podcast_title, episode_title,
                              waveform_data, current_time, transcript_chunks, audio_duration,
                              colors, layout_config,
                              header_title_source: Optional[str] = None,
                              header_soundbite_title: Optional[str] = None,
                              fonts=None, waveform_sensitivities=None,
-                             header_cache=None, transcript_cache=None):
+                             header_cache=None, transcript_cache=None,
+                             cta_config=None, cta_cache=None, format_name='vertical'):
     """Unified layout for all video formats."""
     header_height = _render_header(
         draw, width, height, layout_config, colors,
@@ -392,6 +437,8 @@ def _create_unified_layout(img, draw, width, height, logo_img, podcast_title, ep
         transcript_cache=transcript_cache,
     )
 
+    img = _render_cta(img, width, height, format_name, cta_config, cta_cache)
+
     return img
 
 
@@ -401,7 +448,8 @@ def create_layout(img, draw, width, height, logo_img, podcast_title, episode_tit
                    header_title_source: Optional[str] = None,
                    header_soundbite_title: Optional[str] = None,
                    fonts=None, waveform_sensitivities=None,
-                   header_cache=None, transcript_cache=None):
+                   header_cache=None, transcript_cache=None,
+                   cta_config=None, cta_cache=None):
     """Creates the layout for the specified format.
 
     Supported formats: 'vertical', 'square', 'horizontal'.
@@ -413,6 +461,7 @@ def create_layout(img, draw, width, height, logo_img, podcast_title, episode_tit
         layout_config, header_title_source, header_soundbite_title,
         fonts=fonts, waveform_sensitivities=waveform_sensitivities,
         header_cache=header_cache, transcript_cache=transcript_cache,
+        cta_config=cta_config, cta_cache=cta_cache, format_name=format_name,
     )
 
 
@@ -422,7 +471,8 @@ def create_audiogram_frame(width, height, logo_img, podcast_title, episode_title
                             header_title_source: Optional[str] = None,
                             header_soundbite_title: Optional[str] = None,
                             fonts=None, waveform_sensitivities=None,
-                            header_cache=None, transcript_cache=None):
+                            header_cache=None, transcript_cache=None,
+                            cta_config=None, cta_cache=None):
     """Creates a single audiogram frame as a numpy RGB array."""
     import numpy as np
 
@@ -435,6 +485,7 @@ def create_audiogram_frame(width, height, logo_img, podcast_title, episode_title
         colors_tuples, format_name, header_title_source, header_soundbite_title,
         fonts=fonts, waveform_sensitivities=waveform_sensitivities,
         header_cache=header_cache, transcript_cache=transcript_cache,
+        cta_config=cta_config, cta_cache=cta_cache,
     )
 
     if img.mode != 'RGB':

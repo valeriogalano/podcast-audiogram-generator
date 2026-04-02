@@ -12,7 +12,7 @@ from .compositor import COLOR_ORANGE, COLOR_BEIGE, COLOR_WHITE, COLOR_BLACK
 from .waveform import get_waveform_data
 from .layouts import (
     FORMATS, LAYOUT_CONFIGS,
-    _precompute_transcript, _precompute_header,
+    _precompute_transcript, _precompute_header, _precompute_cta,
     create_audiogram_frame,
 )
 
@@ -25,7 +25,7 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
                         show_subtitles=True, *,
                         header_title_source: Optional[str] = None,
                         header_soundbite_title: Optional[str] = None,
-                        fonts=None):
+                        fonts=None, cta=None):
     """Generate a complete audiogram video.
 
     Args:
@@ -106,6 +106,11 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
         header_title_source, header_soundbite_title,
     )
 
+    cta_cache = None
+    if cta and cta.get('enabled'):
+        logger.info("  - Pre-computing CTA layout...")
+        cta_cache = _precompute_cta(height, fonts)
+
     logger.info("  - Video frame generation...")
     chunks_for_render = transcript_chunks if show_subtitles else []
 
@@ -127,6 +132,8 @@ def generate_audiogram(audio_path, output_path, format_name, podcast_logo_path,
             waveform_sensitivities=waveform_sensitivities,
             header_cache=header_cache,
             transcript_cache=transcript_cache,
+            cta_config=cta,
+            cta_cache=cta_cache,
         )
 
     video = VideoClip(make_frame, duration=duration)

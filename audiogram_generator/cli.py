@@ -130,6 +130,7 @@ def main():
     fonts = config.get('fonts')
     verify_ssl = config.get('verify_ssl', False)
     full_episode = bool(config.get('full_episode', False))
+    cta = config.get('cta')
     if not verify_ssl:
         logger.warning("SSL certificate verification is disabled (verify_ssl: false). "
                        "Set verify_ssl: true in config.yaml to enable it.")
@@ -249,6 +250,7 @@ def main():
             fonts=fonts,
             verify_ssl=verify_ssl,
             full_episode=full_episode,
+            cta=cta,
         )
 
     return

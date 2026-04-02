@@ -27,6 +27,7 @@ def generate_audiogram(
     header_title_source: Optional[str] = None,
     header_soundbite_title: Optional[str] = None,
     fonts: Optional[Dict] = None,
+    cta: Optional[Dict] = None,
 ) -> None:
     """Legacy-compatible wrapper used by the CLI and tests.
 
@@ -49,4 +50,5 @@ def generate_audiogram(
         header_title_source=header_title_source,
         header_soundbite_title=header_soundbite_title,
         fonts=fonts,
+        cta=cta,
     )

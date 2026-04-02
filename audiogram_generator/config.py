@@ -37,6 +37,13 @@ class Config:
             'header': '/System/Library/Fonts/Helvetica.ttc',
             'transcript': '/System/Library/Fonts/Helvetica.ttc'
         },
+        'cta': {
+            'enabled': False,
+            'text': 'Link in bio',
+            'vertical': {'y_offset': 0.82},
+            'square': {'y_offset': 0.85},
+            'horizontal': {'y_offset': 0.85},
+        },
         'formats': {
             'vertical': {
                 'width': 1080,
@@ -86,7 +93,7 @@ class Config:
                 if file_config:
                     # Deep merge for colors, formats, fonts and caption_labels
                     for key, value in file_config.items():
-                        if key in ['colors', 'formats', 'fonts', 'caption_labels'] and isinstance(value, dict):
+                        if key in ['colors', 'formats', 'fonts', 'caption_labels', 'cta'] and isinstance(value, dict):
                             if key not in self.config:
                                 self.config[key] = {}
                             self._deep_merge(self.config[key], value)  # type: ignore[arg-type]

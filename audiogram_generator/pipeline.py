@@ -232,6 +232,7 @@ def _process_single_soundbite(
     fonts=None,
     loaded_audio=None,
     verify_ssl: bool = False,
+    cta=None,
 ):
     """Process a single soundbite: extract audio, generate audiograms, caption and SRT."""
     if total_soundbites:
@@ -325,6 +326,7 @@ def _process_single_soundbite(
                 header_title_source=header_title_source,
                 header_soundbite_title=soundbite_title,
                 fonts=fonts,
+                cta=cta,
             )
             logger.info("✓ %s: %s", format_name, output_path)
             return format_name, output_path
@@ -364,7 +366,7 @@ def _process_single_soundbite(
 def _process_full_episode(selected, podcast_info, full_audio_path, srt_content,
                            artwork_url, output_dir, temp_dir_base, formats_config, colors,
                            show_subtitles, header_title_source=None, fonts=None,
-                           verify_ssl: bool = False):
+                           verify_ssl: bool = False, cta=None):
     """Generate audiograms for the entire episode (no soundbite extraction).
 
     Uses the full audio file and all transcript chunks. Outputs are named
@@ -427,6 +429,7 @@ def _process_full_episode(selected, podcast_info, full_audio_path, srt_content,
                 show_subtitles,
                 header_title_source=header_title_source,
                 fonts=fonts,
+                cta=cta,
             )
             logger.info("✓ %s: %s", format_name, output_path)
             return format_name, output_path
@@ -461,6 +464,7 @@ def _render_soundbites_batch(
     fonts=None,
     loaded_audio=None,
     verify_ssl: bool = False,
+    cta=None,
 ):
     """Download artwork once, then render the given soundbite numbers in sequence."""
     total = len(soundbite_nums) if len(soundbite_nums) > 1 else None
@@ -495,6 +499,7 @@ def _render_soundbites_batch(
                 fonts=fonts,
                 loaded_audio=loaded_audio,
                 verify_ssl=verify_ssl,
+                cta=cta,
             )
 
     logger.info("\n%s", "=" * 60)
@@ -511,7 +516,8 @@ def _render_soundbites_batch(
 def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags,
                          show_subtitles, output_dir, temp_dir_base, soundbites_choice,
                          dry_run=False, use_episode_cover=False, header_title_source=None,
-                         fonts=None, verify_ssl: bool = False, full_episode: bool = False):
+                         fonts=None, verify_ssl: bool = False, full_episode: bool = False,
+                         cta=None):
     """Orchestrate all steps for a single episode.
 
     ``soundbites_choice`` must be resolved by the caller (main() handles
@@ -555,6 +561,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
             header_title_source=header_title_source,
             fonts=fonts,
             verify_ssl=verify_ssl,
+            cta=cta,
         )
         return
 
@@ -589,6 +596,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                 fonts=fonts,
                 loaded_audio=loaded_audio,
                 verify_ssl=verify_ssl,
+                cta=cta,
             )
         elif choice.lower() != 'n':
             try:
@@ -621,6 +629,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                     fonts=fonts,
                     loaded_audio=loaded_audio,
                     verify_ssl=verify_ssl,
+                    cta=cta,
                 )
             except ValueError as e:
                 logger.warning("Invalid input: %s", e)
