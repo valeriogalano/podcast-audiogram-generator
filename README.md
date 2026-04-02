@@ -50,51 +50,36 @@ cp config.yaml.example config.yaml
 
 ## Usage
 
-### Interactive mode
+All configuration lives in `config.yaml`. Once the file is set up, run:
 
 ```bash
 .venv/bin/python -m audiogram_generator
 ```
 
-### Command-line mode
-
-```bash
-.venv/bin/python -m audiogram_generator [options]
-```
+CLI flags are available for lightweight overrides and debugging:
 
 | Flag | Description |
 |---|---|
-| `--config PATH` | YAML configuration file |
-| `--feed-url URL` | RSS feed URL (required if not in config) |
-| `--episode N` | Episodes to process: `5`, `1,3,5`, `all`, or `last` |
-| `--soundbites N` | Soundbites: `1`, `1,3`, or `all` |
-| `--output-dir PATH` | Output directory (default: `./output`) |
-| `--temp-dir PATH` | Temporary directory for intermediate files (default: `./temp`) |
-| `--header-title-source` | Header title: `auto`, `podcast`, `episode`, `soundbite`, `none` |
+| `--config PATH` | Path to a YAML configuration file (default: `./config.yaml`) |
+| `--episode N` | Override the episode selection: `5`, `1,3,5`, `all`, or `last` |
+| `--soundbites N` | Override the soundbite selection: `1`, `1,3`, or `all` |
 | `--log-level LEVEL` | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
-| `--dry-run` | Preview only — no files generated |
-| `--full-episode` | Render the entire episode instead of individual soundbites |
-| `--show-subtitles` / `--no-subtitles` | Force enable/disable on-video subtitles |
-| `--use-episode-cover` / `--no-use-episode-cover` | Use episode-specific cover art when available |
-
-CLI flags take precedence over config file values, which take precedence over built-in defaults.
+| `--dry-run` | Preview timings and subtitles — no files generated |
 
 ### Examples
 
 ```bash
-# Generate all soundbites for episode 142
+# Use defaults from config.yaml
+.venv/bin/python -m audiogram_generator
+
+# Override episode and soundbites at the command line
 .venv/bin/python -m audiogram_generator --episode 142 --soundbites all
 
-# Most recent episode, all soundbites
-.venv/bin/python -m audiogram_generator --episode last --soundbites all
+# Most recent episode, dry run to preview timings
+.venv/bin/python -m audiogram_generator --episode last --soundbites all --dry-run
 
-# Dry run to preview timings without rendering
-.venv/bin/python -m audiogram_generator --episode 142 --soundbites all --dry-run
-
-# Custom feed and output directory
-.venv/bin/python -m audiogram_generator \
-  --feed-url https://example.com/feed.xml \
-  --episode 5 --soundbites all --output-dir ~/videos
+# Use a different config file
+.venv/bin/python -m audiogram_generator --config config.staging.yaml
 ```
 
 ---

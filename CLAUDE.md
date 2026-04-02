@@ -60,7 +60,7 @@ Since shell state does not persist between Bash tool calls, run everything in a 
 
 ```
 audiogram_generator/
-├── cli.py                  # CLI entry point (argparse, interactive prompts)
+├── cli.py                  # CLI entry point (argparse, config loading; no interactive prompts)
 ├── pipeline.py             # Business logic / orchestration (no I/O)
 ├── config.py               # YAML configuration with deep merge
 ├── audio_utils.py          # Audio download and segment extraction
