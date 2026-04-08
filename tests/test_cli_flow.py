@@ -341,6 +341,35 @@ class TestSkipForceLimit(unittest.TestCase):
             )
         self.assertEqual(mock_gen.call_count, 1)
 
+    @patch('audiogram_generator.pipeline.generate_audiogram')
+    @patch('audiogram_generator.pipeline.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('audiogram_generator.pipeline.load_audio')
+    @patch('audiogram_generator.pipeline.download_image')
+    @patch('audiogram_generator.pipeline.download_audio')
+    @patch('os.path.exists', return_value=True)
+    def test_generation_order_is_reversed(
+        self, _exists, _dl_audio, _dl_image, _load_audio, mock_extract, mock_gen
+    ):
+        """Soundbites are processed last-to-first (highest index first)."""
+        formats = {'vertical': {'width': 64, 'height': 64, 'enabled': True}}
+        with tempfile.TemporaryDirectory() as tmp:
+            cli.process_one_episode(
+                selected=self._make_selected(n_soundbites=3),
+                podcast_info={'title': 'Podcast', 'image_url': None},
+                colors=cli.Config.DEFAULT_CONFIG['colors'],
+                formats_config=formats,
+                config_hashtags=None,
+                show_subtitles=True,
+                output_dir=tmp,
+                temp_dir_base=tmp,
+                soundbites_choice='all',
+                dry_run=False,
+                force=True,
+            )
+        # extract_audio_segment is called once per soundbite; check start times decrease
+        starts = [call[0][1] for call in mock_extract.call_args_list]  # positional arg[1] = start
+        self.assertEqual(starts, sorted(starts, reverse=True))
+
 
 if __name__ == '__main__':
     unittest.main()

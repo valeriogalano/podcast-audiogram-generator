@@ -604,7 +604,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
         choice = str(soundbites_choice) if soundbites_choice is not None else 'n'
 
         if choice.lower() in ('a', 'all'):
-            soundbite_nums = list(range(1, len(selected['soundbites']) + 1))
+            soundbite_nums = list(range(len(selected['soundbites']), 0, -1))
             if limit is not None:
                 soundbite_nums = soundbite_nums[:limit]
             logger.info("\nGenerating audiograms for %d soundbite(s)...", len(soundbite_nums))
@@ -641,6 +641,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                                      num, len(selected['soundbites']))
                         return
 
+                soundbite_nums = list(reversed(soundbite_nums))
                 if limit is not None:
                     soundbite_nums = soundbite_nums[:limit]
 
