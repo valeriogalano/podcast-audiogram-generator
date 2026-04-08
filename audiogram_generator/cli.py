@@ -61,6 +61,10 @@ def main():
                         help='Logging level')
     parser.add_argument('--dry-run', action='store_true',
                         help='Print soundbite intervals and subtitles without generating files')
+    parser.add_argument('--force', action='store_true',
+                        help='Overwrite existing output files instead of skipping them')
+    parser.add_argument('--limit', type=int, metavar='N',
+                        help='Maximum number of soundbites to generate per episode')
 
     args = parser.parse_args()
 
@@ -80,6 +84,8 @@ def main():
         'episode': args.episode,
         'soundbites': args.soundbites,
         'dry_run': args.dry_run or None,
+        'force': args.force or None,
+        'limit': args.limit,
     })
 
     feed_url = config.get('feed_url')
@@ -103,6 +109,8 @@ def main():
     verify_ssl = config.get('verify_ssl', False)
     full_episode = bool(config.get('full_episode', False))
     cta = config.get('cta')
+    force = bool(config.get('force', False))
+    limit = config.get('limit')
 
     if not verify_ssl:
         logger.warning("SSL certificate verification is disabled (verify_ssl: false). "
@@ -177,6 +185,8 @@ def main():
             verify_ssl=verify_ssl,
             full_episode=full_episode,
             cta=cta,
+            force=force,
+            limit=limit,
         )
 
 

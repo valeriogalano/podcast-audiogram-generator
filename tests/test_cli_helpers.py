@@ -108,6 +108,7 @@ class TestProcessSingleSoundbitePassesLoadedAudio(unittest.TestCase):
                 show_subtitles=False,
                 config_hashtags=None,
                 loaded_audio=pre_loaded,
+                force=True,  # os.path.exists is mocked to True; bypass skip
             )
 
         # extract_audio_segment must have been called with audio=pre_loaded
@@ -139,6 +140,7 @@ class TestProcessSingleSoundbitePassesLoadedAudio(unittest.TestCase):
                 show_subtitles=False,
                 config_hashtags=None,
                 loaded_audio=None,
+                force=True,  # os.path.exists is mocked to True; bypass skip
             )
 
         mock_extract.assert_called_once()

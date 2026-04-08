@@ -65,6 +65,8 @@ CLI flags are available for lightweight overrides and debugging:
 | `--soundbites N` | Override the soundbite selection: `1`, `1,3`, or `all` |
 | `--log-level LEVEL` | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
 | `--dry-run` | Preview timings and subtitles — no files generated |
+| `--force` | Overwrite existing output files instead of skipping them |
+| `--limit N` | Process at most N soundbites per episode per run |
 
 ### Examples
 
@@ -77,6 +79,9 @@ CLI flags are available for lightweight overrides and debugging:
 
 # Most recent episode, dry run to preview timings
 .venv/bin/python -m audiogram_generator --episode last --soundbites all --dry-run
+
+# Re-generate only the first 3 soundbites of episode 142, overwriting existing files
+.venv/bin/python -m audiogram_generator --episode 142 --soundbites all --limit 3 --force
 
 # Use a different config file
 .venv/bin/python -m audiogram_generator --config config.staging.yaml

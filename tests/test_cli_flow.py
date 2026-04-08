@@ -113,6 +113,7 @@ class TestCliFlow(unittest.TestCase):
                 soundbites_choice='1',
                 dry_run=False,
                 use_episode_cover=True,
+                force=True,  # skip-check would fire because os.path.exists is mocked to True
             )
             # Verify that each call to generate_audiogram uses a path with _nosubs
             self.assertGreaterEqual(gen.call_count, 1)
@@ -198,6 +199,7 @@ class TestProcessOneEpisodeLoadsAudioOnce(unittest.TestCase):
                 temp_dir_base=tmp,
                 soundbites_choice='a',
                 dry_run=False,
+                force=True,  # skip-check would fire because os.path.exists is mocked to True
             )
 
         # Audio loaded from disk exactly once
@@ -209,6 +211,135 @@ class TestProcessOneEpisodeLoadsAudioOnce(unittest.TestCase):
         for c in calls:
             _, kwargs = c
             self.assertIs(kwargs.get('audio'), mock_pre_loaded)
+
+
+class TestSkipForceLimit(unittest.TestCase):
+    """Tests for skip-existing, --force override, and --limit."""
+
+    def _make_selected(self, n_soundbites=3):
+        return {
+            'number': 10,
+            'title': 'Test Episode',
+            'link': 'https://example.com/ep10',
+            'audio_url': 'https://example.com/ep10.mp3',
+            'transcript_url': None,
+            'soundbites': [
+                {'start': i * 10, 'duration': 5, 'title': f'SB{i}', 'text': f'text{i}'}
+                for i in range(1, n_soundbites + 1)
+            ],
+            'keywords': '',
+            'image_url': None,
+        }
+
+    @patch('audiogram_generator.pipeline.generate_audiogram')
+    @patch('audiogram_generator.pipeline.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('audiogram_generator.pipeline.load_audio')
+    @patch('audiogram_generator.pipeline.download_image')
+    @patch('audiogram_generator.pipeline.download_audio')
+    @patch('os.path.exists', return_value=True)
+    def test_soundbite_skipped_when_output_exists(
+        self, _exists, _dl_audio, _dl_image, _load_audio, _extract, mock_gen
+    ):
+        """When output MP4s already exist and force=False, generate_audiogram is not called."""
+        formats = {'vertical': {'width': 64, 'height': 64, 'enabled': True}}
+        with tempfile.TemporaryDirectory() as tmp:
+            cli.process_one_episode(
+                selected=self._make_selected(n_soundbites=1),
+                podcast_info={'title': 'Podcast', 'image_url': None},
+                colors=cli.Config.DEFAULT_CONFIG['colors'],
+                formats_config=formats,
+                config_hashtags=None,
+                show_subtitles=True,
+                output_dir=tmp,
+                temp_dir_base=tmp,
+                soundbites_choice='1',
+                dry_run=False,
+                force=False,
+            )
+        mock_gen.assert_not_called()
+
+    @patch('audiogram_generator.pipeline.generate_audiogram')
+    @patch('audiogram_generator.pipeline.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('audiogram_generator.pipeline.load_audio')
+    @patch('audiogram_generator.pipeline.download_image')
+    @patch('audiogram_generator.pipeline.download_audio')
+    @patch('os.path.exists', return_value=True)
+    def test_force_bypasses_skip(
+        self, _exists, _dl_audio, _dl_image, _load_audio, _extract, mock_gen
+    ):
+        """When force=True, generate_audiogram is called even if output MP4s already exist."""
+        formats = {'vertical': {'width': 64, 'height': 64, 'enabled': True}}
+        with tempfile.TemporaryDirectory() as tmp:
+            cli.process_one_episode(
+                selected=self._make_selected(n_soundbites=1),
+                podcast_info={'title': 'Podcast', 'image_url': None},
+                colors=cli.Config.DEFAULT_CONFIG['colors'],
+                formats_config=formats,
+                config_hashtags=None,
+                show_subtitles=True,
+                output_dir=tmp,
+                temp_dir_base=tmp,
+                soundbites_choice='1',
+                dry_run=False,
+                force=True,
+            )
+        mock_gen.assert_called_once()
+
+    @patch('audiogram_generator.pipeline.generate_audiogram')
+    @patch('audiogram_generator.pipeline.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('audiogram_generator.pipeline.load_audio')
+    @patch('audiogram_generator.pipeline.download_image')
+    @patch('audiogram_generator.pipeline.download_audio')
+    @patch('os.path.exists', return_value=True)
+    def test_limit_caps_soundbites_processed(
+        self, _exists, _dl_audio, _dl_image, _load_audio, _extract, mock_gen
+    ):
+        """With limit=2, only the first 2 soundbites out of 3 are processed."""
+        formats = {'vertical': {'width': 64, 'height': 64, 'enabled': True}}
+        with tempfile.TemporaryDirectory() as tmp:
+            cli.process_one_episode(
+                selected=self._make_selected(n_soundbites=3),
+                podcast_info={'title': 'Podcast', 'image_url': None},
+                colors=cli.Config.DEFAULT_CONFIG['colors'],
+                formats_config=formats,
+                config_hashtags=None,
+                show_subtitles=True,
+                output_dir=tmp,
+                temp_dir_base=tmp,
+                soundbites_choice='all',
+                dry_run=False,
+                limit=2,
+                force=True,  # os.path.exists is mocked to True; bypass skip to test limit
+            )
+        self.assertEqual(mock_gen.call_count, 2)
+
+    @patch('audiogram_generator.pipeline.generate_audiogram')
+    @patch('audiogram_generator.pipeline.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('audiogram_generator.pipeline.load_audio')
+    @patch('audiogram_generator.pipeline.download_image')
+    @patch('audiogram_generator.pipeline.download_audio')
+    @patch('os.path.exists', return_value=True)
+    def test_limit_with_explicit_selection(
+        self, _exists, _dl_audio, _dl_image, _load_audio, _extract, mock_gen
+    ):
+        """With limit=1 and soundbites_choice='1,2,3', only 1 soundbite is rendered."""
+        formats = {'vertical': {'width': 64, 'height': 64, 'enabled': True}}
+        with tempfile.TemporaryDirectory() as tmp:
+            cli.process_one_episode(
+                selected=self._make_selected(n_soundbites=3),
+                podcast_info={'title': 'Podcast', 'image_url': None},
+                colors=cli.Config.DEFAULT_CONFIG['colors'],
+                formats_config=formats,
+                config_hashtags=None,
+                show_subtitles=True,
+                output_dir=tmp,
+                temp_dir_base=tmp,
+                soundbites_choice='1,2,3',
+                dry_run=False,
+                limit=1,
+                force=True,  # os.path.exists is mocked to True; bypass skip to test limit
+            )
+        self.assertEqual(mock_gen.call_count, 1)
 
 
 if __name__ == '__main__':
