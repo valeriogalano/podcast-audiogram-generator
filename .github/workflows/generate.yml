@@ -1,0 +1,17 @@
+name: Generate Audiogram
+
+on:
+  schedule:
+    - cron: '0 10 * * 2'  # martedi alle 10:00 UTC
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: self-hosted
+    timeout-minutes: 120
+
+    steps:
+      - name: Genera audiogram (ultimo episodio)
+        run: |
+          cd $HOME/PycharmProjects/pensieriincodice-audiogram-generator
+          .venv/bin/python -m audiogram_generator --episode last --soundbites all
