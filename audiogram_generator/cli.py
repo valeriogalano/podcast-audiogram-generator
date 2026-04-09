@@ -158,6 +158,52 @@ def main():
         logger.error("soundbites is required. Set it in config.yaml or pass --soundbites.")
         return
 
+    # When --limit is set, pre-select the last N unprocessed soundbites across all
+    # selected episodes (newest episode first, newest soundbite first) so that only
+    # the episodes that actually have pending work are downloaded.
+    episode_soundbite_overrides = {}  # ep_num -> comma-separated soundbite numbers
+    effective_limit = limit  # limit to forward to process_one_episode (cleared below if pre-selected)
+
+    if limit is not None and not dry_run and not full_episode:
+        _nosubs_sfx = "" if show_subtitles else "_nosubs"
+        _enabled_fmts = [
+            fmt for fmt, cfg in (formats_config or {}).items()
+            if cfg.get('enabled', True)
+        ] if formats_config else []
+
+        _pending = []  # [(episode_num, soundbite_num), ...]
+        for _ep_num in reversed(selected_episode_numbers):
+            _ep = next((e for e in episodes if e['number'] == _ep_num), None)
+            if _ep is None:
+                continue
+            _soundbites = _ep.get('soundbites') or []
+            for _sb_num in range(1, len(_soundbites) + 1):
+                _already_done = False
+                if _enabled_fmts and not force:
+                    _sb_dir = os.path.join(output_dir, f"ep{_ep_num}", f"sb{_sb_num}")
+                    _already_done = all(
+                        os.path.exists(os.path.join(
+                            _sb_dir, f"ep{_ep_num}_sb{_sb_num}{_nosubs_sfx}_{fmt}.mp4"
+                        ))
+                        for fmt in _enabled_fmts
+                    )
+                if not _already_done:
+                    _pending.append((_ep_num, _sb_num))
+                    if len(_pending) >= limit:
+                        break
+            if len(_pending) >= limit:
+                break
+
+        # Build per-episode soundbite overrides and restrict episode list
+        _ep_sb_map = {}
+        for _ep_num, _sb_num in _pending:
+            _ep_sb_map.setdefault(_ep_num, []).append(_sb_num)
+
+        selected_episode_numbers = [n for n in selected_episode_numbers if n in _ep_sb_map]
+        for _ep_num, _sb_nums in _ep_sb_map.items():
+            episode_soundbite_overrides[_ep_num] = ','.join(str(n) for n in _sb_nums)
+        effective_limit = None  # already enforced above
+
     for episode_num in selected_episode_numbers:
         selected = None
         for ep in episodes:
@@ -168,6 +214,7 @@ def main():
             logger.warning("Episode %d not found in the feed. Skipping.", episode_num)
             continue
 
+        effective_soundbites_choice = episode_soundbite_overrides.get(episode_num, soundbites_choice)
         process_one_episode(
             selected=selected,
             podcast_info=podcast_info,
@@ -177,7 +224,7 @@ def main():
             show_subtitles=show_subtitles,
             output_dir=output_dir,
             temp_dir_base=temp_dir_base,
-            soundbites_choice=soundbites_choice,
+            soundbites_choice=effective_soundbites_choice,
             dry_run=dry_run,
             use_episode_cover=use_episode_cover,
             header_title_source=header_title_source,
@@ -186,7 +233,7 @@ def main():
             full_episode=full_episode,
             cta=cta,
             force=force,
-            limit=limit,
+            limit=effective_limit,
         )
 
 
