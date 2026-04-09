@@ -30,8 +30,9 @@ def normalize_hashtags(*sources: Optional[Iterable[str]]) -> List[str]:
             t = str(item).strip()
             if t.startswith('#'):
                 t = t[1:]
-            # remove spaces and lowercase
+            # remove spaces, lowercase, strip characters invalid in hashtags
             t = re.sub(r"\s+", "", t).lower()
+            t = re.sub(r"[^\w]", "", t, flags=re.UNICODE)
             if t:
                 flat.append(t)
 
