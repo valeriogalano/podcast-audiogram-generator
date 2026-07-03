@@ -114,6 +114,12 @@ caption_labels:
   # Example: "Listen to the full episode: https://..."
   listen_full_prefix: "Listen to the full episode"
 
+# Where to place the transcript inside the .txt caption (optional)
+#   - inline -> between the soundbite title and the "listen" link (default)
+#   - last   -> after the hashtags, as the final block of the caption
+#   - none   -> omit the transcript from the .txt (it is still written to the .srt)
+caption_transcript: inline
+
 # Manually defined soundbites (optional)
 # Very useful if the podcast feed does not contain soundbites (<podcast:soundbite> tags).
 # You can identify the episode by its number (based on feed order, 1-based)
