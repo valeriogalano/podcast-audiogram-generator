@@ -50,6 +50,8 @@ _warn_if_no_ffmpeg.warned = False  # type: ignore[attr-defined]
 # Caption label defaults; overridable via config in the CLI layer
 CAPTION_LABEL_EPISODE_PREFIX = "Episode"
 CAPTION_LABEL_LISTEN_PREFIX = "Listen to the full episode"
+# Where to place the transcript in the caption: 'inline' | 'last' | 'none'
+CAPTION_TRANSCRIPT_POSITION = "inline"
 
 # Suffix appended to output filenames when subtitles are disabled
 _NOSUBS_SUFFIX = "_nosubs"
@@ -85,10 +87,12 @@ def generate_caption_file(output_path, episode_number, episode_title, episode_li
                            soundbite_title, transcript_text, podcast_keywords=None,
                            episode_keywords=None, config_hashtags=None,
                            *, episode_prefix: Optional[str] = None,
-                           listen_full_prefix: Optional[str] = None):
+                           listen_full_prefix: Optional[str] = None,
+                           transcript_position: Optional[str] = None):
     """Generate a plain-text caption file for social posts."""
     ep_prefix = episode_prefix if episode_prefix is not None else CAPTION_LABEL_EPISODE_PREFIX
     listen_prefix = listen_full_prefix if listen_full_prefix is not None else CAPTION_LABEL_LISTEN_PREFIX
+    position = transcript_position if transcript_position is not None else CAPTION_TRANSCRIPT_POSITION
 
     caption = build_caption_text(
         episode_number=episode_number,
@@ -101,6 +105,7 @@ def generate_caption_file(output_path, episode_number, episode_title, episode_li
         config_hashtags=config_hashtags,
         episode_prefix=ep_prefix,
         listen_full_prefix=listen_prefix,
+        transcript_position=position,
     )
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(caption)

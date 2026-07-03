@@ -27,6 +27,8 @@ class Config:
             'episode_prefix': 'Episode',
             'listen_full_prefix': 'Listen to the full episode',
         },
+        # Transcript placement in the .txt caption: 'inline' | 'last' | 'none'
+        'caption_transcript': 'inline',
         'colors': {
             'primary': [242, 101, 34],      # Orange (header, footer, bars)
             'background': [235, 213, 197],  # Beige (central background)

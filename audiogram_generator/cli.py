@@ -124,6 +124,14 @@ def main():
     _pipeline.CAPTION_LABEL_LISTEN_PREFIX = labels.get(
         'listen_full_prefix', _pipeline.CAPTION_LABEL_LISTEN_PREFIX
     )
+    transcript_position = config.get('caption_transcript', _pipeline.CAPTION_TRANSCRIPT_POSITION)
+    if transcript_position not in ('inline', 'last', 'none'):
+        logger.warning(
+            "Invalid caption_transcript '%s' (expected 'inline', 'last' or 'none'), "
+            "falling back to 'inline'.", transcript_position
+        )
+        transcript_position = 'inline'
+    _pipeline.CAPTION_TRANSCRIPT_POSITION = transcript_position
 
     logger.info("\nFetching episodes from feed...")
     manual_sbs = config.get('manual_soundbites', {})

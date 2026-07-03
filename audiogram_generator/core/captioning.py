@@ -57,6 +57,7 @@ def build_caption_text(
     *,
     episode_prefix: str = "Episode",
     listen_full_prefix: str = "Listen to the full episode",
+    transcript_position: str = "inline",
 ) -> str:
     """Build the full caption text content.
 
@@ -66,6 +67,12 @@ def build_caption_text(
     - ``config_hashtags``: list of extra hashtags from config
 
     When no hashtags are available, defaults to ``#podcast``.
+
+    ``transcript_position`` controls where the transcript is placed:
+    - ``"inline"`` (default): between the soundbite title and the listen link
+    - ``"last"``: after the hashtags, as the final block
+    - ``"none"``: the transcript is omitted from the caption
+    Any unrecognized value is treated as ``"inline"``.
     """
     # Split comma‑separated inputs into lists
     podcast_tags = [t.strip() for t in podcast_keywords.split(',')] if podcast_keywords else []
@@ -74,13 +81,18 @@ def build_caption_text(
     normalized = normalize_hashtags(podcast_tags, episode_tags, config_hashtags or [])
     hashtag_string = ' '.join(f"#{t}" for t in normalized) if normalized else '#podcast'
 
+    position = transcript_position if transcript_position in ("inline", "last", "none") else "inline"
+    inline_block = f"{transcript_text}\n\n" if position == "inline" else ""
+
     caption = (
         f"{episode_prefix} {episode_number}: {episode_title}\n\n"
         f"{soundbite_title}\n\n"
-        f"{transcript_text}\n\n"
+        f"{inline_block}"
         f"{listen_full_prefix}: {episode_link}\n\n"
         f"{hashtag_string}\n"
     )
+    if position == "last":
+        caption += f"\n{transcript_text}\n"
     return caption
 
 

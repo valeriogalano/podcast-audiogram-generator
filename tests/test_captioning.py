@@ -142,6 +142,59 @@ class TestBuildCaptionText:
         )
         assert "Ascolta l'episodio completo:" in caption
 
+    def test_transcript_inline_is_default(self):
+        caption = build_caption_text(
+            episode_number=1,
+            episode_title="Title",
+            episode_link="https://example.com/ep",
+            soundbite_title="Bite",
+            transcript_text="THE_TRANSCRIPT",
+            config_hashtags=["podcast"],
+        )
+        # Inline: transcript comes before the listen link and hashtags
+        assert caption.index("THE_TRANSCRIPT") < caption.index("https://example.com/ep")
+        assert caption.index("THE_TRANSCRIPT") < caption.index("#podcast")
+
+    def test_transcript_position_last(self):
+        caption = build_caption_text(
+            episode_number=1,
+            episode_title="Title",
+            episode_link="https://example.com/ep",
+            soundbite_title="Bite",
+            transcript_text="THE_TRANSCRIPT",
+            config_hashtags=["podcast"],
+            transcript_position="last",
+        )
+        # Last: transcript is the final block, after link and hashtags
+        assert "THE_TRANSCRIPT" in caption
+        assert caption.index("THE_TRANSCRIPT") > caption.index("https://example.com/ep")
+        assert caption.index("THE_TRANSCRIPT") > caption.index("#podcast")
+        assert caption.rstrip().endswith("THE_TRANSCRIPT")
+
+    def test_transcript_position_none(self):
+        caption = build_caption_text(
+            episode_number=1,
+            episode_title="Title",
+            episode_link="https://example.com/ep",
+            soundbite_title="Bite",
+            transcript_text="THE_TRANSCRIPT",
+            config_hashtags=["podcast"],
+            transcript_position="none",
+        )
+        assert "THE_TRANSCRIPT" not in caption
+        assert "#podcast" in caption
+
+    def test_invalid_transcript_position_falls_back_to_inline(self):
+        caption = build_caption_text(
+            episode_number=1,
+            episode_title="Title",
+            episode_link="https://example.com/ep",
+            soundbite_title="Bite",
+            transcript_text="THE_TRANSCRIPT",
+            transcript_position="bogus",
+        )
+        assert caption.index("THE_TRANSCRIPT") < caption.index("https://example.com/ep")
+
 
 class TestFormatSrtTime:
     def test_zero(self):
