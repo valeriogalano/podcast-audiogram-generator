@@ -9,6 +9,7 @@ overrides for episode/soundbite selection and debugging.
 """
 import logging
 import os
+import sys
 import argparse
 
 from .config import Config
@@ -45,8 +46,13 @@ def get_podcast_episodes(feed_url, manual_soundbites=None, verify_ssl: bool = Fa
                                          verify_ssl=verify_ssl)
 
 
-def main():
-    """Main CLI entry point. Configuration is loaded from config.yaml."""
+def main() -> int:
+    """Main CLI entry point. Configuration is loaded from config.yaml.
+
+    Returns 0 on success, 1 if a config/feed error prevented startup or any
+    episode failed to generate — used as the process exit code so CI runs
+    fail visibly instead of reporting a false green.
+    """
     logging.basicConfig(level=logging.WARNING)
     parser = argparse.ArgumentParser(description='Audiogram generator from podcast RSS')
     parser.add_argument('--config', type=str, help='Path to the YAML configuration file')
@@ -91,7 +97,7 @@ def main():
     feed_url = config.get('feed_url')
     if not feed_url:
         logger.error("feed_url is required. Set it in config.yaml.")
-        return
+        return 1
 
     episode_input = config.get('episode')
     soundbites_choice = config.get('soundbites')
@@ -139,8 +145,8 @@ def main():
                                                    verify_ssl=verify_ssl)
 
     if not episodes:
-        logger.warning("No episodes found in the feed.")
-        return
+        logger.error("No episodes found in the feed.")
+        return 1
 
     logger.info("\n%s", "=" * 60)
     logger.info("Podcast: %s", podcast_info.get('title', 'N/A'))
@@ -155,16 +161,16 @@ def main():
     max_episode = len(episodes)
     if not episode_input:
         logger.error("episode is required. Set it in config.yaml or pass --episode.")
-        return
+        return 1
     try:
         selected_episode_numbers = parse_episode_selection(episode_input, max_episode)
     except ValueError as e:
         logger.error("Episode input error: %s", e)
-        return
+        return 1
 
     if not soundbites_choice and not dry_run and not full_episode:
         logger.error("soundbites is required. Set it in config.yaml or pass --soundbites.")
-        return
+        return 1
 
     # When --limit is set, pre-select the last N unprocessed soundbites across all
     # selected episodes (newest episode first, newest soundbite first) so that only
@@ -212,6 +218,8 @@ def main():
             episode_soundbite_overrides[_ep_num] = ','.join(str(n) for n in _sb_nums)
         effective_limit = None  # already enforced above
 
+    had_errors = False
+
     for episode_num in selected_episode_numbers:
         selected = None
         for ep in episodes:
@@ -223,7 +231,7 @@ def main():
             continue
 
         effective_soundbites_choice = episode_soundbite_overrides.get(episode_num, soundbites_choice)
-        process_one_episode(
+        success = process_one_episode(
             selected=selected,
             podcast_info=podcast_info,
             colors=colors,
@@ -243,7 +251,11 @@ def main():
             force=force,
             limit=effective_limit,
         )
+        if not success:
+            had_errors = True
+
+    return 1 if had_errors else 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

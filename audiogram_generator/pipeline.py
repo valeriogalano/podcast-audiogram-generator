@@ -319,6 +319,7 @@ def _process_single_soundbite(
         if fmt_config.get('enabled', True):
             formats_info[fmt_name] = fmt_config.get('description', fmt_name)
 
+    failed_formats = []
     if not segment_path or not os.path.exists(segment_path):
         logger.warning("Skipping audiogram video generation because audio segment is missing.")
     else:
@@ -357,6 +358,7 @@ def _process_single_soundbite(
                     future.result()
                 except Exception as e:
                     logger.error("Format %s rendering failed: %s", futures[future], e)
+                    failed_formats.append(futures[future])
 
     logger.info("Generating caption file...")
     caption_path = os.path.join(sb_dir, f"ep{selected['number']}_sb{soundbite_num}_caption.txt")
@@ -379,21 +381,30 @@ def _process_single_soundbite(
     if os.path.exists(srt_path):
         logger.info("✓ SRT: %s", srt_path)
 
+    if failed_formats:
+        raise RuntimeError(
+            f"Soundbite {soundbite_num}: rendering failed for format(s): "
+            f"{', '.join(failed_formats)}"
+        )
+
     return formats_info
 
 
 def _process_full_episode(selected, podcast_info, full_audio_path, srt_content,
                            artwork_url, output_dir, temp_dir_base, formats_config, colors,
                            show_subtitles, header_title_source=None, fonts=None,
-                           verify_ssl: bool = False, cta=None, force: bool = False):
+                           verify_ssl: bool = False, cta=None, force: bool = False) -> bool:
     """Generate audiograms for the entire episode (no soundbite extraction).
 
     Uses the full audio file and all transcript chunks. Outputs are named
     ``ep{N}_full_{format}.mp4``.
+
+    Returns True on success (including a no-op skip when output already
+    exists), False if a fatal error occurred or any format failed to render.
     """
     if not full_audio_path or not os.path.exists(full_audio_path):
         logger.warning("Full audio file missing — cannot generate full-episode audiogram.")
-        return
+        return False
 
     enabled_formats = [fmt for fmt, cfg in formats_config.items() if cfg.get('enabled', True)]
     if not force and enabled_formats:
@@ -403,7 +414,7 @@ def _process_full_episode(selected, podcast_info, full_audio_path, srt_content,
         ]
         if all(os.path.exists(p) for p in expected_mp4s):
             logger.info("Skipping full-episode audiogram — output already exists (use --force to overwrite).")
-            return
+            return True
 
     # Parse transcript chunks for the full episode (no time window restriction)
     transcript_chunks: List = []
@@ -419,7 +430,7 @@ def _process_full_episode(selected, podcast_info, full_audio_path, srt_content,
         duration = len(loaded) / 1000.0
     except Exception as e:
         logger.warning("Could not determine episode duration: %s", e)
-        return
+        return False
 
     logger.warning(
         "Generating full-episode audiogram (duration: %.0fs). This may take a while.", duration
@@ -463,6 +474,7 @@ def _process_full_episode(selected, podcast_info, full_audio_path, srt_content,
             logger.info("✓ %s: %s", format_name, output_path)
             return format_name, output_path
 
+        failed_formats = []
         with ThreadPoolExecutor(max_workers=len(formats_info)) as executor:
             futures = {executor.submit(_render_one_format, fmt): fmt for fmt in formats_info}
             for future in as_completed(futures):
@@ -470,10 +482,16 @@ def _process_full_episode(selected, podcast_info, full_audio_path, srt_content,
                     future.result()
                 except Exception as e:
                     logger.error("Format %s rendering failed: %s", futures[future], e)
+                    failed_formats.append(futures[future])
 
     logger.info("\n%s", "=" * 60)
-    logger.info("Full-episode audiograms generated in folder: %s", output_dir)
+    if failed_formats:
+        logger.error("Some full-episode formats failed to render: %s", output_dir)
+    else:
+        logger.info("Full-episode audiograms generated in folder: %s", output_dir)
     logger.info("%s", "=" * 60)
+
+    return not failed_formats
 
 
 def _render_soundbites_batch(
@@ -495,9 +513,13 @@ def _render_soundbites_batch(
     verify_ssl: bool = False,
     cta=None,
     force: bool = False,
-):
-    """Download artwork once, then render the given soundbite numbers in sequence."""
+) -> bool:
+    """Download artwork once, then render the given soundbite numbers in sequence.
+
+    Returns True if every soundbite rendered without errors, False otherwise.
+    """
     total = len(soundbite_nums) if len(soundbite_nums) > 1 else None
+    had_errors = False
 
     with tempfile.TemporaryDirectory(dir=temp_dir_base) as temp_dir:
         _warn_if_no_ffmpeg()
@@ -510,31 +532,37 @@ def _render_soundbites_batch(
         formats_info = {}
         for soundbite_num in soundbite_nums:
             soundbite = selected['soundbites'][soundbite_num - 1]
-            formats_info = _process_single_soundbite(
-                soundbite=soundbite,
-                soundbite_num=soundbite_num,
-                total_soundbites=total,
-                selected=selected,
-                podcast_info=podcast_info,
-                temp_dir=temp_dir,
-                logo_path=logo_path,
-                srt_content=srt_content,
-                full_audio_path=full_audio_path,
-                output_dir=output_dir,
-                formats_config=formats_config,
-                colors=colors,
-                show_subtitles=show_subtitles,
-                config_hashtags=config_hashtags,
-                header_title_source=header_title_source,
-                fonts=fonts,
-                loaded_audio=loaded_audio,
-                verify_ssl=verify_ssl,
-                cta=cta,
-                force=force,
-            )
+            try:
+                formats_info = _process_single_soundbite(
+                    soundbite=soundbite,
+                    soundbite_num=soundbite_num,
+                    total_soundbites=total,
+                    selected=selected,
+                    podcast_info=podcast_info,
+                    temp_dir=temp_dir,
+                    logo_path=logo_path,
+                    srt_content=srt_content,
+                    full_audio_path=full_audio_path,
+                    output_dir=output_dir,
+                    formats_config=formats_config,
+                    colors=colors,
+                    show_subtitles=show_subtitles,
+                    config_hashtags=config_hashtags,
+                    header_title_source=header_title_source,
+                    fonts=fonts,
+                    loaded_audio=loaded_audio,
+                    verify_ssl=verify_ssl,
+                    cta=cta,
+                    force=force,
+                )
+            except Exception as e:
+                logger.error("Soundbite %d failed: %s", soundbite_num, e)
+                had_errors = True
 
     logger.info("\n%s", "=" * 60)
-    if total:
+    if had_errors:
+        logger.error("Some audiograms failed to generate — see errors above: %s", output_dir)
+    elif total:
         logger.info("All audiograms generated successfully into: %s", output_dir)
         logger.info("Total: %d soundbites × %d formats = %d videos",
                     len(soundbite_nums), len(formats_info),
@@ -543,16 +571,22 @@ def _render_soundbites_batch(
         logger.info("Audiograms successfully generated in folder: %s", output_dir)
     logger.info("%s", "=" * 60)
 
+    return not had_errors
+
 
 def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags,
                          show_subtitles, output_dir, temp_dir_base, soundbites_choice,
                          dry_run=False, use_episode_cover=False, header_title_source=None,
                          fonts=None, verify_ssl: bool = False, full_episode: bool = False,
-                         cta=None, force: bool = False, limit: Optional[int] = None):
+                         cta=None, force: bool = False, limit: Optional[int] = None) -> bool:
     """Orchestrate all steps for a single episode.
 
     ``soundbites_choice`` must be resolved by the caller (main() handles
     interactive stdin prompts). This function contains no input() calls.
+
+    Returns True if the episode was processed without errors, False if any
+    rendering or generation error occurred (used by the CLI to set the
+    process exit code).
     """
     logger.info("\nEpisode %d: %s", selected['number'], selected['title'])
     if selected['audio_url']:
@@ -566,7 +600,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
 
     if dry_run:
         _dry_run_episode(selected, soundbites_choice, verify_ssl=verify_ssl)
-        return
+        return True
 
     episode_dir = os.path.join(output_dir, f"ep{selected['number']}")
     os.makedirs(episode_dir, exist_ok=True)
@@ -578,7 +612,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
 
     # Full-episode mode: generate audiogram for the entire episode
     if full_episode:
-        _process_full_episode(
+        return _process_full_episode(
             selected=selected,
             podcast_info=podcast_info,
             full_audio_path=full_audio_path,
@@ -595,7 +629,6 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
             cta=cta,
             force=force,
         )
-        return
 
     loaded_audio = None
     if full_audio_path and os.path.exists(full_audio_path):
@@ -605,6 +638,8 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
         except Exception as e:
             logger.warning("Could not pre-load audio, will reload per soundbite: %s", e)
 
+    success = True
+
     if selected['soundbites']:
         choice = str(soundbites_choice) if soundbites_choice is not None else 'n'
 
@@ -613,7 +648,7 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
             if limit is not None:
                 soundbite_nums = soundbite_nums[:limit]
             logger.info("\nGenerating audiograms for %d soundbite(s)...", len(soundbite_nums))
-            _render_soundbites_batch(
+            success = _render_soundbites_batch(
                 soundbite_nums=soundbite_nums,
                 selected=selected,
                 podcast_info=podcast_info,
@@ -644,14 +679,14 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                     if not (1 <= num <= len(selected['soundbites'])):
                         logger.error("Invalid number %d. Choose between 1 and %d",
                                      num, len(selected['soundbites']))
-                        return
+                        return False
 
                 soundbite_nums = list(reversed(soundbite_nums))
                 if limit is not None:
                     soundbite_nums = soundbite_nums[:limit]
 
                 logger.info("\nGenerating audiogram for %d soundbite(s)...", len(soundbite_nums))
-                _render_soundbites_batch(
+                success = _render_soundbites_batch(
                     soundbite_nums=soundbite_nums,
                     selected=selected,
                     podcast_info=podcast_info,
@@ -673,7 +708,11 @@ def process_one_episode(selected, podcast_info, colors, formats_config, config_h
                 )
             except ValueError as e:
                 logger.warning("Invalid input: %s", e)
+                success = False
             except Exception as e:
                 logger.error("Error during generation: %s", e)
+                success = False
     else:
         logger.info("\nNo soundbites found for this episode.")
+
+    return success
