@@ -46,6 +46,11 @@ def parse_feed(feed_xml: str, manual_soundbites: Optional[dict] = None) -> Tuple
       ``number``, ``title``, ``link``, ``description``, ``soundbites`` (list),
       ``transcript_url`` (optional), ``audio_url`` (optional), ``keywords`` (optional),
       ``image_url`` (optional)
+
+    ``number`` is taken from the item's ``itunes:episode`` tag when present (the
+    stable, semantic identity used for filenames, captions and release ids); it
+    falls back to the 1-based feed position (oldest to newest) only when the tag
+    is missing or non-numeric.
     """
     root = ET.fromstring(feed_xml)
 
@@ -86,6 +91,7 @@ def parse_feed(feed_xml: str, manual_soundbites: Optional[dict] = None) -> Tuple
     audio_by_guid: Dict[str, str] = {}
     keywords_by_guid: Dict[str, str] = {}
     episode_image_by_guid: Dict[str, str] = {}
+    episode_number_by_guid: Dict[str, int] = {}
 
     for item in root.findall('.//item'):
         guid_elem = item.find('guid')
@@ -121,6 +127,18 @@ def parse_feed(feed_xml: str, manual_soundbites: Optional[dict] = None) -> Tuple
         if it_kw is not None and it_kw.text:
             keywords_by_guid[guid] = it_kw.text.strip()
 
+        # itunes:episode as the stable episode identity (falls back to feed
+        # position later when absent or non-numeric)
+        it_ep = item.find('itunes:episode', namespaces)
+        if it_ep is not None and it_ep.text:
+            try:
+                episode_number_by_guid[guid] = int(it_ep.text.strip())
+            except ValueError:
+                logger.warning(
+                    "Ignoring non-integer itunes:episode %r for guid %s",
+                    it_ep.text, guid,
+                )
+
         # Episode-specific image (prefer itunes:image, then media:thumbnail/content)
         ep_img_url = None
         itunes_img = item.find('itunes:image', namespaces)
@@ -144,8 +162,12 @@ def parse_feed(feed_xml: str, manual_soundbites: Optional[dict] = None) -> Tuple
     total_episodes = len(feed.entries)
 
     for idx, entry in enumerate(reversed(feed.entries)):
-        episode_number = idx + 1  # oldest to newest numbering
         guid = entry.get('guid', entry.get('id', ''))
+        # Prefer the semantic itunes:episode number as the episode identity, so a
+        # trailer/bonus item, a capped feed or a removed episode cannot silently
+        # shift every id (release names, published.json, captions). Fall back to
+        # the feed position (oldest to newest) only when itunes:episode is absent.
+        episode_number = episode_number_by_guid.get(guid, idx + 1)
         
         # Retrieve soundbites from feed
         feed_sbs = soundbites_by_guid.get(guid, [])

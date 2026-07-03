@@ -158,7 +158,10 @@ def main() -> int:
     for episode in episodes:
         logger.info("%d. %s", episode['number'], episode['title'])
 
-    max_episode = len(episodes)
+    # Bound selection by the highest episode identity (itunes:episode when
+    # present), not by the feed length, so --episode N stays valid even when the
+    # feed is capped or shifted. Missing numbers are handled gracefully below.
+    max_episode = max((episode['number'] for episode in episodes), default=0)
     if not episode_input:
         logger.error("episode is required. Set it in config.yaml or pass --episode.")
         return 1
