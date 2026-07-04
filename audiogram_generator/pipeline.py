@@ -58,7 +58,7 @@ _NOSUBS_SUFFIX = "_nosubs"
 
 
 def get_transcript_text(transcript_url, start_time, duration, srt_content=None,
-                         verify_ssl: bool = False):
+                         verify_ssl: bool = True):
     """Fetch (if needed) and extract transcript text for a time window."""
     try:
         if srt_content is None and transcript_url:
@@ -71,7 +71,7 @@ def get_transcript_text(transcript_url, start_time, duration, srt_content=None,
 
 
 def get_transcript_chunks(transcript_url, start_time, duration, srt_content=None,
-                           verify_ssl: bool = False):
+                           verify_ssl: bool = True):
     """Fetch (if needed) and return timed transcript chunks for a soundbite window."""
     try:
         if srt_content is None and transcript_url:
@@ -120,7 +120,7 @@ def generate_srt_file(output_path, transcript_chunks):
         f.write(content)
 
 
-def _prepare_episode_resources(selected, output_dir, verify_ssl: bool = False):
+def _prepare_episode_resources(selected, output_dir, verify_ssl: bool = True):
     """Download full audio and transcript for an episode.
 
     Returns:
@@ -165,7 +165,7 @@ def _prepare_episode_resources(selected, output_dir, verify_ssl: bool = False):
     return full_audio_path, srt_content
 
 
-def _dry_run_episode(selected, soundbites_choice, verify_ssl: bool = False):
+def _dry_run_episode(selected, soundbites_choice, verify_ssl: bool = True):
     """Print soundbite intervals and subtitles without generating any files."""
     sbs = selected.get('soundbites') or []
     logger.info("\nFound soundbites (%d):", len(sbs))
@@ -236,7 +236,7 @@ def _process_single_soundbite(
     header_title_source=None,
     fonts=None,
     loaded_audio=None,
-    verify_ssl: bool = False,
+    verify_ssl: bool = True,
     cta=None,
     force: bool = False,
 ):
@@ -320,7 +320,9 @@ def _process_single_soundbite(
             formats_info[fmt_name] = fmt_config.get('description', fmt_name)
 
     failed_formats = []
-    if not segment_path or not os.path.exists(segment_path):
+    if not formats_info:
+        logger.warning("No enabled video formats; skipping audiogram video generation.")
+    elif not segment_path or not os.path.exists(segment_path):
         logger.warning("Skipping audiogram video generation because audio segment is missing.")
     else:
         soundbite_title = soundbite.get('text') or soundbite.get('title')
@@ -393,7 +395,7 @@ def _process_single_soundbite(
 def _process_full_episode(selected, podcast_info, full_audio_path, srt_content,
                            artwork_url, output_dir, temp_dir_base, formats_config, colors,
                            show_subtitles, header_title_source=None, fonts=None,
-                           verify_ssl: bool = False, cta=None, force: bool = False) -> bool:
+                           verify_ssl: bool = True, cta=None, force: bool = False) -> bool:
     """Generate audiograms for the entire episode (no soundbite extraction).
 
     Uses the full audio file and all transcript chunks. Outputs are named
@@ -440,6 +442,9 @@ def _process_full_episode(selected, podcast_info, full_audio_path, srt_content,
     for fmt_name, fmt_config in formats_config.items():
         if fmt_config.get('enabled', True):
             formats_info[fmt_name] = fmt_config.get('description', fmt_name)
+    if not formats_info:
+        logger.warning("No enabled video formats; skipping full-episode audiogram generation.")
+        return True
 
     with tempfile.TemporaryDirectory(dir=temp_dir_base) as temp_dir:
         _warn_if_no_ffmpeg()
@@ -510,7 +515,7 @@ def _render_soundbites_batch(
     header_title_source=None,
     fonts=None,
     loaded_audio=None,
-    verify_ssl: bool = False,
+    verify_ssl: bool = True,
     cta=None,
     force: bool = False,
 ) -> bool:
@@ -577,7 +582,7 @@ def _render_soundbites_batch(
 def process_one_episode(selected, podcast_info, colors, formats_config, config_hashtags,
                          show_subtitles, output_dir, temp_dir_base, soundbites_choice,
                          dry_run=False, use_episode_cover=False, header_title_source=None,
-                         fonts=None, verify_ssl: bool = False, full_episode: bool = False,
+                         fonts=None, verify_ssl: bool = True, full_episode: bool = False,
                          cta=None, force: bool = False, limit: Optional[int] = None) -> bool:
     """Orchestrate all steps for a single episode.
 

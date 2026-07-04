@@ -17,7 +17,7 @@ from ._http import make_ssl_context
 logger = logging.getLogger(__name__)
 
 
-def fetch_srt(url: str, timeout: int = 10, verify_ssl: bool = False) -> str:
+def fetch_srt(url: str, timeout: int = 10, verify_ssl: bool = True) -> str:
     """Fetch SRT text from a URL using a UA header.
 
     Returns the decoded UTF‑8 text. Raises exceptions on network errors.

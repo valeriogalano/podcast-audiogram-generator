@@ -139,6 +139,35 @@ class TestRenderingFailurePropagation(unittest.TestCase):
                     force=True,
                 )
 
+    @patch('audiogram_generator.pipeline.generate_audiogram')
+    @patch('audiogram_generator.pipeline.shutil.copy2')
+    @patch('audiogram_generator.pipeline.extract_audio_segment', return_value='/tmp/seg.mp3')
+    @patch('os.path.exists', return_value=True)
+    def test_process_single_soundbite_skips_video_when_no_formats_enabled(
+            self, _exists, _extract, _copy, mock_generate):
+        selected = self._make_selected(n_soundbites=1)
+        with tempfile.TemporaryDirectory() as tmp:
+            result = pipeline._process_single_soundbite(
+                soundbite=selected['soundbites'][0],
+                soundbite_num=1,
+                total_soundbites=None,
+                selected=selected,
+                podcast_info={'title': 'Podcast', 'image_url': None},
+                temp_dir=tmp,
+                logo_path=os.path.join(tmp, 'logo.png'),
+                srt_content=None,
+                full_audio_path='/fake/full.mp3',
+                output_dir=tmp,
+                formats_config={'vertical': {'width': 64, 'height': 64, 'enabled': False}},
+                colors={},
+                show_subtitles=False,
+                config_hashtags=None,
+                force=True,
+            )
+
+        self.assertEqual(result, {})
+        mock_generate.assert_not_called()
+
     @patch('audiogram_generator.pipeline._process_single_soundbite')
     def test_render_soundbites_batch_continues_after_one_failure(self, mock_process):
         """One soundbite failing must not stop the others, but must mark the batch failed."""
@@ -245,6 +274,27 @@ class TestFullEpisodeExitCode(unittest.TestCase):
             force=False,
         )
         self.assertTrue(success)
+
+    @patch('audiogram_generator.pipeline.generate_audiogram')
+    @patch('audiogram_generator.pipeline.load_audio')
+    @patch('os.path.exists', return_value=True)
+    def test_returns_true_when_no_formats_enabled(self, _exists, mock_load_audio, mock_generate):
+        mock_load_audio.return_value.__len__.return_value = 10000
+        success = pipeline._process_full_episode(
+            selected={'number': 5, 'title': 'Ep5'},
+            podcast_info={'title': 'Podcast'},
+            full_audio_path='/fake/full.mp3',
+            srt_content=None,
+            artwork_url=None,
+            output_dir='./output',
+            temp_dir_base='./temp',
+            formats_config={'vertical': {'width': 64, 'height': 64, 'enabled': False}},
+            colors={},
+            show_subtitles=False,
+            force=True,
+        )
+        self.assertTrue(success)
+        mock_generate.assert_not_called()
 
 
 class TestProcessOneEpisodePropagatesSuccess(unittest.TestCase):

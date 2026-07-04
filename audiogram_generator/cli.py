@@ -40,7 +40,7 @@ from .services import rss as rss_svc
 logger = logging.getLogger(__name__)
 
 
-def get_podcast_episodes(feed_url, manual_soundbites=None, verify_ssl: bool = False):
+def get_podcast_episodes(feed_url, manual_soundbites=None, verify_ssl: bool = True):
     """Fetch the list of episodes from the RSS feed."""
     return rss_svc.get_podcast_episodes(feed_url, manual_soundbites=manual_soundbites,
                                          verify_ssl=verify_ssl)
@@ -112,7 +112,7 @@ def main() -> int:
     use_episode_cover = config.get('use_episode_cover', False)
     header_title_source = config.get('header_title_source', 'auto')
     fonts = config.get('fonts')
-    verify_ssl = config.get('verify_ssl', False)
+    verify_ssl = config.get('verify_ssl', True)
     full_episode = bool(config.get('full_episode', False))
     cta = config.get('cta')
     force = bool(config.get('force', False))

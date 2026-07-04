@@ -14,7 +14,7 @@ from ._http import make_ssl_context
 logger = logging.getLogger(__name__)
 
 
-def download_image(url: str, output_path: str, timeout: int = 10, verify_ssl: bool = False) -> str:
+def download_image(url: str, output_path: str, timeout: int = 10, verify_ssl: bool = True) -> str:
     """Download an image from ``url`` into ``output_path``.
 
     Returns the ``output_path`` on success. Raises exceptions on failure.

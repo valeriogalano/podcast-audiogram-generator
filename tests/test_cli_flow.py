@@ -100,7 +100,8 @@ class TestCliFlow(unittest.TestCase):
             'square': {'width': 1080, 'height': 1080, 'enabled': True},
         }
         # Run non-dry-run but with everything mocked; intercept calls
-        with patch('audiogram_generator.pipeline.generate_audiogram') as gen:
+        with tempfile.TemporaryDirectory() as tmp, \
+                patch('audiogram_generator.pipeline.generate_audiogram') as gen:
             cli.process_one_episode(
                 selected=selected,
                 podcast_info={'image_url': 'https://example/podcast.jpg', 'title': 'Podcast'},
@@ -108,8 +109,8 @@ class TestCliFlow(unittest.TestCase):
                 formats_config=formats,
                 config_hashtags=None,
                 show_subtitles=False,  # disabled → _nosubs
-                output_dir='./output',
-                temp_dir_base='./temp',
+                output_dir=tmp,
+                temp_dir_base=tmp,
                 soundbites_choice='1',
                 dry_run=False,
                 use_episode_cover=True,
@@ -146,10 +147,10 @@ class TestCliFlow(unittest.TestCase):
         )
         
         # Verify full audio download attempt
-        mock_download_audio.assert_called_once_with(selected['audio_url'], './output/ep142/ep142.mp3', verify_ssl=False)
+        mock_download_audio.assert_called_once_with(selected['audio_url'], './output/ep142/ep142.mp3', verify_ssl=True)
 
         # Verify full SRT fetch attempt
-        mock_fetch_srt.assert_called_once_with(selected['transcript_url'], verify_ssl=False)
+        mock_fetch_srt.assert_called_once_with(selected['transcript_url'], verify_ssl=True)
 
         # Verify SRT file save attempt
         mock_open.assert_any_call('./output/ep142/ep142.srt', 'w', encoding='utf-8')
