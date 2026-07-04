@@ -19,6 +19,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(config.get('output_dir'), './output')
         self.assertIsNone(config.get('episode'))
         self.assertIsNone(config.get('soundbites'))
+        self.assertIs(config.get('verify_ssl'), True)
 
     def test_get_with_default_value(self):
         """Test del metodo get con valore di default"""

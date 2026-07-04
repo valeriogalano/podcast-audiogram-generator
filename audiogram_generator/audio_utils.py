@@ -6,7 +6,7 @@ import urllib.request
 from .services._http import make_ssl_context
 
 
-def download_audio(url, output_path, verify_ssl: bool = False):
+def download_audio(url, output_path, verify_ssl: bool = True):
     """Download an audio file from a URL"""
     ssl_context = make_ssl_context(verify=verify_ssl)
 

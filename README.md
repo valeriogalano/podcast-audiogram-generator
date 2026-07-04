@@ -180,7 +180,7 @@ When subtitles are disabled, video filenames include a `_nosubs` suffix.
 ## Dependencies
 
 - feedparser >= 6.0.10
-- moviepy >= 1.0.3
+- moviepy >= 2, <3
 - pillow >= 10.0.0
 - pydub >= 0.25.1
 - numpy >= 1.24.0

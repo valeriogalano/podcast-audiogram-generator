@@ -18,7 +18,7 @@ class Config:
         'dry_run': False,
         'show_subtitles': True,
         'use_episode_cover': False,
-        'verify_ssl': False,
+        'verify_ssl': True,
         'manual_soundbites': {},
         # Header title text source: 'auto' (episode then podcast),
         # or explicitly 'episode' | 'podcast' | 'soundbite' | 'none'
@@ -142,4 +142,3 @@ class Config:
             The configuration value
         """
         return self.config.get(key, default)
-

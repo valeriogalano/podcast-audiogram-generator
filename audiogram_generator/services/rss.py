@@ -18,7 +18,7 @@ from ._http import make_ssl_context
 logger = logging.getLogger(__name__)
 
 
-def fetch_feed(url: str, timeout: int = 10, verify_ssl: bool = False) -> str:
+def fetch_feed(url: str, timeout: int = 10, verify_ssl: bool = True) -> str:
     """Fetch RSS/Atom feed XML from a URL.
 
     Returns the decoded UTF-8 text. Raises exceptions on network errors.
@@ -196,7 +196,7 @@ def parse_feed(feed_xml: str, manual_soundbites: Optional[dict] = None) -> Tuple
     return episodes, podcast_info
 
 
-def get_podcast_episodes(feed_url: str, manual_soundbites: Optional[dict] = None, verify_ssl: bool = False) -> Tuple[List[Dict], Dict]:
+def get_podcast_episodes(feed_url: str, manual_soundbites: Optional[dict] = None, verify_ssl: bool = True) -> Tuple[List[Dict], Dict]:
     """High-level convenience that fetches and parses the feed URL.
 
     Network I/O is isolated to ``fetch_feed`` to allow tests to mock it.
