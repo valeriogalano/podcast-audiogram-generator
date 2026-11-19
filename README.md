@@ -14,7 +14,7 @@ The tool parses a podcast RSS feed, downloads the episode audio and transcript (
 
 ## Requirements
 
-- Python >= 3.8
+- Python >= 3.10
 - FFmpeg
 
 ### Install FFmpeg
@@ -208,10 +208,10 @@ When subtitles are disabled, video filenames include a `_nosubs` suffix.
 ## Dependencies
 
 - feedparser >= 6.0.10
-- moviepy >= 2, <3
+- moviepy >= 2.2.1, <3
 - pillow >= 10.0.0
 - pydub >= 0.25.1
-- numpy >= 1.24.0
+- numpy >= 2.2.6
 - requests >= 2.31.0
 - pyyaml >= 6.0
 - audioop-lts >= 0.2.1 (Python 3.13+ only)
