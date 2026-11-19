@@ -8,11 +8,11 @@ setup(
     packages=find_packages(),
     install_requires=[
         "pydub>=0.25.1",
-        "moviepy>=2,<3",
+        "moviepy>=2.2.1,<3",
         "pillow>=10.0.0",
-        "numpy>=1.24.0",
+        "numpy>=2.2.6",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     entry_points={
         "console_scripts": [
             "audiogram-generator=audiogram_generator.cli:main",
